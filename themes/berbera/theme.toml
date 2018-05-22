@@ -7,7 +7,7 @@ min_version = 0.25
 
 [author]
   name = "Nick Hounshell"
-  homepage = "https://napsterinblue.github.io/ChrisAlbonBlogClone/"
+  homepage = "https://napsterinblue.github.io/notes/"
 
 [based on]
   name = "Alan Orth"
