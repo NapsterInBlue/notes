@@ -14,6 +14,7 @@ install:
 # Build the website
 script:
   - binaries/hugo
+  - python make.py
 
 # Deploy to GitHub pages
 deploy:
