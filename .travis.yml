@@ -10,11 +10,12 @@ before_install:
 # Clean and don't fail
 install:
   - rm -rf public || exit 0
+  - pip -mpip install jupyter
 
 # Build the website
 script:
-  - binaries/hugo
   - python make.py
+  - binaries/hugo
 
 # Deploy to GitHub pages
 deploy:
