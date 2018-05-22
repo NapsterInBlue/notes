@@ -6,8 +6,8 @@ features = ["responsive", "blog"]
 min_version = 0.25
 
 [author]
-  name = "Chris Albon"
-  homepage = "https://chrisalbon.com"
+  name = "Nick Hounshell"
+  homepage = "https://napsterinblue.github.io/ChrisAlbonBlogClone/"
 
 [based on]
   name = "Alan Orth"
