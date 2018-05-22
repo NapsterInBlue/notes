@@ -16,3 +16,6 @@
 # Ignore notebooks
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+
+# Never want to push up rendered docs to master
+docs/

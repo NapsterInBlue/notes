@@ -1,6 +1,6 @@
-baseURL = "https://chrisalbon.com/"
+baseURL = "https://napsterinblue.github.io/ChrisAlbonBlogClone/"
 languageCode = "en-us"
-title = "Chris Albon"
+title = "Nick Hounshell"
 theme = "berbera"
 
 pygmentsCodeFences=true
