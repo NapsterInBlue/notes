@@ -15,35 +15,12 @@
         </div>
         <div class="row">
             <div class="col-sm-12 blurb">
-                <p><a href="https://chrisalbon.com/about/chris_albon/">I am a data scientist and political scientist</a> with a decade of experience applying statistical learning, artificial intelligence, and software engineering to political, social, and humanitarian efforts -- from election monitoring to disaster relief. Currently, I am the Chief Data Scientist at <a href="https://www.brck.com/">BRCK</a>, a Kenyan startup building a rugged network for frontier market internet users.</p>
+               Here's a blurb.
 
                 <p></p>
             </div>
         </div>
 
-        <div class="row" id="articles">
-            <div class="col-sm-12">
-                <h3 class="category_header">Articles</h3>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="article_list card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/articles/") }}
-                            <li>
-                                {{ .PublishDate.Format "Jan 2006" }} -
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <hr/>
         <div class="row">
             <div class="col-sm-12">
                 <h2>Technical Notes On<br>Machine Learning &amp; Artificial Intelligence</h2>

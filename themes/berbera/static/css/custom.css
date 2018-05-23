@@ -198,15 +198,12 @@ Navbar
   font-family: sans-serif;
 }
 
-.nav >li > a{
-  padding: 15px;
-}
-
 .navbar-nav > li > a {
   color: #9d9d9d;
   font-size: 15px;
   font-weight: 500;
   font-family: sans-serif;
+  padding: 15px;
 }
 
 .navbar-toggler-icon {
