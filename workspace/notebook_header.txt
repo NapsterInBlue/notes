@@ -1,0 +1,6 @@
+---
+title: "Post Title"
+author: Nick Hounshell
+type: technical_note
+draft: false
+---
