@@ -1,5 +1,5 @@
 # notes
-Inspired, wholesale, by [Chris Albon's Data Science Notes page](https://github.com/chrisalbon/notes).
+Inspired, wholesale, by [Chris Albon's Data Science Notes page](https://github.com/chrisalbon/notes). In fact, if you go back in my commits, you'll see a lot of his *content*, but as I started to figure out how everything was put together, I phased all of that out and only kept the skeleton of the build, hence a copy-with-full-attribution and not fork.
 
 ## Some Notes on My Build
 
