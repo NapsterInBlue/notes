@@ -91,10 +91,3 @@ for file in all_md_files:
             new_link = "!["+md_image_title+"]("+md_image_filename+")"
 
             replaceAll(file, link, new_link)
-
-
-
-
-with open('content/python/data_visualization/matplotlib_bar_plot.md', 'r') as f:
-    for line in f:
-        print(line)
