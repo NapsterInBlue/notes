@@ -339,6 +339,10 @@ Technical Notes
   font-size: 1.1em;
 }
 
+.mjx-chtml {
+  display: block;
+}
+
 .technical_note h1, .page h1{
   font-size: 1.8rem;
 }
