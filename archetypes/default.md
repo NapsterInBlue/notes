@@ -1,7 +1,8 @@
 ---
 title: "{{ replace .TranslationBaseName "-" " " | title }}"
 date: {{ .Date }}
-draft: true
+draft: false
 author: "Nick Hounshell"
+type: technical_note
 ---
 
