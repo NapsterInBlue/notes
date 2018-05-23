@@ -339,7 +339,7 @@ Technical Notes
   font-size: 1.1em;
 }
 
-.mjx-chtml {
+p>.mjx-chtml {
   display: block;
   text-align: center;
 }
