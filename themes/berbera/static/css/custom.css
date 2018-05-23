@@ -190,7 +190,7 @@ Navbar
 }
 
 .navbar .navbar-brand, .navbar .navbar-brand:hover {
-  color: #222222;
+  color: #9d9d9d;
   font-size: 17px;
   float: left;
   margin-left: -15px;
@@ -199,9 +199,8 @@ Navbar
 }
 
 .navbar-nav > li > a {
-  color: #fff;
-  text-transform: uppercase;
-  font-size: .8em;
+  color: #9d9d9d;
+  font-size: 17px;
   font-weight: 500;
 }
 
