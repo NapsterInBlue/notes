@@ -116,6 +116,29 @@
             </div>
         </div>
 
+        <div class="row" id="machine_learning">
+            <div class="col-sm-12">
+                <h3 class="category_header">Spark</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header">Basics</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/basics/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <div class="row" id="machine_learning">
             <div class="col-sm-12">
@@ -129,7 +152,7 @@
                     <h4 class="card-header">Numpy</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/python/numpy/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/numpy/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
