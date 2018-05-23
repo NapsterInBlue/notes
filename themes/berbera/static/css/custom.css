@@ -461,8 +461,9 @@ Biography
 Code
 ---------------------------------------------------------*/
 
-pre code{
-  color:#747474;
+code{
+  color:#333;
+  background-color: #EEE;
 }
 
 pre {
