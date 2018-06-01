@@ -116,6 +116,23 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header">Numpy</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/python/numpy/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row" id="machine_learning">
             <div class="col-sm-12">
                 <h3 class="category_header">Spark</h3>
@@ -166,23 +183,6 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Numpy</h4>
-                    <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/numpy/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
                     <h4 class="card-header">Validation</h4>
                     <div class="card-body">
                         <ul>
@@ -215,6 +215,23 @@
             </div>
         </div>
 
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header">Model Selection</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/model_selection/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="row" id="graphs">
             <div class="col-sm-12">
