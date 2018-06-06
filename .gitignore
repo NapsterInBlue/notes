@@ -19,3 +19,6 @@
 
 # Never want to push up rendered docs to master
 docs/
+
+# PySpark artifacts
+*/spark-warehouse/*
