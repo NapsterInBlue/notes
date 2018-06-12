@@ -177,9 +177,26 @@
             <div class="col-sm-12">
                 <div class="card">
                     <h4 class="card-header">Machine Learning</h4>
-                    <div class="card-body">
+                        <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/spark/machine_learning/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header">Some Trickier Appliations</h4>
+                        <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/intermediate/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
