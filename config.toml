@@ -1,6 +1,6 @@
 baseURL = "https://napsterinblue.github.io/notes/"
 languageCode = "en-us"
-title = "Nick Hounshell"
+title = "Data Science Notes"
 theme = "berbera"
 
 pygmentsCodeFences=true
