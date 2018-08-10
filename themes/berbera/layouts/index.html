@@ -224,9 +224,9 @@
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
-                            {{ end }}
-                        </ul>
-                    </div>
+			    {{ end }}
+			</ul>
+		    </div>
                 </div>
             </div>
         </div>
@@ -238,6 +238,23 @@
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/regression/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                 <div class="card">
+                    <h4 class="card-header" id="ml_nns">Neural Networks</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/neural_nets/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
