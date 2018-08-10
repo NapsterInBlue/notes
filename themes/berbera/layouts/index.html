@@ -34,7 +34,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Pandas</h4>
+		    <h4 class="card-header" id="python_pandas">Pandas</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/pandas/").ByTitle }}
@@ -51,7 +51,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Internals</h4>
+                    <h4 class="card-header" id="python_internals">Internals</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/internals/").ByTitle }}
@@ -68,7 +68,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Object Oriented Programming</h4>
+                    <h4 class="card-header" id="python_oop">Object Oriented Programming</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/oop/").ByTitle }}
@@ -85,7 +85,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Data Visualization</h4>
+                    <h4 class="card-header" id="python_viz">Data Visualization</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/viz/").ByTitle }}
@@ -102,7 +102,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Development</h4>
+                    <h4 class="card-header" id="python_dev">Development</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/development/").ByTitle }}
@@ -119,7 +119,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Numpy</h4>
+                    <h4 class="card-header" id="python_numpy">Numpy</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/numpy/").ByTitle }}
@@ -142,7 +142,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Basics</h4>
+                    <h4 class="card-header" id="pyspark_basics">Basics</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/spark/basics/").ByTitle }}
@@ -159,7 +159,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Spark SQL</h4>
+                    <h4 class="card-header" id="pyspark_sql">Spark SQL</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/spark/sparksql/").ByTitle }}
@@ -176,7 +176,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Machine Learning</h4>
+                    <h4 class="card-header" id="pyspark_ml">Machine Learning</h4>
                         <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/spark/machine_learning/").ByTitle }}
@@ -193,7 +193,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Some Trickier Appliations</h4>
+                    <h4 class="card-header" id="pyspark_tricky">Some Trickier Appliations</h4>
                         <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/spark/intermediate/").ByTitle }}
@@ -217,7 +217,7 @@
         <div class="row">
             <div class="col-sm-12">
                  <div class="card">
-                    <h4 class="card-header">Datasets</h4>
+                    <h4 class="card-header" id="ml_datasets">Datasets</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/datasets/").ByTitle }}
@@ -234,7 +234,7 @@
         <div class="row">
             <div class="col-sm-12">
                  <div class="card">
-                    <h4 class="card-header">Regression</h4>
+                    <h4 class="card-header" id="ml_regression">Regression</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/regression/").ByTitle }}
@@ -251,7 +251,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Validation</h4>
+                    <h4 class="card-header" id="ml_validation">Validation</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/validation/").ByTitle }}
@@ -269,7 +269,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Data Preprocessing</h4>
+                    <h4 class="card-header" id="ml_preprocessing">Data Preprocessing</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/preprocessing/").ByTitle }}
@@ -287,7 +287,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Model Selection</h4>
+                    <h4 class="card-header" id="ml_selection">Model Selection</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/model_selection/").ByTitle }}
@@ -310,7 +310,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Refresher</h4>
+                    <h4 class="card-header" id="stats_refresher">Refresher</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/stats/basics/").ByTitle }}
@@ -335,7 +335,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header">Algorithms</h4>
+                    <h4 class="card-header" id="graph_algorithms">Algorithms</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/graphs/algorithms/").ByTitle }}
