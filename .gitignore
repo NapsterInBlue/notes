@@ -22,3 +22,6 @@ docs/
 
 # PySpark artifacts
 */spark-warehouse/*
+
+# compiled helper code
+__pycache__
