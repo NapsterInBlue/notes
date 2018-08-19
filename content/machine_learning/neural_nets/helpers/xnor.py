@@ -32,7 +32,7 @@ def make_xnor_dataset(points):
 
 def plot_xnor_dataset(X, y):
     fig, ax = plt.subplots(figsize=(8, 6))
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap='jet')
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap='prism')
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
     return ax
