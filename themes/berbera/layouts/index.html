@@ -133,80 +133,6 @@
             </div>
         </div>
 
-        <div class="row" id="pyspark">
-            <div class="col-sm-12">
-                <h3 class="category_header">PySpark</h3>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="pyspark_basics">Basics</h4>
-                    <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/spark/basics/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="pyspark_sql">Spark SQL</h4>
-                    <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/spark/sparksql/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="pyspark_ml">Machine Learning</h4>
-                        <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/spark/machine_learning/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="pyspark_tricky">Some Trickier Appliations</h4>
-                        <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/spark/intermediate/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
 
         <div class="row" id="machine_learning">
             <div class="col-sm-12">
@@ -358,6 +284,79 @@
             </div>
         </div>
 
+        <div class="row" id="pyspark">
+            <div class="col-sm-12">
+                <h3 class="category_header">PySpark</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="pyspark_basics">Basics</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/basics/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="pyspark_sql">Spark SQL</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/sparksql/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="pyspark_ml">Machine Learning</h4>
+                        <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/machine_learning/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="pyspark_tricky">Some Trickier Appliations</h4>
+                        <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/spark/intermediate/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
         <div class="row" id="graphs">
