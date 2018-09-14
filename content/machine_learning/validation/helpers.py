@@ -7,15 +7,14 @@ import matplotlib.pylab as plt
 
 
 def print_cm(result):
-    print('\t\t     Actual')
-    print('\t\t  False\t  True')
+    print('Actual'.rjust(27))
+    print('False'.rjust(23), 'True'.rjust(6))
     print('Predicted  False  ',
           str(result[0][0]).rjust(4), ' ',
           str(result[0][1]).rjust(4))
-    print('\t   True   ',
-          str(result[1][0]).rjust(4), ' ',
+    print('True'.rjust(16),
+          str(result[1][0]).rjust(6), ' ',
           str(result[1][1]).rjust(4))
-    
     
 def downsample_class(X, y, classToDownsample=1, downsampleToPct=.1):
     df = pd.DataFrame(np.c_[X, y])
