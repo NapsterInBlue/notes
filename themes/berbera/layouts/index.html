@@ -227,10 +227,27 @@
         <div class="row">
             <div class="col-sm-12">
                  <div class="card">
-                    <h4 class="card-header" id="ml_nns">Neural Networks: Computer Vision</h4>
+                    <h4 class="card-header" id="ml_cv">Neural Networks: Computer Vision</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/computer_vision/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                 <div class="card">
+                    <h4 class="card-header" id="ml_rnns">Recurrent Neural Networks</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/rnns/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
