@@ -192,6 +192,59 @@
 
         <div class="row">
             <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="ml_validation">Validation</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/validation/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="ml_preprocessing">Data Preprocessing</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/preprocessing/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="ml_selection">Model Selection</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/model_selection/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>        
+
+        <div class="row">
+            <div class="col-sm-12">
                  <div class="card">
                     <h4 class="card-header" id="ml_regression">Regression</h4>
                     <div class="card-body">
@@ -277,11 +330,11 @@
 
         <div class="row">
             <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="ml_validation">Validation</h4>
+                 <div class="card">
+                    <h4 class="card-header" id="ml_text">Generative Adversarial Networks</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/validation/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/gans/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
@@ -290,43 +343,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="ml_preprocessing">Data Preprocessing</h4>
-                    <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/preprocessing/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <h4 class="card-header" id="ml_selection">Model Selection</h4>
-                    <div class="card-body">
-                        <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/model_selection/").ByTitle }}
-                            <li>
-                                <a href="{{.Permalink}}">{{.Title}}</a>
-                            </li>
-                            {{ end }}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </div>      
 
         <div class="row" id="stats">
             <div class="col-sm-12">
