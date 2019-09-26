@@ -263,7 +263,7 @@
         <div class="row">
             <div class="col-sm-12">
                  <div class="card">
-                    <h4 class="card-header" id="ml_regression">Classification</h4>
+                    <h4 class="card-header" id="ml_classification">Classification</h4>
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/machine_learning/classification/").ByTitle }}
@@ -275,7 +275,24 @@
                     </div>
                 </div>
             </div>
-        </div>        
+        </div>    
+
+        <div class="row">
+            <div class="col-sm-12">
+                 <div class="card">
+                    <h4 class="card-header" id="ml_trees">Tree-Based Models</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/machine_learning/trees/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>             
 
         <div class="row">
             <div class="col-sm-12">
