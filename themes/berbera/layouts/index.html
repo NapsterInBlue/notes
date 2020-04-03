@@ -453,6 +453,23 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="survival_analysis">Survival Analysis</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/stats/survival_analysis/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row" id="pyspark">
             <div class="col-sm-12">
                 <h3 class="category_header">PySpark</h3>
