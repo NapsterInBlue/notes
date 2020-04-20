@@ -557,7 +557,7 @@
                     <h4 class="card-header" id="graph_algorithms">Graphs</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/algorithms/graphs").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/algorithms/graphs/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
