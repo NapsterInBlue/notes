@@ -545,19 +545,19 @@
         </div>
 
 
-        <div class="row" id="graphs">
+        <div class="row" id="algorithms">
             <div class="col-sm-12">
-                <h3 class="category_header">Graphs</h3>
+                <h3 class="category_header">Miscellaneous Algorithms</h3>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header" id="graph_algorithms">Algorithms</h4>
+                    <h4 class="card-header" id="graph_algorithms">Graphs</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/graphs/algorithms/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/algorithms/graphs").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
@@ -571,10 +571,10 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header" id="graph_algorithms">In Python</h4>
+                    <h4 class="card-header" id="linear_programming">Linear Programming</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/graphs/python/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/algorithms/linear_programming/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
