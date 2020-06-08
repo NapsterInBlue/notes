@@ -85,10 +85,10 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header" id="python_viz">Data Visualization</h4>
+                    <h4 class="card-header" id="python_dev">Development</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/python/viz/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/python/development/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
@@ -97,15 +97,15 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>        
 
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
-                    <h4 class="card-header" id="python_dev">Development</h4>
+                    <h4 class="card-header" id="python_dev">And SQLite</h4>
                     <div class="card-body">
                         <ul>
-                            {{ range (where .Pages "File.Dir" "in" "/python/development/").ByTitle }}
+                            {{ range (where .Pages "File.Dir" "in" "/python/sql/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
@@ -123,6 +123,23 @@
                     <div class="card-body">
                         <ul>
                             {{ range (where .Pages "File.Dir" "in" "/python/images/").ByTitle }}
+                            <li>
+                                <a href="{{.Permalink}}">{{.Title}}</a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <h4 class="card-header" id="python_viz">Data Visualization</h4>
+                    <div class="card-body">
+                        <ul>
+                            {{ range (where .Pages "File.Dir" "in" "/python/viz/").ByTitle }}
                             <li>
                                 <a href="{{.Permalink}}">{{.Title}}</a>
                             </li>
