@@ -1,0 +1,11 @@
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 0
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 1
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 2
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 3
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 4
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 5
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 6
+2020-10-28 18:02:33,117 — app.app_code — WARNING —run_app:13 — We saw the number 6!
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 7
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 8
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 9
