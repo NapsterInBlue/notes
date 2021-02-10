@@ -23,5 +23,11 @@ docs/
 # PySpark artifacts
 */spark-warehouse/*
 
+# VSCode artifacts
+.vscode/
+
+# logfiles
+*.log
+
 # compiled helper code
 __pycache__
