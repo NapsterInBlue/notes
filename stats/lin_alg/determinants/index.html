@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Determinants" />
+<meta property="og:description" content="Geometric Interpretation In his video on determinants, 3blue1brown provides a nice geometric interpretation for the determinant of a matrix, A.
+ Generally, the determinant represents the factor by which a matrix scales the area/volume/etc after a linear transformation.
+ This is a better approach than rote memorization of the formula for calculating a determinant and just rolling with it (like I did for years).
+from IPython.display import Image Image(&#39;images/determinant_formula_2d.PNG&#39;) 2D Intuition To see why this is the case, let&rsquo;s consider a couple simple shapes/transformations." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/lin_alg/determinants/" />
+
+
+
+<meta property="article:published_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Determinants"/>
+<meta name="twitter:description" content="Geometric Interpretation In his video on determinants, 3blue1brown provides a nice geometric interpretation for the determinant of a matrix, A.
+ Generally, the determinant represents the factor by which a matrix scales the area/volume/etc after a linear transformation.
+ This is a better approach than rote memorization of the formula for calculating a determinant and just rolling with it (like I did for years).
+from IPython.display import Image Image(&#39;images/determinant_formula_2d.PNG&#39;) 2D Intuition To see why this is the case, let&rsquo;s consider a couple simple shapes/transformations."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Determinants",
+  "url": "https://napsterinblue.github.io/notes/stats/lin_alg/determinants/",
+  "wordCount": "326",
+  "datePublished": "2019-10-07T00:00:00&#43;00:00",
+  "dateModified": "2019-10-07T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Determinants</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Determinants</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-10-07T00:00:00Z "> 07 Oct 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+
+<p>In <a href="https://www.youtube.com/watch?v=Ip3X9LOh2dk&amp;list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&amp;index=7&amp;t=0s">his video on determinants</a>, 3blue1brown provides a nice geometric interpretation for the determinant of a matrix, <code>A</code>.</p>
+
+<blockquote>
+<p>Generally, the determinant represents the factor by which a matrix scales the area/volume/etc after a linear transformation.</p>
+</blockquote>
+
+<p>This is a better approach than rote memorization of the formula for calculating a determinant and just rolling with it (like I did for years).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/determinant_formula_2d.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_2_0.png" alt="png" /></p>
+
+<h3 id="2d-intuition">2D Intuition</h3>
+
+<p>To see why this is the case, let&rsquo;s consider a couple simple shapes/transformations.</p>
+
+<p>As mentioned in our Linear Transformation notebook, we consider the matrix <code>A</code> as the effect on our basis unit vectors <code>i</code> and <code>j</code>. The area of a <code>1x1</code> rectangle is obviously <code>1</code>, so looking at a simple matrix below that stretches our area in a straight line about the X and Y axes, we can see that the form expands to area <code>a * d</code>, which is the same as the growth of scale when dividing by <code>1</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/determinant_rectangle.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_4_0.png" alt="png" /></p>
+
+<p>Making the transformation a bit spicier, we&rsquo;ll make our transformation on <code>j</code> one in two dimensions, keeping <code>i</code> in one.</p>
+
+<p>The area of a parallelogram is just the height multiplied by the width, which is still easy enough to see in this form.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/determinant_parallelogram.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_6_0.png" alt="png" /></p>
+
+<p>Finally, making the transformation on both <code>i</code> and <code>j</code> be across two dimensions, 3b1b provided a really elegant geometric representation for the formula that you might have memorized to show that this still holds.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/determinant_math.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_8_0.png" alt="png" /></p>
+
+<h2 id="extensions">Extensions</h2>
+
+<h3 id="3d">3D</h3>
+
+<p>There is, of course, a general form for calculating the determinant, but that&rsquo;s easily obviated away with <code>numpy</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/determinant_formula.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_12_0.png" alt="png" /></p>
+
+<p>Remembering the intuition behind the determinant is far more valueable, imo.</p>
+
+<h3 id="transformation-non-unit-vector-shapes">Transformation Non Unit Vector Shapes</h3>
+
+<p>As remarked in the notebook on Linear Transformations, the consequence of applying a linear transformation using a matrix <code>A</code> is that parallel and evenly-spaced points remain so after a transformation. And so the scaling of our area follows the same effect for any shape. e.g.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/det_linearity_before.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_14_0.png" alt="png" /></p>
+
+<p>transforming to</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/det_linearity_after.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="determinants_16_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Momentum, RMSprop, and Adam Optimization for Gradient Descent" />
+<meta property="og:description" content="Say we&rsquo;re trying to optimize over an oblong cost function like the one below.
+from IPython.display import Image Image(&#39;images/momentum_1.png&#39;) Traditionally, we know that there&rsquo;s a large emphasis on the learning rate, alpha, that dictates the step size of our gradient descent.
+Too large, and we wind up over-shooting paths that would allow us to converge sooner (purple). Too small, and it takes forever to run (blue).
+Image(&#39;images/momentum_2.png&#39;) However, you look at these lines, they learn at a reasonable pace in the X plane, while oscillating back and forth in the Y." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/neural_nets/adam_opt/" />
+
+
+
+<meta property="article:published_time" content="2018-08-26T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-08-26T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Momentum, RMSprop, and Adam Optimization for Gradient Descent"/>
+<meta name="twitter:description" content="Say we&rsquo;re trying to optimize over an oblong cost function like the one below.
+from IPython.display import Image Image(&#39;images/momentum_1.png&#39;) Traditionally, we know that there&rsquo;s a large emphasis on the learning rate, alpha, that dictates the step size of our gradient descent.
+Too large, and we wind up over-shooting paths that would allow us to converge sooner (purple). Too small, and it takes forever to run (blue).
+Image(&#39;images/momentum_2.png&#39;) However, you look at these lines, they learn at a reasonable pace in the X plane, while oscillating back and forth in the Y."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Momentum, RMSprop, and Adam Optimization for Gradient Descent",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/neural_nets/adam_opt/",
+  "wordCount": "688",
+  "datePublished": "2018-08-26T00:00:00&#43;00:00",
+  "dateModified": "2018-08-26T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Momentum, RMSprop, and Adam Optimization for Gradient Descent</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Momentum, RMSprop, and Adam Optimization for Gradient Descent</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-08-26T00:00:00Z "> 26 Aug 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Say we&rsquo;re trying to optimize over an oblong cost function like the one below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/momentum_1.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="adam_opt_2_0.png" alt="png" /></p>
+
+<p>Traditionally, we know that there&rsquo;s a large emphasis on the learning rate, <code>alpha</code>, that dictates the step size of our gradient descent.</p>
+
+<p>Too large, and we wind up over-shooting paths that would allow us to converge sooner (purple). Too small, and it takes forever to run (blue).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/momentum_2.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="adam_opt_4_0.png" alt="png" /></p>
+
+<p>However, you look at these lines, they learn at a reasonable pace in the X plane, while oscillating back and forth in the Y.</p>
+
+<h2 id="momentum">Momentum</h2>
+
+<p>By introducing a concept of &ldquo;Momentum&rdquo; we can continue to enjoy the horizontal descent rate, while deliberately dampening the variance in the Y.</p>
+
+<h3 id="pseudocode">Pseudocode</h3>
+
+<p>We define <code>v_dW</code> and <code>v_db</code> terms to be &ldquo;velocity&rdquo; terms with the same shape as their gradient counterparts. And depending on our values for <code>beta</code> and <code>alpha</code>, we can tune how much momentum we want subsequent gradients to gather.</p>
+
+<pre><code>On iteration t:
+    Compue dW, db for current mini-batch
+    
+    v_dW = beta * v_dW + (1 - beta) dW
+    v_db = beta * v_db + (1 - beta) db
+    
+    W = W - alpha * v_dW
+    b = b - alpha * v_db
+</code></pre>
+
+<p>If this form looks similar to <a href="https://napsterinblue.github.io/notes/stats/techniques/ewma/">Exponentially Weighted Moving Averages</a>, that&rsquo;s only because it is.</p>
+
+<p>Note that because we&rsquo;re weighting successive gradient steps against one another, the <code>X</code> movement will reinforce, whereas the <code>Y</code> movement will have a cancelling-out effect.</p>
+
+<h2 id="rmsprop">RMSprop</h2>
+
+<p>The Root Mean Squared propagation algorithm looks extremely similar to momentum approach we outlined above.</p>
+
+<pre><code>On iteration t:
+    Compue dW, db for current mini-batch
+    
+    s_dW = beta * v_dW + (1 - beta) (dW ** 2)
+    s_db = beta * v_db + (1 - beta) (db ** 2)
+    
+    W = W - alpha * (dW / (sqrt(s_dW) + epsilon))
+    b = b - alpha * (db / (sqrt(s_db) + epsilon))
+</code></pre>
+
+<p>Key difference here is how we element-wise square the last term in our calculations of <code>s_dW</code> and <code>s_db</code>. This matters a ton because on the update step, we&rsquo;re <em>dividing by</em> the <code>s</code> coefficients (and adding a negligible <code>epsilon</code> coefficient so we don&rsquo;t run into divide-by-zero errors)</p>
+
+<p>So intuitively:</p>
+
+<ul>
+<li>If <code>dW</code> is large
+
+<ul>
+<li>We square it, giving us a larger number in the denominator</li>
+<li>This makes the whole learning rate coefficient <em>smaller</em>, so we make a smaller update</li>
+<li>This is what we want to happen on our <code>Y</code> axis</li>
+</ul></li>
+<li>If <code>db</code> is small
+
+<ul>
+<li>Squaring it makes the number even smaller</li>
+<li>Dividing by the square root of a smaller number makes for a much larger update coefficient&ndash; a big step</li>
+<li>This is what we want to happen on the <code>X</code> axis</li>
+</ul></li>
+</ul>
+
+<p>Whereas the momentum approach ramps up after the model gains, well, momentum, this allows us to begin converging more quickly (green line) by correcting for a large gradient value right out of the gate.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/momentum_3.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="adam_opt_18_0.png" alt="png" /></p>
+
+<h2 id="adam-optimization">Adam Optimization</h2>
+
+<p>The current de-facto optimization algorithm, Adam (Adaptive Moment Estimation) combines both Momentum and RMSprop into a mouthful of an update step, borrowing the best features of both to give you smoother cost functions as well as higher accuracy.</p>
+
+<h3 id="pseudocode-1">Pseudocode</h3>
+
+<p>Note:</p>
+
+<ul>
+<li>We&rsquo;ve got two separate <code>beta</code> coefficients&ndash; one for each optimization part.</li>
+<li>We implement bias correction for each gradient (see bottom of <a href="https://napsterinblue.github.io/notes/stats/techniques/ewma/">Exponentially Weighted Moving Averages</a> for explanation)</li>
+</ul>
+
+<pre><code>On iteration t:
+    Compue dW, db for current mini-batch
+    
+    # Momentum
+    v_dW = beta1 * v_dW + (1 - beta1) dW
+    v_db = beta1 * v_db + (1 - beta1) db
+    
+    v_dW_corrected = v_dw / (1 - beta1 ** t)
+    v_db_corrected = v_db / (1 - beta1 ** t)
+    
+    # RMSprop    
+    s_dW = beta * v_dW + (1 - beta2) (dW ** 2)
+    s_db = beta * v_db + (1 - beta2) (db ** 2)
+    
+    s_dW_corrected = s_dw / (1 - beta2 ** t)
+    s_db_corrected = s_db / (1 - beta2 ** t)
+   
+    # Combine
+    W = W - alpha * (v_dW_corrected / (sqrt(s_dW_corrected) + epsilon))
+    b = b - alpha * (v_db_corrected / (sqrt(s_db_corrected) + epsilon))
+</code></pre>
+
+<h3 id="coefficients">Coefficients</h3>
+
+<p><code>alpha</code>: the learning rate. <strong>Needs tuning.</strong></p>
+
+<p><code>beta1</code>: momentum weight. Default to <code>0.9</code>.</p>
+
+<p><code>beta2</code>: RMSprop weight. Default to <code>0.999</code>.</p>
+
+<p><code>epsilon</code>: Divide by Zero failsave. Default to <code>10 ** -8</code>.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

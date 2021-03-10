@@ -1,0 +1,3245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="GroupBy (as best I understand it)" />
+<meta property="og:description" content="Table of Contents Data - Our Dummy Data
+Overview - The Basics - Grain - GroupBy Object
+Using It - Apply - Transform - Filter
+Misc - Grouper Object - Matplotlib - Gotchas - Resources
+Our Dummy Data  For the purposes of demonstration, we&rsquo;re going to borrow the dataset used in this post. It&rsquo;s basically some generic sales record data with account numbers, client names, prices, and timestamps." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/pandas/groupby/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="GroupBy (as best I understand it)"/>
+<meta name="twitter:description" content="Table of Contents Data - Our Dummy Data
+Overview - The Basics - Grain - GroupBy Object
+Using It - Apply - Transform - Filter
+Misc - Grouper Object - Matplotlib - Gotchas - Resources
+Our Dummy Data  For the purposes of demonstration, we&rsquo;re going to borrow the dataset used in this post. It&rsquo;s basically some generic sales record data with account numbers, client names, prices, and timestamps."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "GroupBy (as best I understand it)",
+  "url": "https://napsterinblue.github.io/notes/python/pandas/groupby/",
+  "wordCount": "5182",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>GroupBy (as best I understand it)</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">GroupBy (as best I understand it)</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<p>Data
+- <a href="#data">Our Dummy Data</a></p>
+
+<p>Overview
+- <a href="#basics">The Basics</a>
+- <a href="#grain">Grain</a>
+- <a href="#object">GroupBy Object</a></p>
+
+<p>Using It
+- <a href="#apply">Apply</a>
+- <a href="#transform">Transform</a>
+- <a href="#filter">Filter</a></p>
+
+<p>Misc
+- <a href="#grouper">Grouper Object</a>
+- <a href="#matplotlib">Matplotlib</a>
+- <a href="#gotchas">Gotchas</a>
+- <a href="#resources">Resources</a></p>
+
+<h2 id="our-dummy-data-a-id-data-a">Our Dummy Data <a id="data"></a></h2>
+
+<p>For the purposes of demonstration, we&rsquo;re going to borrow the dataset used in <a href="http://pbpython.com/pandas-grouper-agg.html">this post</a>. It&rsquo;s basically some generic sales record data with account numbers, client names, prices, and timestamps.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">dataUrl</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&#34;https://github.com/chris1610/pbpython/blob/master/data/sample-salesv3.xlsx?raw=True&#34;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">dataUrl</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>How many different records do we have?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code></pre></div>
+<pre><code>1500
+</code></pre>
+
+<p>In terms of categorical data, it looks like most of our grain will be determined by <code>account number</code>, <code>name</code>, and whatever <code>sku</code> is.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span></code></pre></div>
+<pre><code>account number      20
+name                20
+sku                 30
+quantity            50
+unit price        1392
+ext price         1491
+date              1500
+dtype: int64
+</code></pre>
+
+<p>And our date ranges span</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">min</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">max</span><span class="p">())</span></code></pre></div>
+<pre><code>2014-01-01 07:21:51 2014-12-31 12:48:35
+</code></pre>
+
+<p><hr></hr></p>
+
+<h2 id="the-basics-a-id-basics-a">The Basics <a id="basics"></a></h2>
+
+<h3 id="split-apply-combine">Split, Apply, Combine</h3>
+
+<p>At the heart of it, any time you use Group By, it&rsquo;s because you&rsquo;re trying to do any of the following:</p>
+
+<ul>
+<li><strong>Splitting</strong> the data based on some criteria</li>
+<li><strong>Applying</strong> a function to each group independently</li>
+<li><strong>Combining</strong> the results into a data structure</li>
+</ul>
+
+<p>In SQL, this is achieved in one shot with the following syntax</p>
+<div class="highlight"><pre class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">SELECT</span> <span class="n">col1</span><span class="p">,</span> <span class="n">col2</span><span class="p">,</span> <span class="nf">AVG</span><span class="p">(</span><span class="n">col3</span><span class="p">)</span>
+<span class="k">FROM</span> <span class="k">table</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">Col1</span><span class="p">,</span> <span class="n">Col2</span></code></pre></div>
+<p>However, this quickly becomes cumbersome when exploring the data, as each new field you add requires rerunning the query.</p>
+
+<p>By splitting this process up between the <code>split</code> and <code>apply</code> steps, we can stage the groups in memory and flexibly leverage the <code>GroupBy</code> object&rsquo;s powerful methods, which generally do one of two things:</p>
+
+<p><strong>Aggregation</strong>: computing a summary statistic(s) about each group, e.g. per-group:</p>
+
+<ul>
+<li>sums</li>
+<li>means</li>
+<li>counts
+<br /></li>
+</ul>
+
+<p>This collapses the data to the grain that the data is grouped at.</p>
+
+<p><strong>Transformation</strong>: perform some group-specific computations. e.g.:</p>
+
+<ul>
+<li>Standardizing data within a group</li>
+<li>Filling missing data within groups using a value derived from the group</li>
+</ul>
+
+<p>This returns a <em>like-indexed</em> dataset. So you will wind up with as many records of data as your initial population.</p>
+
+<p><hr></hr></p>
+
+<h2 id="grain-a-id-grain-a">Grain <a id="grain"></a></h2>
+
+<h3 id="under-the-hood">Under the Hood</h3>
+
+<p>Creating a <code>GroupBy</code> object is pretty straight-forward. You give <code>pandas</code> some data and you tell it what to group by.</p>
+
+<p>This creates a <code>DataFrameGroupBy</code> object which is a sub-class of the <code>NDFrameGroupBy</code> class, which is in-turn a sub-class of the <code>GroupBy</code> class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">gb</span></code></pre></div>
+<pre><code>&lt;pandas.core.groupby.DataFrameGroupBy object at 0x000000000AA43048&gt;
+</code></pre>
+
+<p>Behind the scenes, all that&rsquo;s happening is that it&rsquo;s taking the index of the DataFrame</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></code></pre></div>
+<pre><code>RangeIndex(start=0, stop=1500, step=1)
+</code></pre>
+
+<p>And making a simple <code>dict</code> by getting all of the unique values in your group definition as keys</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span></code></pre></div>
+<pre><code>array(['Barton LLC', 'Trantow-Barrows', 'Kulas Inc',
+       'Kassulke, Ondricka and Metz', 'Jerde-Hilpert', 'Koepp Ltd',
+       'Fritsch, Russel and Anderson', 'Kiehn-Spinka', 'Keeling LLC',
+       'Frami, Hills and Schmidt', 'Stokes LLC', 'Kuhn-Gusikowski',
+       'Herman LLC', 'White-Trantow', 'Sanford and Sons', 'Pollich LLC',
+       'Will LLC', 'Cronin, Oberbrunner and Spencer',
+       'Halvorson, Crona and Champlin', 'Purdy-Kunde'], dtype=object)
+</code></pre>
+
+<p>The corresponding values are just the indexes in the DataFrame that match these keys.</p>
+
+<p>This means that creating new <code>GroupBy</code> objects is both quick and cheap (your underlying data is only saved once!). It also makes it very easy to inspect the data by group.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="s1">&#39;Kulas Inc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-65551</td>
+      <td>2</td>
+      <td>31.10</td>
+      <td>62.20</td>
+      <td>2014-01-02 10:57:23</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>S1-06532</td>
+      <td>3</td>
+      <td>22.36</td>
+      <td>67.08</td>
+      <td>2014-01-09 23:58:27</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>S2-34077</td>
+      <td>16</td>
+      <td>73.04</td>
+      <td>1168.64</td>
+      <td>2014-01-10 12:07:30</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-50809</td>
+      <td>43</td>
+      <td>47.21</td>
+      <td>2030.03</td>
+      <td>2014-01-12 01:54:37</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>After you <code>groupby</code>, every row of the original dataset is going to be accounted for.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">gb</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gb</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span></code></pre></div>
+<pre><code>1500
+</code></pre>
+
+<h3 id="grouping">Grouping</h3>
+
+<p>And so with this intuition in mind, you should think of the grouping criteria at the <em>index-level</em>.</p>
+
+<p>For example:</p>
+
+<h4 id="values-in-the-data">Values in the Data</h4>
+
+<p>This comes in two flavors:</p>
+
+<p>1) The raw data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])))</span></code></pre></div>
+<pre><code>20
+</code></pre>
+
+<p>2) Or for convenience, the column name itself</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)))</span></code></pre></div>
+<pre><code>20
+</code></pre>
+
+<p>To get even more granular than one field, pass the <code>by</code> argument in as a list of values</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;sku&#39;</span><span class="p">])))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sku&#39;</span><span class="p">]])))</span></code></pre></div>
+<pre><code>544
+544
+</code></pre>
+
+<h4 id="numpy-arrays-the-same-length-as-the-axis">Numpy Arrays the same length as the axis</h4>
+
+<p>Similarly, you can write your own logic as long as the output has the same index as the original data.</p>
+
+<p>Consider a scenario where you define a specific group of clients and want to compare their performance against the rest of the population.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ourGroup</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Kassulke, Ondricka and Metz&#39;</span><span class="p">,</span> <span class="s1">&#39;Jerde-Hilpert&#39;</span><span class="p">,</span> <span class="s1">&#39;Koepp Ltd&#39;</span><span class="p">]</span>
+<span class="n">tf</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ourGroup</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span></code></pre></div>
+<pre><code>False    1265
+True      235
+Name: name, dtype: int64
+</code></pre>
+
+<p>This returns a Numpy array with True/False values for each row that, of course, have the same index</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">all</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></code></pre></div>
+<pre><code>True
+</code></pre>
+
+<p>Using this is as easy as</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">tf</span><span class="p">)</span>
+<span class="n">gb</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys([False, True])
+</code></pre>
+
+<p>As you can see, this partitions our data into two groups</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gb</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="bp">False</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">gb</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="bp">True</span><span class="p">)))</span></code></pre></div>
+<pre><code>1265 235
+</code></pre>
+
+<p>That match our <code>value_counts</code> above perfectly.</p>
+
+<h4 id="functions-maps-applied-to-the-axes-themselves">Functions/Maps applied to the axes themselves</h4>
+
+<p>Assume that we have a real simple dummy dataset</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">abc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;B&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;three&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;three&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;C&#39;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
+                       <span class="s1">&#39;D&#39;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">)})</span>
+<span class="n">abc</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+      <th>D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>foo</td>
+      <td>one</td>
+      <td>1.265959</td>
+      <td>0.555853</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>bar</td>
+      <td>one</td>
+      <td>-0.544206</td>
+      <td>0.358620</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>foo</td>
+      <td>two</td>
+      <td>1.000534</td>
+      <td>-0.835887</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>bar</td>
+      <td>three</td>
+      <td>1.872789</td>
+      <td>0.444664</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>foo</td>
+      <td>two</td>
+      <td>1.684510</td>
+      <td>0.558262</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>bar</td>
+      <td>two</td>
+      <td>0.970853</td>
+      <td>0.880734</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>foo</td>
+      <td>one</td>
+      <td>1.366091</td>
+      <td>0.760195</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>foo</td>
+      <td>three</td>
+      <td>1.638540</td>
+      <td>0.592039</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>And we want to group by whether the column is a consonant or not</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># function implementation</span>
+<span class="k">def</span> <span class="nf">get_letter_type</span><span class="p">(</span><span class="n">letter</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">letter</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="s1">&#39;aeiou&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;vowel&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;consonant&#39;</span>
+
+<span class="c1"># dict implementation</span>
+<span class="n">letter_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="s1">&#39;vowel&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span><span class="s1">&#39;consonant&#39;</span><span class="p">,</span> 
+                  <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="s1">&#39;consonant&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="s1">&#39;consonant&#39;</span><span class="p">}</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># axis=1 uses the column headers</span>
+<span class="n">grouped1</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">get_letter_type</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">grouped2</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">letter_mapping</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">grouped1</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="n">grouped2</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></code></pre></div>
+<pre><code>dict_values([Index(['B', 'C', 'D'], dtype='object'), Index(['A'], dtype='object')])
+dict_values([Index(['B', 'C', 'D'], dtype='object'), Index(['A'], dtype='object')])
+</code></pre>
+
+<p><hr></hr></p>
+
+<h2 id="groupby-properties-a-id-object-a">GroupBy Properties <a id="object"></a></h2>
+
+<p>Before we get into the <em>Transform</em> discussed above, here&rsquo;s a quick look at some of the features available at the moment of instantiation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">gb</span></code></pre></div>
+<pre><code>&lt;pandas.core.groupby.DataFrameGroupBy object at 0x000000000AAEC9E8&gt;
+</code></pre>
+
+<p>Count of records in each group</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span><span class="o">.</span><span class="n">size</span><span class="p">()</span></code></pre></div>
+<pre><code>name
+Barton LLC                         82
+Cronin, Oberbrunner and Spencer    67
+Frami, Hills and Schmidt           72
+Fritsch, Russel and Anderson       81
+Halvorson, Crona and Champlin      58
+Herman LLC                         62
+Jerde-Hilpert                      89
+Kassulke, Ondricka and Metz        64
+Keeling LLC                        74
+Kiehn-Spinka                       79
+Koepp Ltd                          82
+Kuhn-Gusikowski                    73
+Kulas Inc                          94
+Pollich LLC                        73
+Purdy-Kunde                        53
+Sanford and Sons                   71
+Stokes LLC                         72
+Trantow-Barrows                    94
+White-Trantow                      86
+Will LLC                           74
+dtype: int64
+</code></pre>
+
+<p>As mentioned earlier, on the backend, all a <code>GroupBy</code> object is is a <code>dict</code> of keys: group, value: index.</p>
+
+<p>Therefore, inspecting what groups exist is simple.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">gb</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></code></pre></div>
+<pre><code>dict_keys(['Barton LLC', 'Cronin, Oberbrunner and Spencer', 'Frami, Hills and Schmidt', 'Fritsch, Russel and Anderson', 'Halvorson, Crona and Champlin', 'Herman LLC', 'Jerde-Hilpert', 'Kassulke, Ondricka and Metz', 'Keeling LLC', 'Kiehn-Spinka', 'Koepp Ltd', 'Kuhn-Gusikowski', 'Kulas Inc', 'Pollich LLC', 'Purdy-Kunde', 'Sanford and Sons', 'Stokes LLC', 'Trantow-Barrows', 'White-Trantow', 'Will LLC'])
+</code></pre>
+
+<p>as is the distinct number of groups that we have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gb</span><span class="o">.</span><span class="n">groups</span><span class="p">))</span></code></pre></div>
+<pre><code>20
+</code></pre>
+
+<p>You can use the keys to either get the indexes that roll up</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="s1">&#39;Barton LLC&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>Int64Index([   0,   85,   91,   96,   99,  105,  117,  125,  158,  182,  183,
+             195,  202,  226,  237,  268,  306,  310,  397,  420,  423,  427,
+             430,  456,  459,  482,  505,  516,  524,  530,  540,  605,  622,
+             635,  636,  646,  650,  652,  666,  667,  691,  718,  733,  740,
+             830,  853,  854,  895,  906,  907,  915,  920,  930,  963,  985,
+             989, 1008, 1015, 1017, 1019, 1031, 1071, 1077, 1078, 1081, 1094,
+            1108, 1132, 1147, 1149, 1158, 1175, 1208, 1218, 1257, 1321, 1330,
+            1346, 1350, 1414, 1422, 1473],
+           dtype='int64')
+</code></pre>
+
+<p>or the relevant subset of the base DataFrame</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="s1">&#39;Barton LLC&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-50809</td>
+      <td>8</td>
+      <td>19.60</td>
+      <td>156.80</td>
+      <td>2014-01-20 01:48:47</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-53102</td>
+      <td>1</td>
+      <td>68.06</td>
+      <td>68.06</td>
+      <td>2014-01-20 13:27:52</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>S2-16558</td>
+      <td>2</td>
+      <td>90.91</td>
+      <td>181.82</td>
+      <td>2014-01-21 21:21:01</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-86481</td>
+      <td>20</td>
+      <td>30.41</td>
+      <td>608.20</td>
+      <td>2014-01-22 16:33:51</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Lastly, using the <code>dict</code>-like properties, we can cleanly iterate through <code>GroupBy</code> objects</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+
+<span class="c1"># only looking through the first two groups</span>
+<span class="c1"># to save space</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">gb</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">group</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span></code></pre></div>
+<pre><code>Barton LLC
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+    account number        name       sku  quantity  unit price  ext price  \
+0           740150  Barton LLC  B1-20000        39       86.69    3380.91   
+85          740150  Barton LLC  B1-50809         8       19.60     156.80   
+91          740150  Barton LLC  B1-53102         1       68.06      68.06   
+96          740150  Barton LLC  S2-16558         2       90.91     181.82   
+99          740150  Barton LLC  B1-86481        20       30.41     608.20   
+
+                  date  
+0  2014-01-01 07:21:51  
+85 2014-01-20 01:48:47  
+91 2014-01-20 13:27:52  
+96 2014-01-21 21:21:01  
+99 2014-01-22 16:33:51  
+
+
+
+Cronin, Oberbrunner and Spencer
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+     account number                             name       sku  quantity  \
+51           257198  Cronin, Oberbrunner and Spencer  B1-05914         8   
+110          257198  Cronin, Oberbrunner and Spencer  S2-16558        41   
+148          257198  Cronin, Oberbrunner and Spencer  S1-30248        23   
+168          257198  Cronin, Oberbrunner and Spencer  S1-82801        46   
+179          257198  Cronin, Oberbrunner and Spencer  B1-38851        47   
+
+     unit price  ext price                date  
+51        23.05     184.40 2014-01-14 01:57:35  
+110       23.35     957.35 2014-01-25 23:53:42  
+148       13.42     308.66 2014-02-04 19:52:57  
+168       25.66    1180.36 2014-02-09 05:16:26  
+179       42.82    2012.54 2014-02-11 15:33:17  
+</code></pre>
+
+<h2 id="apply-a-id-apply-a">Apply <a id="apply"></a></h2>
+
+<p>You want to use <code>apply</code> when you mean to consolidate all of your data down to the grain of your groups.</p>
+
+<h4 id="example-max-min-per-client-group">Example: Max - Min per Client group</h4>
+
+<p>Say you wanted to know, per client, what the spread of their unit price was, you could do this one of two ways:</p>
+
+<p>1) Making a general function that expects a Series, grouping, then specifying which column will be the series</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">spread_series</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="nb">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">arr</span><span class="o">.</span><span class="nb">min</span><span class="p">()</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)[</span><span class="s1">&#39;unit price&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">spread_series</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>name
+Barton LLC                         89.24
+Cronin, Oberbrunner and Spencer    86.59
+Frami, Hills and Schmidt           83.04
+Fritsch, Russel and Anderson       88.96
+Halvorson, Crona and Champlin      87.95
+Name: unit price, dtype: float64
+</code></pre>
+
+<p>2) Same function, but this time it expects a DataFrame and will filter at the Series level in the function</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">spread_df</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="s1">&#39;unit price&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">arr</span><span class="p">[</span><span class="s1">&#39;unit price&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">min</span><span class="p">()</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">spread_df</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>name
+Barton LLC                         89.24
+Cronin, Oberbrunner and Spencer    86.59
+Frami, Hills and Schmidt           83.04
+Fritsch, Russel and Anderson       88.96
+Halvorson, Crona and Champlin      87.95
+dtype: float64
+</code></pre>
+
+<h4 id="agg">.agg</h4>
+
+<p>A hidden third option is to use the swanky <code>agg</code> funtion that will iterate through columns and try to apply your function</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">spread_series</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+    </tr>
+    <tr>
+      <th>name</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Barton LLC</th>
+      <td>0</td>
+      <td>50</td>
+      <td>89.24</td>
+      <td>4609.41</td>
+      <td>356 days 23:54:35</td>
+    </tr>
+    <tr>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <td>0</td>
+      <td>46</td>
+      <td>86.59</td>
+      <td>4103.63</td>
+      <td>349 days 12:26:02</td>
+    </tr>
+    <tr>
+      <th>Frami, Hills and Schmidt</th>
+      <td>0</td>
+      <td>47</td>
+      <td>83.04</td>
+      <td>4221.14</td>
+      <td>360 days 14:50:24</td>
+    </tr>
+    <tr>
+      <th>Fritsch, Russel and Anderson</th>
+      <td>0</td>
+      <td>48</td>
+      <td>88.96</td>
+      <td>3918.36</td>
+      <td>360 days 18:30:36</td>
+    </tr>
+    <tr>
+      <th>Halvorson, Crona and Champlin</th>
+      <td>0</td>
+      <td>47</td>
+      <td>87.95</td>
+      <td>4082.02</td>
+      <td>345 days 18:32:02</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>You can also pass it a list of Series-friendly functions and it will apply all of them</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="n">spread_series</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="nb">sum</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="3" halign="left">account number</th>
+      <th colspan="3" halign="left">quantity</th>
+      <th colspan="3" halign="left">unit price</th>
+      <th colspan="3" halign="left">ext price</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>spread_series</th>
+      <th>mean</th>
+      <th>sum</th>
+      <th>spread_series</th>
+      <th>mean</th>
+      <th>sum</th>
+      <th>spread_series</th>
+      <th>mean</th>
+      <th>sum</th>
+      <th>spread_series</th>
+      <th>mean</th>
+      <th>sum</th>
+    </tr>
+    <tr>
+      <th>name</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Barton LLC</th>
+      <td>0</td>
+      <td>740150</td>
+      <td>60692300</td>
+      <td>50</td>
+      <td>24.890244</td>
+      <td>2041</td>
+      <td>89.24</td>
+      <td>53.769024</td>
+      <td>4409.06</td>
+      <td>4609.41</td>
+      <td>1334.615854</td>
+      <td>109438.50</td>
+    </tr>
+    <tr>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <td>0</td>
+      <td>257198</td>
+      <td>17232266</td>
+      <td>46</td>
+      <td>24.970149</td>
+      <td>1673</td>
+      <td>86.59</td>
+      <td>49.805821</td>
+      <td>3336.99</td>
+      <td>4103.63</td>
+      <td>1339.321642</td>
+      <td>89734.55</td>
+    </tr>
+    <tr>
+      <th>Frami, Hills and Schmidt</th>
+      <td>0</td>
+      <td>786968</td>
+      <td>56661696</td>
+      <td>47</td>
+      <td>26.430556</td>
+      <td>1903</td>
+      <td>83.04</td>
+      <td>54.756806</td>
+      <td>3942.49</td>
+      <td>4221.14</td>
+      <td>1438.466528</td>
+      <td>103569.59</td>
+    </tr>
+    <tr>
+      <th>Fritsch, Russel and Anderson</th>
+      <td>0</td>
+      <td>737550</td>
+      <td>59741550</td>
+      <td>48</td>
+      <td>26.074074</td>
+      <td>2112</td>
+      <td>88.96</td>
+      <td>53.708765</td>
+      <td>4350.41</td>
+      <td>3918.36</td>
+      <td>1385.366790</td>
+      <td>112214.71</td>
+    </tr>
+    <tr>
+      <th>Halvorson, Crona and Champlin</th>
+      <td>0</td>
+      <td>604255</td>
+      <td>35046790</td>
+      <td>47</td>
+      <td>22.137931</td>
+      <td>1284</td>
+      <td>87.95</td>
+      <td>55.946897</td>
+      <td>3244.92</td>
+      <td>4082.02</td>
+      <td>1206.971724</td>
+      <td>70004.36</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Finally, you can pass <code>agg</code> a <code>dict</code> that specifies which functions to call per column.</p>
+
+<p>The usefulness of this functionality in report automation should be pretty straight-forward</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">diff_days</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="nb">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">arr</span><span class="o">.</span><span class="nb">min</span><span class="p">())</span><span class="o">.</span><span class="n">days</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;account number&#39;</span><span class="p">:</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;quantity&#39;</span><span class="p">:</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> 
+                                 <span class="s1">&#39;unit price&#39;</span><span class="p">:</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;ext price&#39;</span><span class="p">:</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;date&#39;</span><span class="p">:</span><span class="n">diff_days</span><span class="p">})</span>
+
+<span class="c1"># Label your data accordingly</span>
+<span class="n">result</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Account Number&#39;</span><span class="p">,</span> <span class="s1">&#39;Total Orders&#39;</span><span class="p">,</span> <span class="s1">&#39;Avg Unit Price&#39;</span><span class="p">,</span> 
+                  <span class="s1">&#39;Avg Ext Price&#39;</span><span class="p">,</span> <span class="s1">&#39;Days a Client&#39;</span><span class="p">]</span>
+<span class="n">result</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Client&#39;</span>
+
+<span class="n">result</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Account Number</th>
+      <th>Total Orders</th>
+      <th>Avg Unit Price</th>
+      <th>Avg Ext Price</th>
+      <th>Days a Client</th>
+    </tr>
+    <tr>
+      <th>Client</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Barton LLC</th>
+      <td>740150</td>
+      <td>2041</td>
+      <td>53.769024</td>
+      <td>1334.615854</td>
+      <td>356</td>
+    </tr>
+    <tr>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <td>257198</td>
+      <td>1673</td>
+      <td>49.805821</td>
+      <td>1339.321642</td>
+      <td>349</td>
+    </tr>
+    <tr>
+      <th>Frami, Hills and Schmidt</th>
+      <td>786968</td>
+      <td>1903</td>
+      <td>54.756806</td>
+      <td>1438.466528</td>
+      <td>360</td>
+    </tr>
+    <tr>
+      <th>Fritsch, Russel and Anderson</th>
+      <td>737550</td>
+      <td>2112</td>
+      <td>53.708765</td>
+      <td>1385.366790</td>
+      <td>360</td>
+    </tr>
+    <tr>
+      <th>Halvorson, Crona and Champlin</th>
+      <td>604255</td>
+      <td>1284</td>
+      <td>55.946897</td>
+      <td>1206.971724</td>
+      <td>345</td>
+    </tr>
+    <tr>
+      <th>Herman LLC</th>
+      <td>141962</td>
+      <td>1538</td>
+      <td>52.566935</td>
+      <td>1336.532258</td>
+      <td>353</td>
+    </tr>
+    <tr>
+      <th>Jerde-Hilpert</th>
+      <td>412290</td>
+      <td>1999</td>
+      <td>52.084719</td>
+      <td>1265.072247</td>
+      <td>353</td>
+    </tr>
+    <tr>
+      <th>Kassulke, Ondricka and Metz</th>
+      <td>307599</td>
+      <td>1647</td>
+      <td>51.043125</td>
+      <td>1350.797969</td>
+      <td>357</td>
+    </tr>
+    <tr>
+      <th>Keeling LLC</th>
+      <td>688981</td>
+      <td>1806</td>
+      <td>57.076081</td>
+      <td>1363.977027</td>
+      <td>356</td>
+    </tr>
+    <tr>
+      <th>Kiehn-Spinka</th>
+      <td>146832</td>
+      <td>1756</td>
+      <td>55.561013</td>
+      <td>1260.870506</td>
+      <td>360</td>
+    </tr>
+    <tr>
+      <th>Koepp Ltd</th>
+      <td>729833</td>
+      <td>1790</td>
+      <td>54.389756</td>
+      <td>1264.152927</td>
+      <td>357</td>
+    </tr>
+    <tr>
+      <th>Kuhn-Gusikowski</th>
+      <td>672390</td>
+      <td>1665</td>
+      <td>55.833836</td>
+      <td>1247.866849</td>
+      <td>355</td>
+    </tr>
+    <tr>
+      <th>Kulas Inc</th>
+      <td>218895</td>
+      <td>2265</td>
+      <td>59.661596</td>
+      <td>1461.191064</td>
+      <td>355</td>
+    </tr>
+    <tr>
+      <th>Pollich LLC</th>
+      <td>642753</td>
+      <td>1707</td>
+      <td>56.533151</td>
+      <td>1196.536712</td>
+      <td>356</td>
+    </tr>
+    <tr>
+      <th>Purdy-Kunde</th>
+      <td>163416</td>
+      <td>1450</td>
+      <td>50.340943</td>
+      <td>1469.777547</td>
+      <td>335</td>
+    </tr>
+    <tr>
+      <th>Sanford and Sons</th>
+      <td>527099</td>
+      <td>1704</td>
+      <td>58.341549</td>
+      <td>1391.872958</td>
+      <td>348</td>
+    </tr>
+    <tr>
+      <th>Stokes LLC</th>
+      <td>239344</td>
+      <td>1766</td>
+      <td>51.545278</td>
+      <td>1271.332222</td>
+      <td>360</td>
+    </tr>
+    <tr>
+      <th>Trantow-Barrows</th>
+      <td>714466</td>
+      <td>2271</td>
+      <td>56.180106</td>
+      <td>1312.567872</td>
+      <td>362</td>
+    </tr>
+    <tr>
+      <th>White-Trantow</th>
+      <td>424914</td>
+      <td>2258</td>
+      <td>58.613140</td>
+      <td>1579.558023</td>
+      <td>354</td>
+    </tr>
+    <tr>
+      <th>Will LLC</th>
+      <td>383080</td>
+      <td>1828</td>
+      <td>58.632973</td>
+      <td>1411.318919</td>
+      <td>354</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="transform-a-id-transform-a">Transform <a id="transform"></a></h2>
+
+<p>Transform is used when you want to maintain the structure of your current DataFrame, but generate new data at the group-level.</p>
+
+<p><strong>Note:</strong> The functions that you write need to written to process <code>Series</code> objects.</p>
+
+<h4 id="ex-largest-order-per-client">Ex: Largest order per Client</h4>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># apparent &#39;ext price&#39; has been order total this whole time</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;largest order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)[</span><span class="s1">&#39;ext price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="nb">max</span><span class="p">())</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="filling-missing-data">Filling Missing Data</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">test</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;unit price&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">test</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>NaN</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>NaN</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">fill_with_mean</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">test</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">fill_with_mean</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>39.000000</td>
+      <td>NaN</td>
+      <td>3380.910000</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>17.285714</td>
+      <td>57.258571</td>
+      <td>1064.988571</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>14.666667</td>
+      <td>53.544000</td>
+      <td>918.010000</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>31.000000</td>
+      <td>22.176667</td>
+      <td>743.643333</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>17.000000</td>
+      <td>52.440000</td>
+      <td>681.120000</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="outlier-detection">Outlier Detection</h3>
+
+<p>Let&rsquo;s stuff a ton of normally-distributed dummy data into a <code>DataFrame</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100000</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">dummy</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">])</span></code></pre></div>
+<p>And assign them to arbitrary groups (counting off by 3s)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">cycle</span>
+
+<span class="n">countoff</span> <span class="o">=</span> <span class="n">cycle</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">dummy</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">countoff</span><span class="p">))</span>
+<span class="n">dummy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span></code></pre></div>
+<pre><code>1    33334
+2    33333
+3    33333
+dtype: int64
+</code></pre>
+
+<p>A good rule of thumb for an outlier is finding the quartiles of each data, $Q_1, Q_2, Q_3, Q_4$ and then fishing for observations, $x$ that are either:</p>
+
+<p><center>$x &lt; Q_1 - 1.5 * (Q_3 - Q_1)$</center></p>
+
+<p>and</p>
+
+<p><center>$x &gt; Q_3 + 1.5 * (Q_3 - Q_1)$</center></p>
+
+<p>Easy enough!</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39;Given a pd.Series of numeric type&#39;&#39;&#39;</span>
+    <span class="n">q3</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="o">.</span><span class="mi">75</span><span class="p">)</span>
+    <span class="n">q1</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="o">.</span><span class="mi">25</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="p">((</span><span class="n">arr</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">q1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.5</span><span class="o">*</span><span class="p">(</span><span class="n">q3</span><span class="o">-</span><span class="n">q1</span><span class="p">))))</span> <span class="o">|</span> <span class="p">(</span><span class="n">arr</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">q3</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.5</span><span class="o">*</span><span class="p">(</span><span class="n">q3</span><span class="o">-</span><span class="n">q1</span><span class="p">)))))</span>
+
+<span class="n">outliersByCell</span> <span class="o">=</span> <span class="n">dummy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">find_outliers</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">outliersByCell</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span></code></pre></div>
+<pre><code>False    496642
+True       3358
+dtype: int64
+</code></pre>
+
+<p>Hey, so some cells are outliers! But what rows contained outlier data?</p>
+
+<p>Well we can be cheeky and use the property that items of <code>bool</code> type are represented as <code>True=1</code> and <code>False=0</code> on the backend and sum them. Anything greater than 0 has an outlier somewhere.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">outliersByRow</span> <span class="o">=</span> <span class="n">outliersByCell</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="k">print</span><span class="p">(</span><span class="n">outliersByRow</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<span class="n">outliersByCell</span><span class="p">[</span><span class="n">outliersByRow</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>False    96684
+True      3316
+dtype: int64
+</code></pre>
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+      <th>d</th>
+      <th>e</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>51</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>So if we&rsquo;re doing some rudimentary modelling, this will likely be one of our earlier steps.</p>
+
+<p>Next, we want to be able to hold back data that&rsquo;s going to throw off our model. Which transitions nicely into&hellip;</p>
+
+<h2 id="filter-a-id-filter-a">Filter <a id="filter"></a></h2>
+
+<p>Anyone comfortable with <code>pandas</code> will likely be used to using Numpy masks to trim down their datasets. However, the <code>filter</code> functionality allows us to be even more specific in our exclusions.</p>
+
+<h5 id="ex-filtering-out-low-participation-clients">Ex: Filtering Out Low-Participation Clients</h5>
+
+<p>If we ever found ourselves wanting to filter out clients that had, arbitrarily, less than 64 orders, we would want to find the top 3 of this series</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;account number&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>account number
+163416    53
+604255    58
+141962    62
+307599    64
+257198    67
+dtype: int64
+</code></pre>
+
+<p>Filtering this out is easy as writing a filtering function&ndash; <strong>at the <code>DataFrame</code> level</strong>&ndash; of things that you want to <em>keep</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">no_small_potatoes</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">64</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;account number&#39;</span><span class="p">)</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">no_small_potatoes</span><span class="p">)[</span><span class="s1">&#39;account number&#39;</span><span class="p">]</span>
+<span class="n">results</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="mi">163416</span><span class="p">,</span> <span class="mi">604255</span><span class="p">,</span> <span class="mi">141961</span><span class="p">])</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span></code></pre></div>
+<pre><code>False    1263
+Name: account number, dtype: int64
+</code></pre>
+
+<h5 id="ex-clients-with-high-incidence-of-issues">Ex: Clients with High Incidence of Issues</h5>
+
+<p>Our dataset had negative <code>ext price</code> values, which seemed to indicate returns/refunds.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;account number&#39;</span><span class="p">)[</span><span class="s1">&#39;quantity&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span> \
+                                        <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
+<pre><code>account number
+729833    4
+218895    4
+424914    3
+714466    3
+527099    3
+688981    2
+740150    2
+383080    1
+146832    1
+239344    1
+307599    1
+141962    1
+412290    1
+672390    1
+604255    0
+257198    0
+642753    0
+163416    0
+737550    0
+786968    0
+Name: quantity, dtype: int64
+</code></pre>
+
+<p>A few clients had 0 or 1 returns. This is ideal, but suppose we want to zero in on clients 3 or more</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">lots_of_returns</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;account number&#39;</span><span class="p">)</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">lots_of_returns</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;account number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<span class="n">results</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>[714466 218895 729833 424914 527099]
+</code></pre>
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>17</td>
+      <td>87.63</td>
+      <td>1489.71</td>
+      <td>2014-01-02 10:07:15</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-65551</td>
+      <td>2</td>
+      <td>31.10</td>
+      <td>62.20</td>
+      <td>2014-01-02 10:57:23</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>729833</td>
+      <td>Koepp Ltd</td>
+      <td>S1-30248</td>
+      <td>8</td>
+      <td>33.25</td>
+      <td>266.00</td>
+      <td>2014-01-03 06:32:11</td>
+      <td>4708.41</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><hr></hr></p>
+
+<h2 id="the-grouper-object-a-id-grouper-a">The <code>Grouper</code> Object <a id="grouper"></a></h2>
+
+<p>The <code>pd.Grouper</code> object largely exists to make <code>groupby</code> operations with <code>datetime</code> values less of a headache.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h4 id="the-old-way">The old way</h4>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># resample only works on an index, not a column</span>
+<span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)[</span><span class="s1">&#39;ext price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">])</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sum</th>
+      <th>count</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2014-01-31</th>
+      <td>185361.66</td>
+      <td>134</td>
+    </tr>
+    <tr>
+      <th>2014-02-28</th>
+      <td>146211.62</td>
+      <td>108</td>
+    </tr>
+    <tr>
+      <th>2014-03-31</th>
+      <td>203921.38</td>
+      <td>142</td>
+    </tr>
+    <tr>
+      <th>2014-04-30</th>
+      <td>174574.11</td>
+      <td>134</td>
+    </tr>
+    <tr>
+      <th>2014-05-31</th>
+      <td>165418.55</td>
+      <td>132</td>
+    </tr>
+    <tr>
+      <th>2014-06-30</th>
+      <td>174089.33</td>
+      <td>128</td>
+    </tr>
+    <tr>
+      <th>2014-07-31</th>
+      <td>191662.11</td>
+      <td>128</td>
+    </tr>
+    <tr>
+      <th>2014-08-31</th>
+      <td>153778.59</td>
+      <td>117</td>
+    </tr>
+    <tr>
+      <th>2014-09-30</th>
+      <td>168443.17</td>
+      <td>118</td>
+    </tr>
+    <tr>
+      <th>2014-10-31</th>
+      <td>171495.32</td>
+      <td>126</td>
+    </tr>
+    <tr>
+      <th>2014-11-30</th>
+      <td>119961.22</td>
+      <td>114</td>
+    </tr>
+    <tr>
+      <th>2014-12-31</th>
+      <td>163867.26</td>
+      <td>119</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>When you introduce regular groupby operations, the syntax gets cumbersome.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)[</span><span class="s1">&#39;ext price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span><span class="o">.</span><span class="nb">sum</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>name                             date      
+Barton LLC                       2014-01-31     6177.57
+                                 2014-02-28    12218.03
+                                 2014-03-31     3513.53
+                                 2014-04-30    11474.20
+                                 2014-05-31    10220.17
+                                 2014-06-30    10463.73
+                                 2014-07-31     6750.48
+                                 2014-08-31    17541.46
+                                 2014-09-30    14053.61
+                                 2014-10-31     9351.68
+                                 2014-11-30     4901.14
+                                 2014-12-31     2772.90
+Cronin, Oberbrunner and Spencer  2014-01-31     1141.75
+                                 2014-02-28    13976.26
+                                 2014-03-31    11691.62
+                                 2014-04-30     3685.44
+                                 2014-05-31     6760.11
+                                 2014-06-30     5379.67
+                                 2014-07-31     6020.30
+                                 2014-08-31     5399.58
+Name: ext price, dtype: float64
+</code></pre>
+
+<h4 id="instead">Instead</h4>
+
+<p>We can do all of the group definition in one shot with Grouper</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Grouper</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)])[</span><span class="s1">&#39;ext price&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">sum</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>name                             date      
+Barton LLC                       2014-01-31     6177.57
+                                 2014-02-28    12218.03
+                                 2014-03-31     3513.53
+                                 2014-04-30    11474.20
+                                 2014-05-31    10220.17
+                                 2014-06-30    10463.73
+                                 2014-07-31     6750.48
+                                 2014-08-31    17541.46
+                                 2014-09-30    14053.61
+                                 2014-10-31     9351.68
+                                 2014-11-30     4901.14
+                                 2014-12-31     2772.90
+Cronin, Oberbrunner and Spencer  2014-01-31     1141.75
+                                 2014-02-28    13976.26
+                                 2014-03-31    11691.62
+                                 2014-04-30     3685.44
+                                 2014-05-31     6760.11
+                                 2014-06-30     5379.67
+                                 2014-07-31     6020.30
+                                 2014-08-31     5399.58
+Name: ext price, dtype: float64
+</code></pre>
+
+<p>Making this an annual aggregation is as easy as changing the <code>freq</code> argument</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Grouper</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;A-DEC&#39;</span><span class="p">)])[</span><span class="s1">&#39;ext price&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">sum</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>name                             date      
+Barton LLC                       2014-12-31    109438.50
+Cronin, Oberbrunner and Spencer  2014-12-31     89734.55
+Frami, Hills and Schmidt         2014-12-31    103569.59
+Fritsch, Russel and Anderson     2014-12-31    112214.71
+Halvorson, Crona and Champlin    2014-12-31     70004.36
+Herman LLC                       2014-12-31     82865.00
+Jerde-Hilpert                    2014-12-31    112591.43
+Kassulke, Ondricka and Metz      2014-12-31     86451.07
+Keeling LLC                      2014-12-31    100934.30
+Kiehn-Spinka                     2014-12-31     99608.77
+Koepp Ltd                        2014-12-31    103660.54
+Kuhn-Gusikowski                  2014-12-31     91094.28
+Kulas Inc                        2014-12-31    137351.96
+Pollich LLC                      2014-12-31     87347.18
+Purdy-Kunde                      2014-12-31     77898.21
+Sanford and Sons                 2014-12-31     98822.98
+Stokes LLC                       2014-12-31     91535.92
+Trantow-Barrows                  2014-12-31    123381.38
+White-Trantow                    2014-12-31    135841.99
+Will LLC                         2014-12-31    104437.60
+Name: ext price, dtype: float64
+</code></pre>
+
+<h2 id="matplotlib-a-id-matplotlib-a">Matplotlib <a id="matplotlib"></a></h2>
+
+<p><code>GroupBy</code> objects also play pretty well with <code>matplotlib</code>&hellip; with some finagling</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+
+
+C:\Users\nhounshell\AppData\Local\Continuum\Anaconda3\lib\site-packages\IPython\core\magics\pylab.py:160: UserWarning: pylab import has clobbered these variables: ['test']
+`%matplotlib` prevents importing * from pylab and numpy
+  &quot;\n`%matplotlib` prevents importing * from pylab and numpy&quot;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>740150</td>
+      <td>Barton LLC</td>
+      <td>B1-20000</td>
+      <td>39</td>
+      <td>86.69</td>
+      <td>3380.91</td>
+      <td>2014-01-01 07:21:51</td>
+      <td>4543.96</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>714466</td>
+      <td>Trantow-Barrows</td>
+      <td>S2-77896</td>
+      <td>-1</td>
+      <td>63.16</td>
+      <td>-63.16</td>
+      <td>2014-01-01 10:00:47</td>
+      <td>4444.30</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>218895</td>
+      <td>Kulas Inc</td>
+      <td>B1-69924</td>
+      <td>23</td>
+      <td>90.70</td>
+      <td>2086.10</td>
+      <td>2014-01-01 13:24:58</td>
+      <td>4590.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>307599</td>
+      <td>Kassulke, Ondricka and Metz</td>
+      <td>S1-65481</td>
+      <td>41</td>
+      <td>21.05</td>
+      <td>863.05</td>
+      <td>2014-01-01 15:05:22</td>
+      <td>4418.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>412290</td>
+      <td>Jerde-Hilpert</td>
+      <td>S2-34077</td>
+      <td>6</td>
+      <td>83.21</td>
+      <td>499.26</td>
+      <td>2014-01-01 23:26:55</td>
+      <td>3791.62</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>What if we wanted to inspect the count of issues vs the count of orders by month?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+<span class="n">monthlyClip</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Grouper</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+
+<span class="n">problemOrder</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+<span class="n">problemsPerMonth</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">problemOrder</span><span class="p">,</span> <span class="n">monthlyClip</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="bp">True</span><span class="p">]</span>
+<span class="n">problemsPerMonth</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Issues&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">ordersPerMonth</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">monthlyClip</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ordersPerMonth</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Orders&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code></pre></div>
+<pre><code>&lt;matplotlib.legend.Legend at 0xdbca400&gt;
+</code></pre>
+
+<p><img src="groupby_132_1.png" alt="png" /></p>
+
+<p>Or if we wanted to see if there was a discernable difference in the price/quantity behavior of our 5 biggest spenders?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fiveBiggestSpenders</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">])[</span><span class="s1">&#39;unit price&#39;</span><span class="p">]</span>
+                          <span class="o">.</span><span class="nb">sum</span><span class="p">()</span>
+                          <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                          <span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="n">gb</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">fiveBiggestSpenders</span><span class="p">))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">gb</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;unit price&#39;</span><span class="p">],</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;quantity&#39;</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></code></pre></div>
+<pre><code>&lt;matplotlib.legend.Legend at 0xdfad0f0&gt;
+</code></pre>
+
+<p><img src="groupby_134_1.png" alt="png" /></p>
+
+<p>Or wanted to examine our cumulative earnings per Client over the course of the year?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gb</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">gb</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;unit price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></code></pre></div>
+<pre><code>&lt;matplotlib.legend.Legend at 0xdd99828&gt;
+</code></pre>
+
+<p><img src="groupby_136_1.png" alt="png" /></p>
+
+<p><hr></hr></p>
+
+<h2 id="gotchas-a-id-gotchas-a">Gotchas <a id="gotchas"></a></h2>
+
+<h3 id="multi-index">Multi-Index</h3>
+
+<p>Suppose that we wanted to know what day of the week each client did business with us on.</p>
+
+<p>This is, as discussed above:</p>
+
+<p>1) Creating a <code>Numpy</code> array with the same index as the <code>DataFrame</code> representing <code>day of week</code>
+2) Grouping by that and the client&rsquo;s name</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dow</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">dow</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>name                             date
+Barton LLC                       0        8
+                                 1       12
+                                 2       15
+                                 3        8
+                                 4       20
+                                 5       10
+                                 6        9
+Cronin, Oberbrunner and Spencer  0       12
+                                 1       12
+                                 2        7
+                                 3        8
+                                 4       11
+                                 5       10
+                                 6        7
+Frami, Hills and Schmidt         0       11
+                                 1        8
+                                 2       10
+                                 3        9
+                                 4       12
+                                 5        7
+dtype: int64
+</code></pre>
+
+<p>But this is damn gross. Furthermore, we want the values in the <code>date</code> column to be the column headers.</p>
+
+<p>What we want is the <code>unstack</code> function. Let&rsquo;s try that again.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">dow</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>date</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+    </tr>
+    <tr>
+      <th>name</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Barton LLC</th>
+      <td>8</td>
+      <td>12</td>
+      <td>15</td>
+      <td>8</td>
+      <td>20</td>
+      <td>10</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <td>12</td>
+      <td>12</td>
+      <td>7</td>
+      <td>8</td>
+      <td>11</td>
+      <td>10</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>Frami, Hills and Schmidt</th>
+      <td>11</td>
+      <td>8</td>
+      <td>10</td>
+      <td>9</td>
+      <td>12</td>
+      <td>7</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <th>Fritsch, Russel and Anderson</th>
+      <td>8</td>
+      <td>12</td>
+      <td>14</td>
+      <td>12</td>
+      <td>11</td>
+      <td>15</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Halvorson, Crona and Champlin</th>
+      <td>11</td>
+      <td>8</td>
+      <td>5</td>
+      <td>6</td>
+      <td>12</td>
+      <td>5</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>Herman LLC</th>
+      <td>11</td>
+      <td>8</td>
+      <td>7</td>
+      <td>8</td>
+      <td>8</td>
+      <td>9</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>Jerde-Hilpert</th>
+      <td>12</td>
+      <td>22</td>
+      <td>16</td>
+      <td>12</td>
+      <td>8</td>
+      <td>8</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>Kassulke, Ondricka and Metz</th>
+      <td>8</td>
+      <td>9</td>
+      <td>10</td>
+      <td>10</td>
+      <td>8</td>
+      <td>8</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>Keeling LLC</th>
+      <td>15</td>
+      <td>12</td>
+      <td>10</td>
+      <td>11</td>
+      <td>8</td>
+      <td>10</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>Kiehn-Spinka</th>
+      <td>10</td>
+      <td>8</td>
+      <td>9</td>
+      <td>17</td>
+      <td>13</td>
+      <td>14</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>Koepp Ltd</th>
+      <td>11</td>
+      <td>7</td>
+      <td>16</td>
+      <td>9</td>
+      <td>18</td>
+      <td>11</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>Kuhn-Gusikowski</th>
+      <td>16</td>
+      <td>9</td>
+      <td>7</td>
+      <td>7</td>
+      <td>17</td>
+      <td>7</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>Kulas Inc</th>
+      <td>13</td>
+      <td>21</td>
+      <td>15</td>
+      <td>13</td>
+      <td>12</td>
+      <td>12</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>Pollich LLC</th>
+      <td>7</td>
+      <td>11</td>
+      <td>7</td>
+      <td>10</td>
+      <td>16</td>
+      <td>8</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>Purdy-Kunde</th>
+      <td>9</td>
+      <td>8</td>
+      <td>8</td>
+      <td>7</td>
+      <td>6</td>
+      <td>5</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>Sanford and Sons</th>
+      <td>10</td>
+      <td>8</td>
+      <td>11</td>
+      <td>7</td>
+      <td>10</td>
+      <td>16</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Stokes LLC</th>
+      <td>2</td>
+      <td>11</td>
+      <td>10</td>
+      <td>11</td>
+      <td>18</td>
+      <td>7</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>Trantow-Barrows</th>
+      <td>16</td>
+      <td>13</td>
+      <td>9</td>
+      <td>12</td>
+      <td>21</td>
+      <td>11</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>White-Trantow</th>
+      <td>10</td>
+      <td>17</td>
+      <td>12</td>
+      <td>13</td>
+      <td>12</td>
+      <td>14</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>Will LLC</th>
+      <td>14</td>
+      <td>13</td>
+      <td>12</td>
+      <td>10</td>
+      <td>9</td>
+      <td>10</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Much better. Similarly, we could have made a unwieldly wide table instead by either reversing the arguments in the <code>groupby</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">dow</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>name</th>
+      <th>Barton LLC</th>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <th>Frami, Hills and Schmidt</th>
+      <th>Fritsch, Russel and Anderson</th>
+      <th>Halvorson, Crona and Champlin</th>
+      <th>Herman LLC</th>
+      <th>Jerde-Hilpert</th>
+      <th>Kassulke, Ondricka and Metz</th>
+      <th>Keeling LLC</th>
+      <th>Kiehn-Spinka</th>
+      <th>Koepp Ltd</th>
+      <th>Kuhn-Gusikowski</th>
+      <th>Kulas Inc</th>
+      <th>Pollich LLC</th>
+      <th>Purdy-Kunde</th>
+      <th>Sanford and Sons</th>
+      <th>Stokes LLC</th>
+      <th>Trantow-Barrows</th>
+      <th>White-Trantow</th>
+      <th>Will LLC</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8</td>
+      <td>12</td>
+      <td>11</td>
+      <td>8</td>
+      <td>11</td>
+      <td>11</td>
+      <td>12</td>
+      <td>8</td>
+      <td>15</td>
+      <td>10</td>
+      <td>11</td>
+      <td>16</td>
+      <td>13</td>
+      <td>7</td>
+      <td>9</td>
+      <td>10</td>
+      <td>2</td>
+      <td>16</td>
+      <td>10</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>12</td>
+      <td>12</td>
+      <td>8</td>
+      <td>12</td>
+      <td>8</td>
+      <td>8</td>
+      <td>22</td>
+      <td>9</td>
+      <td>12</td>
+      <td>8</td>
+      <td>7</td>
+      <td>9</td>
+      <td>21</td>
+      <td>11</td>
+      <td>8</td>
+      <td>8</td>
+      <td>11</td>
+      <td>13</td>
+      <td>17</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>15</td>
+      <td>7</td>
+      <td>10</td>
+      <td>14</td>
+      <td>5</td>
+      <td>7</td>
+      <td>16</td>
+      <td>10</td>
+      <td>10</td>
+      <td>9</td>
+      <td>16</td>
+      <td>7</td>
+      <td>15</td>
+      <td>7</td>
+      <td>8</td>
+      <td>11</td>
+      <td>10</td>
+      <td>9</td>
+      <td>12</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>8</td>
+      <td>8</td>
+      <td>9</td>
+      <td>12</td>
+      <td>6</td>
+      <td>8</td>
+      <td>12</td>
+      <td>10</td>
+      <td>11</td>
+      <td>17</td>
+      <td>9</td>
+      <td>7</td>
+      <td>13</td>
+      <td>10</td>
+      <td>7</td>
+      <td>7</td>
+      <td>11</td>
+      <td>12</td>
+      <td>13</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20</td>
+      <td>11</td>
+      <td>12</td>
+      <td>11</td>
+      <td>12</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
+      <td>13</td>
+      <td>18</td>
+      <td>17</td>
+      <td>12</td>
+      <td>16</td>
+      <td>6</td>
+      <td>10</td>
+      <td>18</td>
+      <td>21</td>
+      <td>12</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10</td>
+      <td>10</td>
+      <td>7</td>
+      <td>15</td>
+      <td>5</td>
+      <td>9</td>
+      <td>8</td>
+      <td>8</td>
+      <td>10</td>
+      <td>14</td>
+      <td>11</td>
+      <td>7</td>
+      <td>12</td>
+      <td>8</td>
+      <td>5</td>
+      <td>16</td>
+      <td>7</td>
+      <td>11</td>
+      <td>14</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>9</td>
+      <td>7</td>
+      <td>15</td>
+      <td>9</td>
+      <td>11</td>
+      <td>11</td>
+      <td>11</td>
+      <td>11</td>
+      <td>8</td>
+      <td>8</td>
+      <td>10</td>
+      <td>10</td>
+      <td>8</td>
+      <td>14</td>
+      <td>10</td>
+      <td>9</td>
+      <td>13</td>
+      <td>12</td>
+      <td>8</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Or specifying that we want <code>level=0</code> instead of the default <code>1</code> in <code>unstack</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">dow</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>name</th>
+      <th>Barton LLC</th>
+      <th>Cronin, Oberbrunner and Spencer</th>
+      <th>Frami, Hills and Schmidt</th>
+      <th>Fritsch, Russel and Anderson</th>
+      <th>Halvorson, Crona and Champlin</th>
+      <th>Herman LLC</th>
+      <th>Jerde-Hilpert</th>
+      <th>Kassulke, Ondricka and Metz</th>
+      <th>Keeling LLC</th>
+      <th>Kiehn-Spinka</th>
+      <th>Koepp Ltd</th>
+      <th>Kuhn-Gusikowski</th>
+      <th>Kulas Inc</th>
+      <th>Pollich LLC</th>
+      <th>Purdy-Kunde</th>
+      <th>Sanford and Sons</th>
+      <th>Stokes LLC</th>
+      <th>Trantow-Barrows</th>
+      <th>White-Trantow</th>
+      <th>Will LLC</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8</td>
+      <td>12</td>
+      <td>11</td>
+      <td>8</td>
+      <td>11</td>
+      <td>11</td>
+      <td>12</td>
+      <td>8</td>
+      <td>15</td>
+      <td>10</td>
+      <td>11</td>
+      <td>16</td>
+      <td>13</td>
+      <td>7</td>
+      <td>9</td>
+      <td>10</td>
+      <td>2</td>
+      <td>16</td>
+      <td>10</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>12</td>
+      <td>12</td>
+      <td>8</td>
+      <td>12</td>
+      <td>8</td>
+      <td>8</td>
+      <td>22</td>
+      <td>9</td>
+      <td>12</td>
+      <td>8</td>
+      <td>7</td>
+      <td>9</td>
+      <td>21</td>
+      <td>11</td>
+      <td>8</td>
+      <td>8</td>
+      <td>11</td>
+      <td>13</td>
+      <td>17</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>15</td>
+      <td>7</td>
+      <td>10</td>
+      <td>14</td>
+      <td>5</td>
+      <td>7</td>
+      <td>16</td>
+      <td>10</td>
+      <td>10</td>
+      <td>9</td>
+      <td>16</td>
+      <td>7</td>
+      <td>15</td>
+      <td>7</td>
+      <td>8</td>
+      <td>11</td>
+      <td>10</td>
+      <td>9</td>
+      <td>12</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>8</td>
+      <td>8</td>
+      <td>9</td>
+      <td>12</td>
+      <td>6</td>
+      <td>8</td>
+      <td>12</td>
+      <td>10</td>
+      <td>11</td>
+      <td>17</td>
+      <td>9</td>
+      <td>7</td>
+      <td>13</td>
+      <td>10</td>
+      <td>7</td>
+      <td>7</td>
+      <td>11</td>
+      <td>12</td>
+      <td>13</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20</td>
+      <td>11</td>
+      <td>12</td>
+      <td>11</td>
+      <td>12</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
+      <td>13</td>
+      <td>18</td>
+      <td>17</td>
+      <td>12</td>
+      <td>16</td>
+      <td>6</td>
+      <td>10</td>
+      <td>18</td>
+      <td>21</td>
+      <td>12</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10</td>
+      <td>10</td>
+      <td>7</td>
+      <td>15</td>
+      <td>5</td>
+      <td>9</td>
+      <td>8</td>
+      <td>8</td>
+      <td>10</td>
+      <td>14</td>
+      <td>11</td>
+      <td>7</td>
+      <td>12</td>
+      <td>8</td>
+      <td>5</td>
+      <td>16</td>
+      <td>7</td>
+      <td>11</td>
+      <td>14</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>9</td>
+      <td>7</td>
+      <td>15</td>
+      <td>9</td>
+      <td>11</td>
+      <td>11</td>
+      <td>11</td>
+      <td>11</td>
+      <td>8</td>
+      <td>8</td>
+      <td>10</td>
+      <td>10</td>
+      <td>8</td>
+      <td>14</td>
+      <td>10</td>
+      <td>9</td>
+      <td>13</td>
+      <td>12</td>
+      <td>8</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="apply-map-and-applymap"><code>.apply</code>, <code>.map</code>, and <code>.applymap</code></h3>
+
+<p>These 3 functions are used to manipulate data in <code>pandas</code> objects, but until you&rsquo;ve used them a bunch, it&rsquo;s often confusing which one you want in order to solve a given problem.</p>
+
+<p>A decent-enough rule of thumb I use is:</p>
+
+<p><code>.apply</code> applies a function across a <strong><code>DataFrame</code></strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="nb">max</span><span class="p">)</span></code></pre></div>
+<pre><code>account number                 786968
+name                         Will LLC
+sku                          S2-83881
+quantity                           49
+unit price                      99.85
+ext price                     4824.54
+date              2014-12-31 12:48:35
+largest order                 4824.54
+dtype: object
+</code></pre>
+
+<p><code>.map</code> applies a mapping function to <strong>each value in a <code>Series</code></strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>0    10
+1    15
+2     9
+3    27
+4    13
+Name: name, dtype: int64
+</code></pre>
+
+<p>So when considering <code>.applymap</code>, it might help to think about how</p>
+
+<pre><code>apply (1) + map (2) = applymap
+</code></pre>
+
+<p>therefore, you can &ldquo;add&rdquo; their functionality as well:</p>
+
+<p><code>.applymap</code> applies a <strong>mapping to each value (2)</strong> of a given <strong>DataFrame (1)</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>account number</th>
+      <th>name</th>
+      <th>sku</th>
+      <th>quantity</th>
+      <th>unit price</th>
+      <th>ext price</th>
+      <th>date</th>
+      <th>largest order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'pandas._libs.tslib.Timestamp'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'pandas._libs.tslib.Timestamp'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'pandas._libs.tslib.Timestamp'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'pandas._libs.tslib.Timestamp'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'str'&gt;</td>
+      <td>&lt;class 'int'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+      <td>&lt;class 'pandas._libs.tslib.Timestamp'&gt;</td>
+      <td>&lt;class 'float'&gt;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><hr></hr></p>
+
+<h2 id="resources-a-id-resources-a">Resources <a id="resources"></a></h2>
+
+<ul>
+<li><a href="https://pandas.pydata.org/pandas-docs/stable/groupby.html">Group By: split-apply-combine</a> from the Pandas docs</li>
+<li><a href="http://pbpython.com/pandas-grouper-agg.html">Pandas Grouper and Agg Functions Explained</a> by Practical Business Python</li>
+<li><a href="http://pbpython.com/pandas_transform.html">Understanding the Transform Function in Pandas</a></li>
+<li>Chapter 9 of Wes McKinney&rsquo;s <a href="https://www.amazon.com/Python-Data-Analysis-Wrangling-IPython/dp/1449319793">Python for Data Analysis</a></li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

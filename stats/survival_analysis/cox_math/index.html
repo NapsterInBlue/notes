@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Cox Proportional Hazard Math" />
+<meta property="og:description" content="As hinted at the end of our notebook on the Kaplan-Meier Estimator, we can enrich our approximations of Survival and Hazard curves by using covariate (attribute) data from our records. One of the most popular methods of doing so is by employing the Cox Proportional Hazard model.
+Borrowing once more from the lifelines documentation, the Cox model estimates a given hazard function as
+from IPython.display import Image Image(&#39;images/lifelines_cox_eq.PNG&#39;) Essentially, this model behaves in two parts:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/survival_analysis/cox_math/" />
+
+
+
+<meta property="article:published_time" content="2020-04-03T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-03T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cox Proportional Hazard Math"/>
+<meta name="twitter:description" content="As hinted at the end of our notebook on the Kaplan-Meier Estimator, we can enrich our approximations of Survival and Hazard curves by using covariate (attribute) data from our records. One of the most popular methods of doing so is by employing the Cox Proportional Hazard model.
+Borrowing once more from the lifelines documentation, the Cox model estimates a given hazard function as
+from IPython.display import Image Image(&#39;images/lifelines_cox_eq.PNG&#39;) Essentially, this model behaves in two parts:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cox Proportional Hazard Math",
+  "url": "https://napsterinblue.github.io/notes/stats/survival_analysis/cox_math/",
+  "wordCount": "787",
+  "datePublished": "2020-04-03T00:00:00&#43;00:00",
+  "dateModified": "2020-04-03T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Cox Proportional Hazard Math</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Cox Proportional Hazard Math</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-03T00:00:00Z "> 03 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>As hinted at the end of our notebook on the Kaplan-Meier Estimator, we can enrich our approximations of Survival and Hazard curves by using covariate (attribute) data from our records. One of the most popular methods of doing so is by employing the Cox Proportional Hazard model.</p>
+
+<p>Borrowing once more from the <a href="https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#model-selection-in-survival-regression"><code>lifelines</code> documentation</a>, the Cox model estimates a given hazard function as</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/lifelines_cox_eq.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_2_0.png" alt="png" /></p>
+
+<p>Essentially, this model behaves in two parts:</p>
+
+<ul>
+<li>The baseline hazard function is some curve, shared by each record in our population</li>
+<li>The a linear combination of the covariates act on this baseline hazard function with a multiplicative effect</li>
+</ul>
+
+<h3 id="observations">Observations</h3>
+
+<h4 id="the-baseline-hazard-doesn-t-matter-when-looking-at-the-hazard-ratio">The baseline hazard doesn&rsquo;t matter when looking at the hazard ratio</h4>
+
+<p>This should be pretty obvious. If we want to know the relative hazard for agents <code>a</code> and <code>b</code> in our sample, it&rsquo;s simply a matter of dividing the two.</p>
+
+<p>$\frac{h(t_a)}{h(t_b)} = \frac{b_0 \exp ( \sum{w^T \beta_a}}{b_0 \exp ( \sum{w^T \beta_b})}$</p>
+
+<p>And you can see that the <code>b_0</code> terms clearly cancel out.</p>
+
+<h4 id="the-proportional-of-proportional-hazard">The <em>proportional</em> of proportional hazard</h4>
+
+<p>Moreover, one of the key assumpts that the Cox model makes is that the proportional hazard between two records stays the same. That&rsquo;s to say that despite the fact that hazard changes over time, scaled by the covariates, the relative hazard when comparing various records should be the same.</p>
+
+<p>I like how this is shown in the illustration from <a href="https://www.youtube.com/watch?v=z1b2hFzXsrU">this video</a>. Note that despite the fact that the dotted line is clearly steeper than the solid, you can see that at any given point, the height can be expressed as a <code>solid = .64 * dotted</code>, due to their hazard ratio.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/prop_hazard.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_4_0.png" alt="png" /></p>
+
+<h4 id="the-log-of-hazard-ratio-is-linear">The <code>log</code> of hazard ratio is linear</h4>
+
+<p>Where &ldquo;hazard ratio&rdquo; is between the left-most term and the baseline hazard. This can be made clear with some simple algebra</p>
+
+<p>$h = b_0 \exp ( \sum{b_i (x - \bar{x}}))$</p>
+
+<p>$\frac{h}{b_0} = \exp ( \sum{b_i (x - \bar{x}}))$</p>
+
+<p>$ln(\frac{h}{b_0}) = \sum{b_i (x - \bar{x}})$</p>
+
+<p>The reason we&rsquo;re interested in this is because&ndash; like the log-odds ratio&ndash; it allows us to interpret the effect of activated categorical variables or unit changes in continuous variables.</p>
+
+<h4 id="we-can-fit-the-weights-without-knowing-the-baseline-hazard">We can fit the weights without knowing the baseline hazard</h4>
+
+<p>Finally, it might feel a little black box-y when thinking about fitting the model. A lot of variables at play here, for sure.</p>
+
+<p>Fortunately, it can be shown with a little more algebra that we can achieve our best approximation for the covariate weights by ignoring the baseline hazard completely. Borrowing this derivation from the second chapter of <a href="https://smile.amazon.com/Introduction-Algorithmic-Marketing-Artificial-Intelligence/dp/0692989048?sa-no-redirect=1">Introduction to Algorithmic Marketing</a></p>
+
+<p>First, they start off by defining an equation that would represent the likelihood of the model.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cox_likelihood_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_6_0.png" alt="png" /></p>
+
+<p>The first two equations deal with censored and uncensored data, respectively. When they&rsquo;re combined into the third equation, the <code>delta_i</code> term in the exponent acts as a <code>0/1</code> switch to control for this.</p>
+
+<p>However, we&rsquo;re still stuck, waiting on the baseline hazard model. This is side-stepped by some clever application of partial likelihoods.</p>
+
+<p>First, they define a &ldquo;risk set&rdquo; as the set of all individuals that have yet to experience the event. This is essentially the leftover population of the Survival Curve after any point <code>t</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cox_likelihood_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_8_0.png" alt="png" /></p>
+
+<p>Then, they reiterate that the partial likelihood is:</p>
+
+<ol>
+<li>The conditional probability that person <code>i</code> will fail at time <code>t_i</code></li>
+<li>Given the set risk at that time</li>
+<li>And that exactly one failure will happen at time <code>t_i</code></li>
+</ol>
+
+<p>Recall from our <a href="https://napsterinblue.github.io/notes/stats/survival_analysis/building_blocks/">Building Blocks</a> notebook, that the Hazard Function is a point-in-time estimate of the risk. And so putting on our calculus hats, we&rsquo;ll multiply this function by a sliver of time <code>dt</code> to get an approximation fo the Probability of failure.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cox_likelihood_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_10_0.png" alt="png" /></p>
+
+<p>And because this probability is conditioned on having survived for this long, we divide by the sum of similar terms for everyone else who has survived this long, due to general conditional probability rules.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cox_likelihood_4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_math_12_0.png" alt="png" /></p>
+
+<p>As we saw earlier in this notebook, dividing a hazard by a hazard cancels out the baseline hazard term, giving us an equation free from the tyranny of having to approximate two different features at once.</p>
+
+<p>Finally, we use the Likelihood of one individual to reformulate the likelihood of the population, again leveraging the <code>delta_i</code> term to denote censorship.</p>
+
+<p>We (or more appropriately, computers) can estimate the values of the weight-vector <code>w</code> using numerical methods (read: throw it into <code>lifelines</code>). And if all we want to do is compare individual hazards, we&rsquo;re golden.</p>
+
+<p>But if we&rsquo;re interested in plotting estimates of individuals, the baseline hazard function is popularly attained through use of the Brewslow Estimator, which I&rsquo;ll leave as an exercise to the rader (read: the math is over my head and you get it for free in <code>lifelines</code>, lol)</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

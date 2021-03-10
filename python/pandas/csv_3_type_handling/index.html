@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="csv 3: Type Handling" />
+<meta property="og:description" content="Type Handling The default read-in behavior is pretty good, but sometimes it&rsquo;s worth being a bit more explicit.
+Consider this file that has all of its data wrapped in quotes.
+import pandas as pd dataPath = &#39;data/ex8.csv&#39; open(dataPath).read() &#39;&quot;a&quot;,&quot;b&quot;,&quot;c&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n&#39;  pd.read_csv(dataPath)   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    a b c     0 1 2 3   1 1 2 3     General dtype  Getting the data in float format is easy with the dtype argument." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/pandas/csv_3_type_handling/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="csv 3: Type Handling"/>
+<meta name="twitter:description" content="Type Handling The default read-in behavior is pretty good, but sometimes it&rsquo;s worth being a bit more explicit.
+Consider this file that has all of its data wrapped in quotes.
+import pandas as pd dataPath = &#39;data/ex8.csv&#39; open(dataPath).read() &#39;&quot;a&quot;,&quot;b&quot;,&quot;c&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n&#39;  pd.read_csv(dataPath)   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    a b c     0 1 2 3   1 1 2 3     General dtype  Getting the data in float format is easy with the dtype argument."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "csv 3: Type Handling",
+  "url": "https://napsterinblue.github.io/notes/python/pandas/csv_3_type_handling/",
+  "wordCount": "704",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>csv 3: Type Handling</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">csv 3: Type Handling</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="type-handling">Type Handling</h2>
+
+<p>The default read-in behavior is pretty good, but sometimes it&rsquo;s worth being a bit more explicit.</p>
+
+<p>Consider this file that has all of its data wrapped in quotes.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">dataPath</span> <span class="o">=</span> <span class="s1">&#39;data/ex8.csv&#39;</span>
+<span class="nb">open</span><span class="p">(</span><span class="n">dataPath</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></code></pre></div>
+<pre><code>'&quot;a&quot;,&quot;b&quot;,&quot;c&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n&quot;1&quot;,&quot;2&quot;,&quot;3&quot;\n'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataPath</span><span class="p">)</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="general">General</h3>
+
+<pre><code>dtype
+</code></pre>
+
+<p>Getting the data in <code>float</code> format is easy with the <code>dtype</code> argument.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataPath</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>It can also be leveraged on a column-by-column level, letting the parser default anything unspecified however it will.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataPath</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">})</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2.0</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>2.0</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="handling-foreign-true-false-words">Handling Foreign &ldquo;True/False&rdquo; Words</h3>
+
+<pre><code>true_values
+false_values
+</code></pre>
+
+<p>Sometimes we get output from other sources that codes the Python <code>True</code> and <code>False</code> values in manners we might not expect.</p>
+
+<p>For example, say we wanted to take this data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="n">stringyData</span> <span class="o">=</span> <span class="s1">&#39;BOOL,oneBoolWord,twoBoolWords</span><span class="se">\n</span><span class="s1">TRUE,Yes,Yes</span><span class="se">\n</span><span class="s1">FALSE,FALSE,No&#39;</span>
+<span class="n">StringIO</span><span class="p">(</span><span class="n">stringyData</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></code></pre></div>
+<pre><code>'BOOL,oneBoolWord,twoBoolWords\nTRUE,Yes,Yes\nFALSE,FALSE,No'
+</code></pre>
+
+<p>Notice that our ALLCAPS <code>TRUE</code> and <code>FALSE</code> values get correctly cased (and cast as <code>bool</code> types) in the first column of the output. The parser knows that this external data looks like this frequently, so it&rsquo;s hard-coded in.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">stringyData</span><span class="p">))</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>BOOL</th>
+      <th>oneBoolWord</th>
+      <th>twoBoolWords</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>True</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>FALSE</td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>We can expand the number of words that the parser looks for to do these smart substitutions (here, we&rsquo;ll use <code>true_values</code>). The second column now casts accordingly (note the how the value in row 1 changed).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">stringyData</span><span class="p">),</span> <span class="n">true_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Yes&#39;</span><span class="p">])</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>BOOL</th>
+      <th>oneBoolWord</th>
+      <th>twoBoolWords</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>True</td>
+      <td>True</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>False</td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>However, that third column is still reading as strings, even though we mapped &ldquo;Yes&rdquo; to <code>True</code></p>
+
+<p>Because the parser doesn&rsquo;t know how to handle EVERY value, it elects to just store all values as strings to be safe.</p>
+
+<p>Thus, our last step is providing rules for the string &ldquo;No&rdquo; with <code>false_values</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">stringyData</span><span class="p">),</span> <span class="n">true_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Yes&#39;</span><span class="p">],</span> <span class="n">false_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;No&#39;</span><span class="p">])</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>BOOL</th>
+      <th>oneBoolWord</th>
+      <th>twoBoolWords</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Finally, this gives us our intended column datatypes.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">stringyData</span><span class="p">),</span> <span class="n">true_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Yes&#39;</span><span class="p">],</span> <span class="n">false_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;No&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>BOOL            bool
+oneBoolWord     bool
+twoBoolWords    bool
+dtype: object
+</code></pre>
+
+<h3 id="tricky-rules-based-typing">Tricky, Rules-Based Typing</h3>
+
+<pre><code>converters
+</code></pre>
+
+<p>And if your conversions are less straight-forward, you can use <code>converters</code> to specify a dictionary of functions to apply on reads.</p>
+
+<p>For instance, if you&rsquo;re reading the following file:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">moneyCsvPath</span> <span class="o">=</span> <span class="s1">&#39;data/ex9.csv&#39;</span>
+<span class="nb">open</span><span class="p">(</span><span class="n">moneyCsvPath</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></code></pre></div>
+<pre><code>'a|b|c|money|bignum\n1|2|3|$1,000|1,000,000\n5|6|7|$0.00|867,530.9\n9|10|11|$3.50|3.14159265359'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">money_to_float</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">moneyCsvPath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">converters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;money&#39;</span><span class="p">:</span><span class="n">money_to_float</span><span class="p">})</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+      <th>money</th>
+      <th>bignum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>1000.0</td>
+      <td>1,000,000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5</td>
+      <td>6</td>
+      <td>7</td>
+      <td>0.0</td>
+      <td>867,530.9</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>9</td>
+      <td>10</td>
+      <td>11</td>
+      <td>3.5</td>
+      <td>3.14159265359</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="big-numbers">Big Numbers</h3>
+
+<pre><code>thousands
+decimal
+</code></pre>
+
+<p>We had to use a function in our money example because of the leading <code>$</code>, but you may encounter several-digit numbers written out as strings with commas and decimals (and some complicated Dialect rules, no doubt). By default, Python doesn&rsquo;t check for these.</p>
+
+<p>If you need to turn that feature on, you can use the <code>thousands</code> and <code>decimal</code> arguments, setting them to <code>','</code> and <code>'.'</code>, respectively.</p>
+
+<p>Or <code>thousands='.'</code> and <code>decimal=','</code>, if you&rsquo;re reading data from some backwards, Byzantine hellscape.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">moneyCsvPath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">,</span>
+            <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;bignum&#39;</span><span class="p">],</span>
+            <span class="n">thousands</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">decimal</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>a</th>
+      <th>b</th>
+      <th>c</th>
+      <th>bignum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>1000000.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5</td>
+      <td>6</td>
+      <td>7</td>
+      <td>867530.900000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>9</td>
+      <td>10</td>
+      <td>11</td>
+      <td>3.141593</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

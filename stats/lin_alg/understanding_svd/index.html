@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="SVD Intuition" />
+<meta property="og:description" content="This was one of the more illuminating math videos I&rsquo;ve come across and it did wonders for grounding my intuition on this topic. This notebook will mostly follow along, typing ideas from our other notebooks.
+Overview Recall the intuition that we arrived at for eigenvectors when we went from following our basis vectors i and j in a linear transformation to finding the eigenvectors and watching the transformation from the perspective of the stretch/shrink on these vectors." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/lin_alg/understanding_svd/" />
+
+
+
+<meta property="article:published_time" content="2019-10-09T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-10-09T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="SVD Intuition"/>
+<meta name="twitter:description" content="This was one of the more illuminating math videos I&rsquo;ve come across and it did wonders for grounding my intuition on this topic. This notebook will mostly follow along, typing ideas from our other notebooks.
+Overview Recall the intuition that we arrived at for eigenvectors when we went from following our basis vectors i and j in a linear transformation to finding the eigenvectors and watching the transformation from the perspective of the stretch/shrink on these vectors."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SVD Intuition",
+  "url": "https://napsterinblue.github.io/notes/stats/lin_alg/understanding_svd/",
+  "wordCount": "1330",
+  "datePublished": "2019-10-09T00:00:00&#43;00:00",
+  "dateModified": "2019-10-09T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>SVD Intuition</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">SVD Intuition</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-10-09T00:00:00Z "> 09 Oct 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p><a href="https://www.youtube.com/watch?v=EfZsEFhHcNM">This was one of the more illuminating math videos I&rsquo;ve come across</a> and it did wonders for grounding my intuition on this topic. This notebook will mostly follow along, typing ideas from our other notebooks.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>Recall the intuition that we arrived at for eigenvectors when we went from following our basis vectors <code>i</code> and <code>j</code> in a linear transformation to finding the eigenvectors and watching the transformation from the perspective of the stretch/shrink on these vectors.</p>
+
+<p>By orienting yourself to the problem via these vectors, we made it much easier to compute and represent linear transformations in a new basis. In a way, we can think of these new basis eigen vectors as &ldquo;the essence&rdquo; of these transformations. To answer the multitude of &ldquo;where does <em>this</em> point go?&rdquo; questions, we can articulate them relative to the eigen bases.</p>
+
+<p>To hammer this notion home, I&rsquo;ll share the same video from the Eigenspaces notebook&ndash; <a href="https://youtu.be/8F0gdO643Tc?t=291">it has a graphic so good that it merits reposting in my own resources</a>.</p>
+
+<p>Using this general concept, we want to find a way to learn complex things about a matrix <code>A</code> by reformulating the problem into a simpler one based on properties of eigenvectors.</p>
+
+<h2 id="ingredients">Ingredients</h2>
+
+<p>Before we get into what Singular Value Decomposition <em>is</em>, let&rsquo;s first explore the Linear Algebra tricks that make it possible.</p>
+
+<h3 id="symmetric-square-matrix">Symmetric, Square Matrix</h3>
+
+<p>Say we have a matrix that&rsquo;s square and symmetric across the diag, like the following</p>
+
+<pre><code>a  d  e
+d  b  f
+e  f  c
+</code></pre>
+
+<p>Following along with the example in the video, we&rsquo;ll construct such a matrix, <code>s</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="kn">as</span> <span class="nn">LA</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span></code></pre></div>
+<p>We&rsquo;ll then use <code>numpy</code> to find the eigenvalues and their corresponding eigenvectors</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="n">eigvals</span></code></pre></div>
+<pre><code>array([3., 8., 6.])
+</code></pre>
+
+<p>The vectors have the interesting property of being both linearly independent and orthogonal (having dot product <code>=0</code>) to one another</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="k">for</span> <span class="n">vec_a</span><span class="p">,</span> <span class="n">vec_b</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">eigvecs</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="c1"># is their dot product basically 0?</span>
+    <span class="c1"># (accounts for float weirdness)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vec_a</span><span class="p">,</span> <span class="n">vec_b</span><span class="p">)))</span></code></pre></div>
+<pre><code>True
+True
+True
+</code></pre>
+
+<p>Furthermore, these eigenvectors are all <strong>orthonormal</strong>. So not only are they perpendicular, but they&rsquo;re also of unit length.</p>
+
+<p>Thankfully, <code>numpy</code> handled this for us, but if it didn&rsquo;t we&rsquo;d just have to scale each column in <code>eigvecs</code> by the magnitude of the column.</p>
+
+<h4 id="diagonalizing-it">Diagonalizing It</h4>
+
+<p>After we&rsquo;ve found our orthonormalized eigenvectors, we want to use them to diagonalize our matrix <code>s</code> into its constituent eigenbasis (<a href="https://napsterinblue.github.io/notes/stats/lin_alg/eigenvectors_and_values/">as discussed in this notebook</a>).</p>
+
+<p>Recall that the form here is <code>S = P D P^-1</code>, where <code>D</code> is our diagonal matrix and <code>P</code> is the mapping from our original space into the eigenbasis, in this case it&rsquo;s our matrix <code>eigvecs</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">eigvecs</span></code></pre></div>
+<pre><code>array([[ 5.77350269e-01,  7.07106781e-01, -4.08248290e-01],
+       [ 5.77350269e-01, -7.07106781e-01, -4.08248290e-01],
+       [ 5.77350269e-01, -2.23967696e-17,  8.16496581e-01]])
+</code></pre>
+
+<p>Another interesting/useful property of working with the <em>isonormal eigenbasis</em> is that <code>P^-1</code> is equivalent to <code>P^T</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eigvecs</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[ 5.77350269e-01,  5.77350269e-01,  5.77350269e-01],
+       [ 7.07106781e-01, -7.07106781e-01, -5.94118866e-19],
+       [-4.08248290e-01, -4.08248290e-01,  8.16496581e-01]])
+</code></pre>
+
+<p>This makes calculation very convenient, as we don&rsquo;t need to deliberately calculate the inverse transformation from our eigenbasis to the original basis.</p>
+
+<h3 id="engineering-square-matricies">Engineering Square Matricies</h3>
+
+<p>Nearly all of the data that we encounter can be represented via matricies and most of those matricies will likely be non-square. We can, however, use these rectangular matricies to <em>create</em> a square matrix by multiplying by the transpose, and vice-versa.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/nonsquare_to_square.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_12_0.png" alt="png" /></p>
+
+<p>Take the following for example</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">AAt</span> <span class="o">=</span> <span class="n">A</span> <span class="err">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span>
+<span class="n">AAt</span></code></pre></div>
+<pre><code>array([[333,  81],
+       [ 81, 117]])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">AtA</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="err">@</span> <span class="n">A</span>
+<span class="n">AtA</span></code></pre></div>
+<pre><code>array([[ 80, 100,  40],
+       [100, 170, 140],
+       [ 40, 140, 200]])
+</code></pre>
+
+<p>Furthermore, we can also see that these matricies are symmetric across the diag. This should be intuitive, but the following screengrab from the video spells out the calculation if it&rsquo;s not</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/symmetric_transposes.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_18_0.png" alt="png" /></p>
+
+<h3 id="diagonalizing-the-new-matricies">Diagonalizing the New Matricies</h3>
+
+<p>Moving along, we want to repeat the same orthonormal diagonalization as with our first square, symmetric matrix.</p>
+
+<p>In doing this, we&rsquo;ll finally arrive at some notation that we&rsquo;ll need in performing SVD:</p>
+
+<ul>
+<li><code>D</code> will be the diagonal matrix of eigenvalues for each <code>AtA</code> and <code>AAt</code></li>
+<li>We&rsquo;ll call <code>V</code> the matrix that maps <code>AtA</code> to <code>D</code></li>
+<li>We&rsquo;ll call <code>U</code> the matrix that maps <code>AAt</code> to <code>D</code></li>
+</ul>
+
+<p>If you want to follow along in the video, we&rsquo;re at about the 8 minute mark and will be doing these calculations in <code>numpy</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">eigvals_v</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">AtA</span><span class="p">)</span>
+<span class="n">eigvals_v</span></code></pre></div>
+<pre><code>array([ 3.60000000e+02, -3.18981901e-14,  9.00000000e+01])
+</code></pre>
+
+<p><strong>Note:</strong> The video stresses many times that our matrix <code>D</code> of eigenvalues&ndash; and the corresponding matrix of eigenvectors&ndash; should be ordered in <em>descending order</em>. This doesn&rsquo;t come default when using <code>LA.eig()</code> (it will when we just use <code>LA.svd()</code>). Thus, we will manually reorder them, and construct a diagonal matrix from our 1D vector of eigen values.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">eigvals_v</span> <span class="o">=</span> <span class="n">eigvals_v</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">V</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">D_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">eigvals_v</span><span class="p">)</span>
+<span class="n">D_v</span></code></pre></div>
+<pre><code>array([[ 3.60000000e+02,  0.00000000e+00,  0.00000000e+00],
+       [ 0.00000000e+00,  9.00000000e+01,  0.00000000e+00],
+       [ 0.00000000e+00,  0.00000000e+00, -3.18981901e-14]])
+</code></pre>
+
+<p>Again, we can show equality between the inverse and transpose of <code>V</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">LA</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">V</span><span class="p">),</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[ True,  True,  True],
+       [ True,  True,  True],
+       [ True,  True,  True]])
+</code></pre>
+
+<p>Doing the same for <code>AAT</code>, we have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">eigvals_u</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">AAt</span><span class="p">)</span>
+<span class="n">eigvals_u</span></code></pre></div>
+<pre><code>array([360.,  90.])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">D_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">eigvals_u</span><span class="p">)</span>
+<span class="n">D_u</span></code></pre></div>
+<pre><code>array([[360.,   0.],
+       [  0.,  90.]])
+</code></pre>
+
+<p>You might have noted that the eigenvalues of both <code>D_u</code> and <code>D_v</code> are the exact same. This is no accident and is absolutely something we&rsquo;ll use in the next section.</p>
+
+<h2 id="putting-it-all-together">Putting it All Together</h2>
+
+<p>As it turns out, these orthonormal eigenvector matricies, <code>U</code> and <code>V</code> are instrumental in writing a simplified form of <code>A</code>. We say that our original matrix <code>A</code> can be written as</p>
+
+<p>$A = U \Sigma V^T$</p>
+
+<p>Where this <code>SIGMA</code> is the same as our matrix, <code>D</code>, but instead with the square root of each diagonal entry&ndash; our eponymous <em>singular values</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/singular_values.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_30_0.png" alt="png" /></p>
+
+<p>And <a href="https://www.youtube.com/watch?v=mBcLRGuAFUk&amp;t=1s">Professor Strang</a> gives us a great gut check that this equation holds.</p>
+
+<p>Substituting the <code>U SIGMA V^T</code> values in for <code>A</code>, we arrive at a clean diagonalization in terms of <code>SIGMA</code> and <code>V</code>. We&rsquo;d get the same with <code>U</code> if we went swaped the two terms on the left.</p>
+
+<p>Moreover, we get to enjoy the properties of the square, symmetric matricies that these two self-products provide.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/confirming_v.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_32_0.png" alt="png" /></p>
+
+<p>One thing to note is that depending on how our eigenvalue (<code>D</code>) shakes out, we might have some rank for <code>D</code> that&rsquo;s incompatible with <code>U</code> or <code>V^T</code> (due to duplicate or zero eigen values).</p>
+
+<p>When this happens, we basically want to append a column of zeroes in <code>SIGMA</code> so the dimensions of the matrix multiplications work out.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/svd_dimensions.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_34_0.png" alt="png" /></p>
+
+<p>And so what we wind up with is basically a way to express our original matrix, <code>A</code> as a linear combination of the vectors in <code>U</code> and <code>V^T</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/svd_lin_comb.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_36_0.png" alt="png" /></p>
+
+<h2 id="conceptualizing">Conceptualizing</h2>
+
+<p>I&rsquo;ve spent a couple days ruminating on this topic. Still don&rsquo;t feel like I&rsquo;ve mastered SVD&rsquo;s but two facts that have helped ground my intuition for <em>why</em> this all works.</p>
+
+<h3 id="space-to-space">Space to Space</h3>
+
+<p><a href="http://www.ams.org/publicoutreach/feature-column/fcarc-svd">The writeup by the AMS</a> explains SVDs as</p>
+
+<blockquote>
+<p>for any 2  2 matrix, we may find an orthogonal grid that is transformed into another orthogonal grid.</p>
+</blockquote>
+
+<p>That that&rsquo;s some orthonormal eigen basis in our domain, and multiplying it by our matrix (we&rsquo;ve been using <code>A</code>, they use <code>M</code>), moves us to <em>another</em> orthonormal eigen basis in the <em>co-domain</em>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/orthog_to_orthog.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_38_0.png" alt="png" /></p>
+
+<p>The transformation takes us to the basis formed by the unit vectors of <code>U</code>. The length of the lines <code>Mv1</code>, <code>Mv2</code> are scaled by our singular values as found above.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/u_in_codomain.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_40_0.png" alt="png" /></p>
+
+<p>All at once, this happens as the following (per <a href="http://www.souravsengupta.com/cds2016/lectures/Strang_Paper1.pdf">Strang&rsquo;s iconic paper</a>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/orthog_to_orthog_one_step.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="understanding_svd_42_0.png" alt="png" /></p>
+
+<h3 id="rotate-scale-rotate">Rotate, Scale, Rotate</h3>
+
+<p>Another way to think about this transformation&ndash; indeed all transformations&ndash; is that any transformation can be described as:</p>
+
+<ul>
+<li>A rotation (to orient to our row space, <code>V</code>)</li>
+<li>A scaling stretching by <code>sigma</code> values</li>
+<li>Another rotation (relative to our column space, <code>U</code>)</li>
+</ul>
+
+<p>Visually, the <a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">wikipedia article on the topic</a> explains the <code>U</code> and <code>V^T</code> terms as rotations and <code>SIGMA</code> as the term that scales our space by a factor of our <em>singular values</em>.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

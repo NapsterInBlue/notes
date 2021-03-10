@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Interpretability: Visualizing Intermediate Activations" />
+<meta property="og:description" content="Per Chapter 5 of Chollet&rsquo;s Deep Learning with Python, we&rsquo;ve trained a simple dog/cat CNN classifier.
+%pylab inline import helpers from keras.models import load_model from keras import models from keras.utils import plot_model model = load_model(&#39;cats_and_dogs_small_2.h5&#39;) Populating the interactive namespace from numpy and matplotlib Using TensorFlow backend.  Now, we want to understand why this &ldquo;black box algorithm&rdquo; makes the determinations that it does.
+We&rsquo;ll do this by loading up a sample image, show it to the Network, then inspect how the different components react to the data it sees." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_activations/" />
+
+
+
+<meta property="article:published_time" content="2018-08-05T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-08-05T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Interpretability: Visualizing Intermediate Activations"/>
+<meta name="twitter:description" content="Per Chapter 5 of Chollet&rsquo;s Deep Learning with Python, we&rsquo;ve trained a simple dog/cat CNN classifier.
+%pylab inline import helpers from keras.models import load_model from keras import models from keras.utils import plot_model model = load_model(&#39;cats_and_dogs_small_2.h5&#39;) Populating the interactive namespace from numpy and matplotlib Using TensorFlow backend.  Now, we want to understand why this &ldquo;black box algorithm&rdquo; makes the determinations that it does.
+We&rsquo;ll do this by loading up a sample image, show it to the Network, then inspect how the different components react to the data it sees."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Interpretability: Visualizing Intermediate Activations",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_activations/",
+  "wordCount": "724",
+  "datePublished": "2018-08-05T00:00:00&#43;00:00",
+  "dateModified": "2018-08-05T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Interpretability: Visualizing Intermediate Activations</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Interpretability: Visualizing Intermediate Activations</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-08-05T00:00:00Z "> 05 Aug 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Per Chapter 5 of Chollet&rsquo;s <em>Deep Learning with Python</em>, we&rsquo;ve trained a simple dog/cat CNN classifier.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">helpers</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">keras</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">plot_model</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;cats_and_dogs_small_2.h5&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+
+
+Using TensorFlow backend.
+</code></pre>
+
+<p>Now, we want to understand why this &ldquo;black box algorithm&rdquo; makes the determinations that it does.</p>
+
+<p>We&rsquo;ll do this by loading up a sample image, show it to the Network, then inspect how the different components react to the data it sees.</p>
+
+<h2 id="image-preprocessing">Image Preprocessing</h2>
+
+<p>First things first, here&rsquo;s a cat.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img_path</span> <span class="o">=</span> <span class="s1">&#39;images/cat.jpg&#39;</span>
+
+<span class="kn">from</span> <span class="nn">keras.preprocessing</span> <span class="kn">import</span> <span class="n">image</span>
+
+<span class="n">img_tensor</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">target_size</span><span class="o">=</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">))</span>
+<span class="n">img_tensor</span></code></pre></div>
+<p><img src="interpretable_activations_6_0.png" alt="png" /></p>
+
+<p>Of course, we&rsquo;ll need to go from image to numerical representation. The following gives us a vector of shape <code>(height, width, channels)</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img_tensor</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">img_to_array</span><span class="p">(</span><span class="n">img_tensor</span><span class="p">)</span>
+<span class="n">img_tensor</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(150, 150, 3)
+</code></pre>
+
+<p>But the model expects an input with 4 dimensions (specifically with arbitrarily-many records for the first dimension)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>TensorShape([Dimension(None), Dimension(150), Dimension(150), Dimension(3)])
+</code></pre>
+
+<p>So we&rsquo;ll transform appropriately with <code>np.expand_dims</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img_tensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">img_tensor</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">img_tensor</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(1, 1, 150, 150, 3)
+</code></pre>
+
+<p>Furthermore, the RGB values for the image are comprised of values between 0 and 255</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img_tensor</span><span class="o">.</span><span class="nb">min</span><span class="p">(),</span> <span class="n">img_tensor</span><span class="o">.</span><span class="nb">max</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.0, 255.0)
+</code></pre>
+
+<p>But as we know from the various optimization notebooks we&rsquo;ve written/read, normalizing our values to be between <code>0</code> and <code>1</code> helps speed up training due to faster convergence.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img_tensor</span> <span class="o">/=</span> <span class="mf">255.</span></code></pre></div>
+<p>Finally, our image vector is good to go.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img_tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span></code></pre></div>
+<p><img src="interpretable_activations_18_0.png" alt="png" /></p>
+
+<h2 id="cracking-the-network-open">Cracking the Network Open</h2>
+
+<p>So we&rsquo;ve got this stacked model with a bunch of layers</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d_21 (Conv2D)           (None, 148, 148, 32)      896       
+_________________________________________________________________
+max_pooling2d_21 (MaxPooling (None, 74, 74, 32)        0         
+_________________________________________________________________
+conv2d_22 (Conv2D)           (None, 72, 72, 64)        18496     
+_________________________________________________________________
+max_pooling2d_22 (MaxPooling (None, 36, 36, 64)        0         
+_________________________________________________________________
+conv2d_23 (Conv2D)           (None, 34, 34, 128)       73856     
+_________________________________________________________________
+max_pooling2d_23 (MaxPooling (None, 17, 17, 128)       0         
+_________________________________________________________________
+conv2d_24 (Conv2D)           (None, 15, 15, 128)       147584    
+_________________________________________________________________
+max_pooling2d_24 (MaxPooling (None, 7, 7, 128)         0         
+_________________________________________________________________
+flatten_6 (Flatten)          (None, 6272)              0         
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 6272)              0         
+_________________________________________________________________
+dense_11 (Dense)             (None, 512)               3211776   
+_________________________________________________________________
+dense_12 (Dense)             (None, 1)                 513       
+=================================================================
+Total params: 3,453,121
+Trainable params: 3,453,121
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+
+<p>We don&rsquo;t care about the last 4 layers because they&rsquo;re used for the actual consolidation/prediction and can&rsquo;t be neatly traced back to the image itself.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">layer_outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">output</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="mi">8</span><span class="p">]]</span>
+<span class="n">layer_outputs</span></code></pre></div>
+<pre><code>[&lt;tf.Tensor 'conv2d_21/Relu:0' shape=(?, 148, 148, 32) dtype=float32&gt;,
+ &lt;tf.Tensor 'max_pooling2d_21/MaxPool:0' shape=(?, 74, 74, 32) dtype=float32&gt;,
+ &lt;tf.Tensor 'conv2d_22/Relu:0' shape=(?, 72, 72, 64) dtype=float32&gt;,
+ &lt;tf.Tensor 'max_pooling2d_22/MaxPool:0' shape=(?, 36, 36, 64) dtype=float32&gt;,
+ &lt;tf.Tensor 'conv2d_23/Relu:0' shape=(?, 34, 34, 128) dtype=float32&gt;,
+ &lt;tf.Tensor 'max_pooling2d_23/MaxPool:0' shape=(?, 17, 17, 128) dtype=float32&gt;,
+ &lt;tf.Tensor 'conv2d_24/Relu:0' shape=(?, 15, 15, 128) dtype=float32&gt;,
+ &lt;tf.Tensor 'max_pooling2d_24/MaxPool:0' shape=(?, 7, 7, 128) dtype=float32&gt;]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">layer_outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></code></pre></div>
+<pre><code>tensorflow.python.framework.ops.Tensor
+</code></pre>
+
+<p>So what we&rsquo;re going to do is make a generic <code>Model</code> that takes an image as its input, and returns each output <code>Tensor</code> at every step of the Network.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">activation_model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="nb">input</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">layer_outputs</span><span class="p">)</span></code></pre></div>
+<p>Not only does each layer flow into the next to seed <em>their</em> activations, it also kicks out the activation values, a matrix, that can be coerced into a human-interpretable image.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">layer_names</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="mi">8</span><span class="p">]:</span>
+    <span class="n">layer_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">activations</span> <span class="o">=</span> <span class="n">activation_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">img_tensor</span><span class="p">)</span></code></pre></div>
+<p>Because the first 8 layers alternate between Convolution and MaxPooling, we&rsquo;re only going to take every other element&ndash; the results of Pooling aren&rsquo;t terribly interesting/novel to inspect.</p>
+
+<p>This code chunk handles that.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+
+<span class="n">chunk</span> <span class="o">=</span> <span class="n">islice</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">layer_names</span><span class="p">,</span> <span class="n">activations</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></code></pre></div>
+<p>Finally, we borrow, almost verbatim, from Chollet to iterate through all of these activation matricies and plot the results, by layer</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">images_per_row</span> <span class="o">=</span> <span class="mi">16</span>
+
+<span class="k">for</span> <span class="n">layer_name</span><span class="p">,</span> <span class="n">layer_activation</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">layer_activation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">size</span> <span class="o">=</span> <span class="n">layer_activation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="n">n_features</span> <span class="o">//</span> <span class="n">images_per_row</span>
+    <span class="n">display_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size</span> <span class="o">*</span> <span class="n">n_cols</span><span class="p">,</span> <span class="n">images_per_row</span> <span class="o">*</span> <span class="n">size</span><span class="p">))</span>
+    
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">images_per_row</span><span class="p">):</span>
+            <span class="n">channel_image</span> <span class="o">=</span> <span class="n">layer_activation</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span>
+                                              <span class="p">:,</span> <span class="p">:,</span>
+                                              <span class="n">col</span> <span class="o">*</span> <span class="n">images_per_row</span> <span class="o">+</span> <span class="n">row</span><span class="p">]</span>
+            <span class="n">channel_image</span> <span class="o">-=</span> <span class="n">channel_image</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">channel_image</span> <span class="o">/=</span> <span class="n">channel_image</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="n">channel_image</span> <span class="o">*=</span> <span class="mi">64</span>
+            <span class="n">channel_image</span> <span class="o">+=</span> <span class="mi">128</span>
+            <span class="n">channel_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">channel_image</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint8&#39;</span><span class="p">)</span>
+            
+            <span class="n">display_grid</span><span class="p">[</span><span class="n">col</span> <span class="o">*</span> <span class="n">size</span> <span class="p">:</span> <span class="p">(</span><span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span>
+                         <span class="n">row</span> <span class="o">*</span> <span class="n">size</span> <span class="p">:</span> <span class="p">(</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel_image</span>
+            
+    <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">size</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">scale</span> <span class="o">*</span> <span class="n">display_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">scale</span> <span class="o">*</span> <span class="n">display_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">layer_name</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">display_grid</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>C:\Users\Nick\Anaconda3\lib\site-packages\ipykernel_launcher.py:17: RuntimeWarning: invalid value encountered in true_divide
+</code></pre>
+
+<p><img src="interpretable_activations_33_1.png" alt="png" /></p>
+
+<p><img src="interpretable_activations_33_2.png" alt="png" /></p>
+
+<p><img src="interpretable_activations_33_3.png" alt="png" /></p>
+
+<p><img src="interpretable_activations_33_4.png" alt="png" /></p>
+
+<p>Finally, as remarked <a href="https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_intuition/">in our notebook about Convolution</a>, you can clearly see here that the deeper into the Network we inspect:</p>
+
+<ol>
+<li>The more filters we employ to capture high-level features</li>
+<li>The blurrier and more-general these high-level features look</li>
+</ol>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

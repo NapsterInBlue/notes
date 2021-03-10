@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Encoding Categorical Data" />
+<meta property="og:description" content="Perhaps not surprisingly, when we want to do some sort of prediction in sklearn using data that comes to us in text format, the library doesn&rsquo;t know how to stuff the word &ldquo;Michigan&rdquo; into a regression.
+Thus, we have to transform our categorical data into a numerical representation.
+The Data Let&rsquo;s load the iris dataset
+from sklearn.datasets import load_iris data = load_iris() And, for the sake of example, do a bit of manipulation to it to get it into a format relevant to this notebook." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/preprocessing/encoding_categorical/" />
+
+
+
+<meta property="article:published_time" content="2018-05-29T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-29T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Encoding Categorical Data"/>
+<meta name="twitter:description" content="Perhaps not surprisingly, when we want to do some sort of prediction in sklearn using data that comes to us in text format, the library doesn&rsquo;t know how to stuff the word &ldquo;Michigan&rdquo; into a regression.
+Thus, we have to transform our categorical data into a numerical representation.
+The Data Let&rsquo;s load the iris dataset
+from sklearn.datasets import load_iris data = load_iris() And, for the sake of example, do a bit of manipulation to it to get it into a format relevant to this notebook."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Encoding Categorical Data",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/preprocessing/encoding_categorical/",
+  "wordCount": "1207",
+  "datePublished": "2018-05-29T00:00:00&#43;00:00",
+  "dateModified": "2018-05-29T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Encoding Categorical Data</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Encoding Categorical Data</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-29T00:00:00Z "> 29 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Perhaps not surprisingly, when we want to do some sort of prediction in <code>sklearn</code> using data that comes to us in text format, the library doesn&rsquo;t know how to stuff the word &ldquo;Michigan&rdquo; into a regression.</p>
+
+<p>Thus, we have to transform our <em>categorical</em> data into a numerical representation.</p>
+
+<h2 id="the-data">The Data</h2>
+
+<p>Let&rsquo;s load the iris dataset</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span></code></pre></div>
+<p>And, for the sake of example, do a bit of manipulation to it to get it into a format relevant to this notebook.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">cols</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;feature_names&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;flower_name&#39;</span><span class="p">]</span>
+<span class="n">flowerNames</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;setosa&#39;</span><span class="p">,</span>
+               <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;versicolor&#39;</span><span class="p">,</span>
+               <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;virgniica&#39;</span><span class="p">}</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]],</span>
+                  <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;flower_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;flower_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="n">flowerNames</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sepal length (cm)</th>
+      <th>sepal width (cm)</th>
+      <th>petal length (cm)</th>
+      <th>petal width (cm)</th>
+      <th>flower_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5.1</td>
+      <td>3.5</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4.9</td>
+      <td>3.0</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4.7</td>
+      <td>3.2</td>
+      <td>1.3</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.6</td>
+      <td>3.1</td>
+      <td>1.5</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>3.6</td>
+      <td>1.4</td>
+      <td>0.2</td>
+      <td>setosa</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="trying-to-predict-sepal-length-cm">Trying to Predict <code>sepal length (cm)</code></h2>
+
+<p>Typically, firing up the iris dataset leads to an exercise in trying to predict the last column, <code>flower_name</code>. However, since the purpose of tutorial is to show how to leverage categorical variables in <code>sklearn</code>, we&rsquo;re going to predict one of the features, intead.</p>
+
+<p>Nevertheless, let&rsquo;s try and use one of the more popular almost-classification techniques for an almost-classification dataset.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">forest</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">()</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span></code></pre></div>
+<p>As expected, it doesn&rsquo;t know what to do with strings.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">forest</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></code></pre></div>
+<pre><code>could not convert string to float: 'virgniica'
+</code></pre>
+
+<p>And so we can transform that column from string to a numerical representation wiht the <code>LabelEncoder</code> class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelEncoder</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">stringCol</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">encoder</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+
+<span class="n">encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">stringCol</span><span class="p">)</span></code></pre></div>
+<pre><code>LabelEncoder()
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">stringCol</span><span class="p">)</span></code></pre></div>
+<pre><code>array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], dtype=int64)
+</code></pre>
+
+<p>And build the same <code>X</code>, but with numbers.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">clean_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">stringCol</span><span class="p">)]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">forest</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">clean_X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=None,
+           max_features='auto', max_leaf_nodes=None,
+           min_impurity_decrease=0.0, min_impurity_split=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">forest</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">clean_X</span><span class="p">)</span></code></pre></div>
+<pre><code>array([ 5.11      ,  4.82      ,  4.595     ,  4.71      ,  5.015     ,
+        5.37      ,  4.77      ,  5.02833333,  4.54      ,  4.89      ,
+        5.29333333,  4.91      ,  4.81      ,  4.56      ,  5.43      ,
+        5.43      ,  5.3       ,  5.09      ,  5.57333333,  5.20833333,
+        5.25      ,  5.16      ,  4.83      ,  5.2       ,  4.86      ,
+        4.92      ,  5.1       ,  5.19333333,  5.15      ,  4.69      ,
+        4.83      ,  5.21      ,  5.255     ,  5.275     ,  4.89      ,
+        4.915     ,  5.42      ,  4.89      ,  4.49      ,  5.02833333,
+        5.21      ,  4.62      ,  4.595     ,  5.04      ,  5.1       ,
+        4.84      ,  5.16333333,  4.62      ,  5.29333333,  5.        ,
+        6.91      ,  6.43      ,  6.86      ,  5.53      ,  6.51      ,
+        5.87333333,  6.31      ,  5.04      ,  6.54      ,  5.39      ,
+        5.21      ,  5.79      ,  5.77      ,  6.24      ,  5.61      ,
+        6.66      ,  5.59666667,  5.78      ,  6.01      ,  5.54      ,
+        6.14      ,  6.02      ,  6.18      ,  6.21      ,  6.175     ,
+        6.59      ,  6.42      ,  6.37      ,  5.91333333,  5.48      ,
+        5.46      ,  5.44      ,  5.76      ,  6.04      ,  5.59666667,
+        6.04      ,  6.7       ,  6.08      ,  5.71      ,  5.55      ,
+        5.62      ,  6.27      ,  5.78      ,  5.09      ,  5.63      ,
+        5.75      ,  5.7       ,  6.175     ,  5.15      ,  5.77      ,
+        6.53      ,  5.93      ,  6.84      ,  6.37      ,  6.61      ,
+        7.65      ,  5.52      ,  7.29      ,  6.7       ,  7.47      ,
+        6.33      ,  6.23      ,  6.68      ,  5.92      ,  6.18      ,
+        6.52      ,  6.52      ,  7.71      ,  7.72      ,  6.08      ,
+        6.78      ,  5.96      ,  7.68      ,  6.16      ,  6.66      ,
+        7.2       ,  6.22      ,  6.11      ,  6.32      ,  7.01      ,
+        7.39      ,  7.74      ,  6.43      ,  6.24      ,  6.19      ,
+        7.53      ,  6.36      ,  6.42      ,  6.01      ,  6.7       ,
+        6.64      ,  6.68      ,  5.93      ,  6.78      ,  6.58      ,
+        6.7       ,  6.23      ,  6.3       ,  6.34      ,  6.01      ])
+</code></pre>
+
+<p>Groovy.</p>
+
+<h2 id="a-better-idea">A Better Idea</h2>
+
+<p>Of course, we might not have decided to go the route of Random Forest, but may have instead used a Linear Regression.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span></code></pre></div>
+<p>And it works.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">clean_X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False)
+</code></pre>
+
+<p>But this is where it&rsquo;s <em>particularly important</em> to know what you&rsquo;re actually doing. If something didn&rsquo;t compile, you&rsquo;d know that and have to investigate. Here, we&rsquo;ve made a critical error and it passed silently.</p>
+
+<p>Let&rsquo;s investigate.</p>
+
+<p>According to <code>scikitlearn</code>, [-0.22 * &lsquo;versicolor&rsquo; = the flower&rsquo;s contribution to the sepal length].</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span></code></pre></div>
+<pre><code>['sepal width (cm)', 'petal length (cm)', 'petal width (cm)', 'flower_name']
+[ 0.6291636   0.74403774 -0.41389919 -0.22135464]
+</code></pre>
+
+<p>What&rsquo;s more, is that because &lsquo;versicolor&rsquo; is encoded as a 1 and &lsquo;virginica&rsquo; as a 2, that makes versicolor &ldquo;twice&rdquo; virginica, which is nonsense.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">data</span><span class="p">[</span><span class="s1">&#39;target_names&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>array(['setosa', 'versicolor', 'virginica'],
+      dtype='&lt;U10')
+</code></pre>
+
+<p>Instead, we want to use the <code>LabelBinarizer</code> class to break each of these values out into their own colums, populated with 0&rsquo;s and 1&rsquo;s.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+
+<span class="n">binarizer</span> <span class="o">=</span> <span class="n">LabelBinarizer</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">binarizer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span></code></pre></div>
+<pre><code>LabelBinarizer(neg_label=0, pos_label=1, sparse_output=False)
+</code></pre>
+
+<p>This process is called <strong>one-hot encoding</strong> and produces rows that look like this.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">encoded_flowers</span> <span class="o">=</span> <span class="n">binarizer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">encoded_flowers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">encoded_flowers</span><span class="p">[</span><span class="mi">50</span><span class="p">],</span> <span class="n">encoded_flowers</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span></code></pre></div>
+<pre><code>(array([1, 0, 0]), array([0, 1, 0]), array([0, 0, 1]))
+</code></pre>
+
+<p>Where each row only has one non-zero value.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">sum</span><span class="p">(</span><span class="n">encoded_flowers</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></code></pre></div>
+<pre><code>array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+</code></pre>
+
+<p>So now if we put this into our Linear Regression</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">encoded_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">encoded_flowers</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">encoded_X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False)
+</code></pre>
+
+<p>We can intuit the behavior of the last three values.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">coef_</span></code></pre></div>
+<pre><code>array([ 0.50107481,  0.82878689, -0.32210351,  0.57456359, -0.13951206,
+       -0.43505152])
+</code></pre>
+
+<p>For instance, a setosa flower (hot-encoded as (1, 0, 0)) would contribute [.5746 * 1 + (-.1395) * 0 + (-.4351) * 0]</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

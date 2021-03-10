@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Ridge and Lasso Regression" />
+<meta property="og:description" content="We touched on this a bit in our discussion of Regularization in Neural Networks, but I feel that it bears elaboration for the regression case.
+In general, both of the following techniques we&rsquo;ll look at aim to dampen the effect of a small subset of regression coefficients from dominating our prediction schemes. Additionally, both will use our formula for the Residual Sum of Squares as a jumping off point" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/ridge_lasso/" />
+
+
+
+<meta property="article:published_time" content="2019-09-18T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-18T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Ridge and Lasso Regression"/>
+<meta name="twitter:description" content="We touched on this a bit in our discussion of Regularization in Neural Networks, but I feel that it bears elaboration for the regression case.
+In general, both of the following techniques we&rsquo;ll look at aim to dampen the effect of a small subset of regression coefficients from dominating our prediction schemes. Additionally, both will use our formula for the Residual Sum of Squares as a jumping off point"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Ridge and Lasso Regression",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/ridge_lasso/",
+  "wordCount": "849",
+  "datePublished": "2019-09-18T00:00:00&#43;00:00",
+  "dateModified": "2019-09-18T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Ridge and Lasso Regression</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Ridge and Lasso Regression</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-18T00:00:00Z "> 18 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>We touched on this a bit in our discussion of <a href="https://napsterinblue.github.io/notes/machine_learning/neural_nets/regularization/">Regularization in Neural Networks</a>, but I feel that it bears elaboration for the regression case.</p>
+
+<p>In general, both of the following techniques we&rsquo;ll look at aim to dampen the effect of a small subset of regression coefficients from dominating our prediction schemes. Additionally, both will use our formula for the Residual Sum of Squares as a jumping off point</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rss_formula_long.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_2_0.png" alt="png" /></p>
+
+<p>Then apply some tuning parameter <code>lambda</code> to rein in our coefficients. At this point, finding the correct value for <code>lambda</code> becomes the name of the game.</p>
+
+<p><strong>Note</strong>: In the examples below, they&rsquo;re working with a dataset where only like 3 of the features are actually of any use to the model. Thus, we apply different Regression Regularization techniques to try and coerce more information out of them.</p>
+
+<h3 id="ridge-l2-regression">Ridge (L2) Regression</h3>
+
+<p>Ridge Regression applies a squared penalty term, <code>lambda</code> at the end of our RSS, like so</p>
+
+<p>$ RSS + \lambda \sum_{j=1}^p \beta_j^2$</p>
+
+<p>Intuitively, this has the effect of shrinking the values of <code>B_i</code>, each coefficient, as <code>lambda</code> increases. Indeed as <code>lambda</code> approaches infinity, all of them tend to zero, as evidenced by the left-hand figure below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_6_4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_6_0.png" alt="png" /></p>
+
+<p>The right takes a bit of head-scratching to read quickly.</p>
+
+<p>For starters the double-bar, &ldquo;L2 norm&rdquo; notation means</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/l2_norm_formula.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_8_0.png" alt="png" /></p>
+
+<p>Or the distance from <code>0</code> to <code>Beta</code>.</p>
+
+<p>And so the denominator of the X-axis on the right is the distance of our <code>Beta</code> coefficients, <em>absent any penality</em> <code>lambda</code>. This is held constant.</p>
+
+<p>The X-axis can take on values between <code>0</code> and <code>1</code>, but intuitively, this means:</p>
+
+<ul>
+<li><code>1</code>: The top is equal to the bottom, which only occurs when <code>lambda = 0</code>, and no regularization occurs. Note that this means the coefficients in red, yellow, and blue are all fairly large.</li>
+<li><code>0</code>: This means that the top of the fraction is basically 0. And as mentioned above, this occurs when the <code>lambda</code> penalty has basically beaten all of the coefficients into the ground.</li>
+</ul>
+
+<p>Thus, we can read the ratio on the x-axis as simply &ldquo;the amount that the coefficients have been shrunken to zero.&rdquo;</p>
+
+<h3 id="lasso-l1-regression">Lasso (L1) Regression</h3>
+
+<p>Lasso Regression, on the other hand, fits the same form as Ridge Regression except the last term is penalized by the absolute value, not the square, of our coefficients.</p>
+
+<p>Thus</p>
+
+<p>$RSS + \lambda\sum_{j=1}^p|\beta_j|$</p>
+
+<p>But whereas increasing values of <code>lambda</code> may drive Ridge coefficients <em>towards</em> zero, sufficently-large values will cause Lasso coefficients to be <em>exactly</em> zero. Therefore, it&rsquo;s not inaccurate to say that Lasso performs a sort of variable selection, as these zero-coefficients drop out as below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_6_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_12_0.png" alt="png" /></p>
+
+<p>In the event that we see variable coeffients becoming zero, this means that we&rsquo;ve got less to interpret, and therefore Lasso Regression has the advantage of easier interpretability.</p>
+
+<h3 id="bad-names-are-bad">Bad Names are Bad</h3>
+
+<p>The following two images show contour plots with constant levels of RSS.</p>
+
+<p>If you constrain both Ridge and Lasso Regressions such that their coefficients are bound by</p>
+
+<p>$\sum_{j=1}^p|\beta_j| \leq s$</p>
+
+<p>$\sum_{j=1}^p\beta^2_j \leq s$</p>
+
+<p>respectively, then the blue areas represent the constant solution space for Lasso (left) and Ridge (right) for a given <code>s</code>, optimized at the point tangent to the outer-most contour</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_6_7.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_16_0.png" alt="png" /></p>
+
+<p>If you&rsquo;re like me, the notion that the <em>round area</em> wasn&rsquo;t Lasso and that the <em>rigid</em> area wasn&rsquo;t Ridge is impossibly confusing.</p>
+
+<p>However, Ridge Regression makes&hellip; marginally more sense, when you instead consider that it was <em>designed to address ridge-shapes in your dataset</em>, like the following.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ridge_name.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_18_0.png" alt="png" /></p>
+
+<p>Lasso, on the other hand, stands for <a href="https://en.wikipedia.org/wiki/Lasso_(statistics)">Least Absolute Shrinkage and Selection Operator</a>, which technically makes sense, but the acronym feels like such a stretch that I will die on the hill of &ldquo;They just named it that way because it&rsquo;d be funny to confuse people.&rdquo; Meh.</p>
+
+<h3 id="when-to-use-ridge-vs-lasso">When to Use Ridge vs Lasso</h3>
+
+<p>Pulling directly from the perfectly-cogent explanation in ISL:</p>
+
+<blockquote>
+<p>In general, one might expect the lasso to perform better in a setting where a relatively small number of predictors have substantial coefficients, and the remaining predictors have coefficients that are very small or that equal zero. Ridge regression will perform better when the response is a function of many predictors, all with coefficients of roughly equal size.</p>
+</blockquote>
+
+<p>Regardless of which technique you employ, however, it&rsquo;s worth noting that you want to standardize your data before attempting either. Due to its squared nature, Ridge Regression is particularly sensitive to coefficients of different scales.</p>
+
+<h2 id="bias-variance-tradeoff">Bias-Variance Tradeoff</h2>
+
+<p>As ISL defines near the beginning of the book, our equation for the Expected Test MSE is as follows</p>
+
+<p>$E(y_0 - \hat{f}(x_0))^2 = Var(\hat{f}(x_0)) + [Bias(f(x_0))]^2 + Var(\epsilon)$</p>
+
+<p>Fundamentally, this means that our error will be <em>some</em> combination of the Variance and Bias of our predictions (represented as Green and Black lines below) and an inescable error term (omitted)</p>
+
+<p>Plotting these values for Ridge Regression, we can see that <code>lambda</code> has a huge effect on how biased our models are.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/figure_6_5.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_24_0.png" alt="png" /></p>
+
+<p>Making similar plots for the Lasso case, we re-affirm an observation made in <a href="https://napsterinblue.github.io/notes/machine_learning/regression/r_squared/">our notebook on the R-Squared statistic</a>, that it&rsquo;s not necessarily optimal to select the model with the highest R-Squared.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_6_8.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="ridge_lasso_26_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

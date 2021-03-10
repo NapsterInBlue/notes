@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="ROC and AUC" />
+<meta property="og:description" content="You may have seen images like this 1000 times, with some memorized understanding that the better the orange line hugs the top-left the &ldquo;better your model is.&rdquo;
+%pylab inline from IPython.display import Image Image(&#39;images/basic_roc.PNG&#39;) Populating the interactive namespace from numpy and matplotlib  Unpacking why that&rsquo;s the case is pretty straight-forward after you frame this info with a a new fundamental assumption:
+ The whole goal of your model is to figuroute out how to separate your data points into two distributions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/validation/roc_auc/" />
+
+
+
+<meta property="article:published_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="ROC and AUC"/>
+<meta name="twitter:description" content="You may have seen images like this 1000 times, with some memorized understanding that the better the orange line hugs the top-left the &ldquo;better your model is.&rdquo;
+%pylab inline from IPython.display import Image Image(&#39;images/basic_roc.PNG&#39;) Populating the interactive namespace from numpy and matplotlib  Unpacking why that&rsquo;s the case is pretty straight-forward after you frame this info with a a new fundamental assumption:
+ The whole goal of your model is to figuroute out how to separate your data points into two distributions."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ROC and AUC",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/validation/roc_auc/",
+  "wordCount": "684",
+  "datePublished": "2018-09-14T00:00:00&#43;00:00",
+  "dateModified": "2018-09-14T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>ROC and AUC</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">ROC and AUC</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-14T00:00:00Z "> 14 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>You may have seen images like this 1000 times, with <em>some</em> memorized understanding that the better the orange line hugs the top-left the &ldquo;better your model is.&rdquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/basic_roc.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p><img src="roc_auc_2_1.png" alt="png" /></p>
+
+<p>Unpacking <em>why that&rsquo;s the case</em> is pretty straight-forward after you frame this info with a a new fundamental assumption:</p>
+
+<blockquote>
+<p>The <strong>whole goal of your model</strong> is to figuroute out how to separate your data points into two distributions.</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/two_dist.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="roc_auc_4_0.png" alt="png" /></p>
+
+<p>From here, you can set a decision threshold, which yields some confusion matrix.</p>
+
+<p>Say in the example above, we&rsquo;ve got</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">helpers</span> <span class="kn">import</span> <span class="n">print_cm</span>
+
+<span class="n">tn</span> <span class="o">=</span> <span class="mi">240</span>
+<span class="n">fn</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">tp</span> <span class="o">=</span> <span class="mi">200</span>
+
+<span class="n">print_cm</span><span class="p">([[</span><span class="n">tn</span><span class="p">,</span> <span class="n">fn</span><span class="p">],</span> <span class="p">[</span><span class="n">fp</span><span class="p">,</span> <span class="n">tp</span><span class="p">]])</span></code></pre></div>
+<pre><code>                     Actual
+                  False   True
+Predicted  False    240     50
+            True     10    200
+</code></pre>
+
+<p>It seems that we did a reasonable job mitigating false positives at this threshold.</p>
+
+<h3 id="stats">Stats</h3>
+
+<p>Using these values we can calculate, among other things</p>
+
+<ul>
+<li>True Positive Ratio</li>
+<li>False Positive Ratio</li>
+</ul>
+
+<p>The <strong>True Positive Ratio</strong> is a measure of &ldquo;how many of ALL TRUE values did we call out?&rdquo;</p>
+
+<p>$\frac{TP}{TP + FN}$</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span><span class="p">)</span></code></pre></div>
+<pre><code>0.8
+</code></pre>
+
+<p>The <strong>False Positive Ratio</strong> is a measure of &ldquo;how many of our True predictions were actually False?&rdquo;</p>
+
+<p>$\frac{FP}{FP + TN}$</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fp</span> <span class="o">/</span> <span class="p">(</span><span class="n">fp</span> <span class="o">+</span> <span class="n">tn</span><span class="p">)</span></code></pre></div>
+<pre><code>0.04
+</code></pre>
+
+<p>But this was just for ONE cherry-picked, example threshold.</p>
+
+<p>At scale, we can generate these statistics for multiple Threshold values at once by using <code>sklearn.metrics.roc_curve()</code> which, given imputs <code>y_true</code> and <code>y_score</code>, tries a bunch of thresholds between <code>0</code> and <code>1</code> and returns</p>
+
+<pre><code>fpr : array, shape = [&gt;2]
+    Increasing false positive rates such that element i is the false
+    positive rate of predictions with score &gt;= thresholds[i].
+
+tpr : array, shape = [&gt;2]
+    Increasing true positive rates such that element i is the true
+    positive rate of predictions with score &gt;= thresholds[i].
+
+thresholds : array, shape = [n_thresholds]
+    Decreasing thresholds on the decision function used to compute
+    fpr and tpr. `thresholds[0]` represents no instances being predicted
+    and is arbitrarily set to `max(y_score) + 1`.
+</code></pre>
+
+<h2 id="good-model-bad-model">Good Model, Bad Model</h2>
+
+<p>To restate our earlier assumption, &ldquo;The whole goal of your model is to figuroute out how to separate your data points into two distributions.&rdquo;</p>
+
+<p>Extending this notion further, we say that a model is &ldquo;Good&rdquo; when it separates the <code>True</code> and <code>False</code> populations as above. Conversely, a model is not so good when it can&rsquo;t separate the two classes, as below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bad_model.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="roc_auc_17_0.png" alt="png" /></p>
+
+<p>Bringing it home, look at the difference between the ROC for the two models.</p>
+
+<p>You can go into production with any Threshold value you want&ndash; one model is <em>objectively</em> better than the other because <strong>at all threshold values</strong> it&rsquo;s as good or better at separating the two populations.</p>
+
+<h3 id="one-score">One Score</h3>
+
+<p>While the two-population and adjusting Threshold graphic is helpful for reinforcing intuition, all you need to know is that <strong>maximizing AUC means maximizing the degree of class separability</strong> in your model.</p>
+
+<p>From there, you can do whatever. Depending on your use case, maybe you have a higher tolerance for False Positives and prioritize maximizing the number of True Positives you find, a better model will mean better separability will mean more bang for your buck adjusting the Threshold.</p>
+
+<h2 id="sklearn">Sklearn</h2>
+
+<p>For concreteness, let&rsquo;s use a simple dummy model to see how to examine AUC statistics in ScikitLearn.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#Make the dataset/train simple Logistic Regression.</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">()</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">y_pred_probs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># examine FPR and TPR at various acceptance thresholds</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_curve</span>
+
+<span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred_probs</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># plot the two against each other</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">)</span>
+<span class="c1"># and a x=y line to show break-even</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">fpr</span><span class="p">);</span></code></pre></div>
+<p><img src="roc_auc_25_0.png" alt="png" /></p>
+
+<p>Pretty good for a dummy model on dummy data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span>
+
+<span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred_probs</span><span class="p">)</span></code></pre></div>
+<pre><code>0.93959999999999999
+</code></pre>
+
+<p>Now say we&rsquo;ve decided on an acceptance threshold (in this case <code>.5</code>) and we want to take a look at our Confusion Matrix</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+
+<span class="n">print_cm</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">))</span></code></pre></div>
+<pre><code>                     Actual
+                  False   True
+Predicted  False     43      7
+            True      5     45
+</code></pre>
+
+<h3 id="resources">Resources</h3>
+
+<p><a href="https://www.youtube.com/watch?v=OAl6eAyP-yo">This video</a> and <a href="http://www.navan.name/roc/">the accompanying webapp</a> were enormous helps in preparing this notebook.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

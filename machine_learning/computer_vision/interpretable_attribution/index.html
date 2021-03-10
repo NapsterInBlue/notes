@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Interpretability: Decision Attribution" />
+<meta property="og:description" content="Cracking open the intermediate layers of a Convolutional Neural Network can be incredibly instructive and help reinforce your intuition for the types of features learned within a &ldquo;black box&rdquo; algorithm. However, from an image classification standpoint, it&rsquo;s hard to overstate just how effective seeing a simple heatmap of &ldquo;decision attribution&rdquo; can be for debugging and understanding the behavior of your model as a whole.
+In this notebook, we&rsquo;ll give a quick overview of an approach that lets us achieve just that&ndash; adapted from Chapter 5 of Chollet&rsquo;s excellent Deep Learning book." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_attribution/" />
+
+
+
+<meta property="article:published_time" content="2019-09-04T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-04T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Interpretability: Decision Attribution"/>
+<meta name="twitter:description" content="Cracking open the intermediate layers of a Convolutional Neural Network can be incredibly instructive and help reinforce your intuition for the types of features learned within a &ldquo;black box&rdquo; algorithm. However, from an image classification standpoint, it&rsquo;s hard to overstate just how effective seeing a simple heatmap of &ldquo;decision attribution&rdquo; can be for debugging and understanding the behavior of your model as a whole.
+In this notebook, we&rsquo;ll give a quick overview of an approach that lets us achieve just that&ndash; adapted from Chapter 5 of Chollet&rsquo;s excellent Deep Learning book."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Interpretability: Decision Attribution",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_attribution/",
+  "wordCount": "1428",
+  "datePublished": "2019-09-04T00:00:00&#43;00:00",
+  "dateModified": "2019-09-04T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Interpretability: Decision Attribution</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Interpretability: Decision Attribution</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-04T00:00:00Z "> 04 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Cracking open the intermediate layers of a Convolutional Neural Network can be incredibly instructive and help reinforce your intuition for the types of features learned within a &ldquo;black box&rdquo; algorithm. However, from an image classification standpoint, it&rsquo;s hard to overstate just how effective seeing a simple heatmap of &ldquo;decision attribution&rdquo; can be for debugging and understanding the behavior of your model as a whole.</p>
+
+<p>In this notebook, we&rsquo;ll give a quick overview of an approach that lets us achieve just that&ndash; adapted from Chapter 5 of Chollet&rsquo;s excellent Deep Learning book.</p>
+
+<h2 id="our-image">Our Image</h2>
+
+<p>Almost every time I tell a stranger that I played the <a href="https://en.wikipedia.org/wiki/Mellophone">mellophone</a> in the MMB, I&rsquo;m met with a blank stare. It&rsquo;s only after I describe it as &ldquo;basically a fat trumpet&rdquo; do I get appreciable nods.</p>
+
+<p>The <a href="http://image-net.org/about-overview">ImageNet dataset</a> is a popular image dataset in the data science arena with 14M images in over 20K different classes of &ldquo;thing.&rdquo; For our purposes, we&rsquo;ll download a pre-trained model that comes, batteries-included, ready to organize images it sees into one of these 20 thousand classes.</p>
+
+<p>Ultimately, we want to see:</p>
+
+<ol>
+<li><p>What this model thinks it&rsquo;s looking at</p></li>
+
+<li><p>What parts of the image it arrived at this guess from</p></li>
+</ol>
+
+<p>And so we load the model</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">helpers</span>
+
+<span class="kn">from</span> <span class="nn">keras.applications.vgg16</span> <span class="kn">import</span> <span class="n">VGG16</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">VGG16</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+
+
+Using TensorFlow backend.
+</code></pre>
+
+<p>And snag a picture of a mellophone from the Internet</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.preprocessing</span> <span class="kn">import</span> <span class="n">image</span>
+<span class="kn">from</span> <span class="nn">keras.applications.vgg16</span> <span class="kn">import</span> <span class="n">preprocess_input</span><span class="p">,</span> <span class="n">decode_predictions</span>
+
+<span class="n">img_path</span> <span class="o">=</span> <span class="s1">&#39;./images/mello.jpeg&#39;</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">target_size</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
+
+<span class="n">img</span></code></pre></div>
+<p><img src="interpretable_attribution_6_0.png" alt="png" /></p>
+
+<p>Ain&rsquo;t it pretty?</p>
+
+<p>Then we convert this image into a matrix of values that our model can consume</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">x</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">img_to_array</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">preprocess_input</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code></pre></div>
+<p>And ask it what it thinks it&rsquo;s looking at</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code></pre></div>
+<p>Go figure, this near-state-of-the-art model thinks it&rsquo;s looking at a trumpet (cornet) with about 96% certainty</p>
+
+<p>(Bonus points for French Horn&ndash; the more appropriate guess, sound-wise&ndash; being the runner-up candidate)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">decode_predictions</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span></code></pre></div>
+<pre><code>[[('n03110669', 'cornet', 0.96294755),
+  ('n03394916', 'French_horn', 0.02380206),
+  ('n04141076', 'sax', 0.0053833486),
+  ('n04487394', 'trombone', 0.0046766168),
+  ('n03838899', 'oboe', 0.00057546276)]]
+</code></pre>
+
+<p>But now the meat-and-potatoes of this post:</p>
+
+<p><em>Why</em> did it think this?</p>
+
+<h2 id="attribution-in-convnets">Attribution in ConvNets</h2>
+
+<p>If you squint, this approach might look similar to our <a href="https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_filter_essence/">&ldquo;use the gradients&rdquo; approach for finding &ldquo;filter essence&rdquo;</a>.</p>
+
+<p>We&rsquo;re basically going to peek at the very last of the Convolutional Layers (before the Network gets all Dense on us&hellip;), and inspect all 512 of the filters that get passed on. More accurately, we&rsquo;re going to generate a vector of shape <code>(512,)</code>, where each entry is the mean intensity of the gradient <em>for that specific channel filter</em>.</p>
+
+<p>This will require a lot of functional programming and <code>keras</code> magic, so we&rsquo;ll load up the backend</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras</span> <span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">K</span></code></pre></div>
+<p>Then, using <a href="https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a#file-imagenet1000_clsidx_to_labels-txt-L514">this handy GitHub gist</a>, we&rsquo;ll zero in on the <code>513</code>th index of the model output, which is the probability that the image is a cornet.</p>
+
+<p><strong>Note</strong>: <code>Dimension(None)</code> for the output shape actually means a <em>singular value</em> (the <code>[0-1]</code> prediction) for as many records as we&rsquo;re looking at at once</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cornet_idx</span> <span class="o">=</span> <span class="mi">513</span>
+
+<span class="n">cornet_output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">output</span><span class="p">[:,</span> <span class="n">cornet_idx</span><span class="p">]</span>
+<span class="n">cornet_output</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>TensorShape([Dimension(None)])
+</code></pre>
+
+<p>Similarly, we take the last Convolutional layer.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">last_conv_layer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">&#39;block5_conv3&#39;</span><span class="p">)</span>
+
+<span class="n">last_conv_layer</span><span class="o">.</span><span class="n">output</span></code></pre></div>
+<pre><code>&lt;tf.Tensor 'block5_conv3/Relu:0' shape=(?, 14, 14, 512) dtype=float32&gt;
+</code></pre>
+
+<p>Breaking down the dimaensionality here, we&rsquo;ve got:</p>
+
+<ul>
+<li><code>?</code>: Again, this means &ldquo;for as many records as we&rsquo;re looking at at once&rdquo;</li>
+<li><code>14, 14</code>: The image passed to the next layer is <code>14 x 14</code> pixels</li>
+<li><code>512</code>: There are 512 filter channels at this point in the model, each looking for different features in the image
+
+<ul>
+<li>Scroll to the bottom of <a href="https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_filter_essence/">this notebook</a> for a clearer picture of the kinds of things the filters are looking for</li>
+</ul></li>
+</ul>
+
+<h3 id="the-tricky-functional-part">The Tricky, Functional Part</h3>
+
+<p>Next, we define a variable that will represent our activation gradients</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">grads</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">gradients</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="n">cornet_output</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">last_conv_layer</span><span class="o">.</span><span class="n">output</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></code></pre></div>
+<p>The docstring for our call of <code>K.gradients(loss, variables)</code> reads:</p>
+
+<pre><code>Returns the gradients of `loss` w.r.t. `variables`.
+</code></pre>
+
+<p>So to unpack a little: each of the 512 filters found in the output of <code>last_conv_layer</code> are of size <code>14x14</code> and have <em>some</em> differentiable gradient function that Chain Rule&rsquo;s up to the loss function parked at the end of the model, <code>cornet_output</code>.</p>
+
+<p><code>grads</code> isn&rsquo;t the activations/synapses that go from one layer of the Network to the next, but <em>their same-dimensional derivative values at any given point</em>.</p>
+
+<p>Thus, we expect the <em>output shape</em> for this layer to be preserved</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">grads</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>TensorShape([Dimension(None), Dimension(14), Dimension(14), Dimension(512)])
+</code></pre>
+
+<p>But also consistently-shaped, so that we can define <code>pooled_grads</code>, the average gradient activation value <strong>for each filter</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pooled_grads</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></code></pre></div>
+<p>Calling <code>K.mean()</code> on <code>512</code> different <code>14x14</code> filters yields <code>512</code> single-value averages. Neat.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pooled_grads</span></code></pre></div>
+<pre><code>&lt;tf.Tensor 'Mean:0' shape=(512,) dtype=float32&gt;
+</code></pre>
+
+<p>Next, we need some scheme that&rsquo;ll take us from &ldquo;<code>14x14x512</code> and a lot of data&rdquo; to just&hellip;. <code>heatmap</code></p>
+
+<h5 id="these-next-few-cells-merit-some-reading-rereading-and-re-rereading-as-they-re-devilishly-clever">These next few cells merit some reading, rereading, and re-rereading as they&rsquo;re devilishly clever.</h5>
+
+<p><code>iterate</code> serves as a generic method that takes an image of size <code>model.input</code> and returns our average filter gradients and what each of the <code>14x14</code> filters looked like.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="nb">input</span></code></pre></div>
+<pre><code>&lt;tf.Tensor 'input_1:0' shape=(?, 224, 224, 3) dtype=float32&gt;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">iterate</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="nb">input</span><span class="p">],</span>
+                     <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="n">pooled_grads</span><span class="p">,</span> <span class="n">last_conv_layer</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span></code></pre></div>
+<p>These two variables are, again, functional placeholders that represent the underlying <code>Tensor</code> objects.</p>
+
+<p>They&rsquo;re used to evoke <code>iterate</code> on our original image, <code>x</code>, and yield two concrete <code>numpy</code> arrays:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pooled_grads_value</span><span class="p">,</span> <span class="n">conv_layer_output_value</span> <span class="o">=</span> <span class="n">iterate</span><span class="p">([</span><span class="n">x</span><span class="p">])</span></code></pre></div>
+<p><code>pooled_grads_value</code> is the average activation value for each filter, used to determine <em>each filter&rsquo;s contribution to the overall pixel-level activation</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pooled_grads_value</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(512,)
+</code></pre>
+
+<p>and <code>conv_layer_output_value</code> is the actual <code>14x14</code> display of each of the 512 filters</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">conv_layer_output_value</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(14, 14, 512)
+</code></pre>
+
+<p><strong>THIS IS THE CRUX OF THIS WHOLE METHOD</strong></p>
+
+<p>Here, we cycle through all 512 filters and essentially &ldquo;scale&rdquo; each of the <code>14x14x1</code> outputs relative to how activated they are. For instance:</p>
+
+<ul>
+<li>If the average activation is <em>low</em>, then <em>all</em> values for a given filter will be much lower</li>
+<li>Conversely, if they&rsquo;re high, the parts that signaled the activation will be more prominent</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">512</span><span class="p">):</span>
+    <span class="n">conv_layer_output_value</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">pooled_grads_value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    </code></pre></div>
+<p>So iteratively multiplying <code>*=</code> each <code>pooled_grads_value</code> in lockstep with its respective filter allows a sort of &ldquo;normalizing&rdquo; effect.</p>
+
+<p>After we&rsquo;ve done that for each filter, we average together the &ldquo;normalized activation values&rdquo; at the pixel-level, and areas that didn&rsquo;t do much in the way of positive activation will effectively come out in the wash.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">heatmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">conv_layer_output_value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></code></pre></div>
+<p>As expected, this gives us a single <code>14x14</code> image of the parts of the image that mattered, on average, to these different activation layers.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">heatmap</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(14, 14)
+</code></pre>
+
+<p>Intuitively, this should track. Say you&rsquo;ve got a filter looking for, say, eyes, and you&rsquo;ve got one right in the center of your picture. The <code>[0-1]</code> values in this filter&rsquo;s gradient should be pretty close to <code>1</code> in the pixels around the eye, and the average activation for this image will likely be higher than all other filters.</p>
+
+<p>So when you consider <em>this filter&rsquo;s</em> addition to the overall averaging, the areas that it adds the most positive value will be <em>at the location that activated the filter</em>.</p>
+
+<p>You might have other areas looking for wheels or wings. Not only will these filters <em>not</em> be bright at any particular place, their entire filter will be, on average, dark. Then the further-dampening of this filter will basically make it a trivial addition to the final, aggregate, <code>14x14</code> heatmap.</p>
+
+<p>Extend this to, say, areas activated by a filter looking for ears, and areas looking for tongues hanging out. These areas, after averaging in, will be brighter in the aggregated final image.</p>
+
+<p>Ultimately, when you look at your final heatmap you&rsquo;ll see that, on average, you have higher activation around the eyes, ears, and big ol&rsquo; tongues, which led your model to predict that the picture of a dog was, indeed, a picture of a good old boye.</p>
+
+<h2 id="applying-the-heatmap">Applying the Heatmap</h2>
+
+<p>And so after running this algorithm over our image, we&rsquo;ve got the following.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">heatmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">heatmap</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">heatmap</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="nb">max</span><span class="p">(</span><span class="n">heatmap</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">heatmap</span><span class="p">);</span></code></pre></div>
+<p><img src="interpretable_attribution_52_0.png" alt="png" /></p>
+
+<p>But we want to overlay this <code>14x14</code> image atop our original, much-larger picture of a mellophone, so we&rsquo;ll leverage <code>cv2</code> to do some resizing.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">cv2</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+<span class="n">heatmap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">heatmap</span><span class="p">,</span> <span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">heatmap</span><span class="p">);</span></code></pre></div>
+<p><img src="interpretable_attribution_54_0.png" alt="png" /></p>
+
+<p>Finally, we&rsquo;ll translate from a heatmap representing the span between <code>[0, 1]</code> on a single axis, to their actual <code>(R, G, B)</code> values.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">heatmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">heatmap</span><span class="p">)</span>
+<span class="n">heatmap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">applyColorMap</span><span class="p">(</span><span class="n">heatmap</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLORMAP_VIRIDIS</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+<span class="n">heatmap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">heatmap</span><span class="p">,</span> <span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></code></pre></div>
+<p>Overlay it atop our original image and save</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">superimposed_img</span> <span class="o">=</span> <span class="n">heatmap</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">img</span>
+
+<span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s1">&#39;mello_heatmap.png&#39;</span><span class="p">,</span> <span class="n">superimposed_img</span><span class="p">);</span></code></pre></div>
+<p>Then we&rsquo;ll load up the result</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="s1">&#39;mello_heatmap.png&#39;</span><span class="p">,</span> <span class="n">target_size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span></code></pre></div>
+<p><img src="interpretable_attribution_61_0.png" alt="png" /></p>
+
+<p>Turns out it strongly considers the bell and the piping behind the first valve when answering &ldquo;What <em>is</em> a trumpet?&rdquo;</p>
+
+<p>Huh.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Neural Style Transfer" />
+<meta property="og:description" content="Overview One of the funner/more popular tricks you can employ using Deep Learning is the notion of style transfer between two images, like the canonical examples shown below.
+from IPython.display import Image Image(&#39;images/style_transfer.png&#39;) To get started, you want to determine some cost function that takes into consideration both:
+ Content: how similar the principal shapes are between the Content Image and the Generated Image (e.g. the bridge clock tower) Style: How much the Generated Image &ldquo;looks/feels&rdquo; like the Style Image  (more on these below)" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/style_transfer/" />
+
+
+
+<meta property="article:published_time" content="2018-10-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Neural Style Transfer"/>
+<meta name="twitter:description" content="Overview One of the funner/more popular tricks you can employ using Deep Learning is the notion of style transfer between two images, like the canonical examples shown below.
+from IPython.display import Image Image(&#39;images/style_transfer.png&#39;) To get started, you want to determine some cost function that takes into consideration both:
+ Content: how similar the principal shapes are between the Content Image and the Generated Image (e.g. the bridge clock tower) Style: How much the Generated Image &ldquo;looks/feels&rdquo; like the Style Image  (more on these below)"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Neural Style Transfer",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/style_transfer/",
+  "wordCount": "692",
+  "datePublished": "2018-10-10T00:00:00&#43;00:00",
+  "dateModified": "2018-10-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Neural Style Transfer</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Neural Style Transfer</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-10T00:00:00Z "> 10 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>One of the funner/more popular tricks you can employ using Deep Learning is the notion of style transfer between two images, like the canonical examples shown below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/style_transfer.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="style_transfer_3_0.png" alt="png" /></p>
+
+<p>To get started, you want to determine some cost function that takes into consideration both:</p>
+
+<ul>
+<li><strong>Content</strong>: how similar the principal shapes are between the Content Image and the Generated Image (e.g. the bridge clock tower)</li>
+<li><strong>Style</strong>: How much the Generated Image &ldquo;looks/feels&rdquo; like the Style Image</li>
+</ul>
+
+<p>(more on these below)</p>
+
+<p>Actually working the algorithm is as follows:</p>
+
+<ul>
+<li>Start with some pre-trained model (VGG seems to be the most popular)</li>
+<li>Instantiate some completely-random image <code>G</code> with the same resolution as your intended output</li>
+<li>Compute the cost of your generated image, as outlined above</li>
+<li>Modify the image to minimize the cost</li>
+<li>Rinse, repeat</li>
+</ul>
+
+<h2 id="determining-cost">Determining Cost</h2>
+
+<p>As previously mentioned, there are two aspects to our notion of cost: content and style</p>
+
+<h3 id="content-cost">Content Cost</h3>
+
+<p>This one&rsquo;s pretty straight-forward. Two images that have similar content have objects/pixel values that activate in about the same locations.</p>
+
+<p>Thus, if we were to crack open some arbitrary intermediate VGG layer, run both images through it, and inspect the activation values, we&rsquo;d expect to see a high degree of similarity between images of similar spatial-content and a low degree otherwise.</p>
+
+<p>Extending this further, we can consider the distance between the activations of a particular layer, <code>l</code>, between the Content Image and Generated Image as a cost that we want to minimize.</p>
+
+<p>$Jstyle(C, G) = || a^{\lbrack l \rbrack&copy;} - a^{\lbrack l \rbrack(G)}|| ^{2}$</p>
+
+<h3 id="style-cost">Style Cost</h3>
+
+<p>This one&rsquo;s a bit trickier.</p>
+
+<p><strong>Note</strong>, the design of this approach relies heavily on the intuition that <em>we extract increasingly-complex features as we look at later convolutional layers</em>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/layer_over_layer.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="style_transfer_15_0.png" alt="png" /></p>
+
+<p>Thus, in our selection of layer <code>l</code>, we should be aiming for a more-intermediate layer&ndash; not primative enough that we&rsquo;re just looking for edges, not advanced enough that we accidentally attribute &ldquo;number of dogs in frame&rdquo; as style.</p>
+
+<p>From there we employ a similar &ldquo;correlation-type&rdquo; idea as before, except this time instead of looking at pairwise correlations of activations, this time we&rsquo;re comparing <em>the inter-relatedness between channels of a layer, for a given image.</em></p>
+
+<p>More concretely, because each channel can have dramatically different representations, the value that you get when you unroll everything and correlate is <strong>extremely specific</strong>&ndash; for instance:</p>
+
+<ul>
+<li>Liberal use of rounded edges in one layer</li>
+<li>Pastel coloration in another</li>
+<li>Complementary colors often found right next to each other in a third</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/style_corr.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="style_transfer_19_0.png" alt="png" /></p>
+
+<p>Running our Style Image thorough the &ldquo;sum everything up&rdquo; operation will yield a specific value.</p>
+
+<p>Then, once we run our not-yet-similar Generated Image through it, we might find that it&rsquo;s close-ish, perhaps checking 2 of the 3 boxes above. We feed this information to whatever optimizer we&rsquo;re using and it determines that we could achieve a closer score by modifying the image in a way that improves in this third, poor-performing channel.</p>
+
+<h4 id="the-math">The Math</h4>
+
+<p>Assume that a given layer, <code>l</code> with width <code>w</code>, height <code>h</code>, and channels <code>c</code>, has activation values (<code>i</code>, <code>j</code>, <code>k</code>) for each dimension, respectively. Then any given activation value would be written as</p>
+
+<p>$a^{\lbrack l \rbrack}(i, j, k)$</p>
+
+<p>And our &ldquo;sum everything up&rdquo; operation is actually just creating a Gram Matrix <code>G</code>, operating between two channels <code>k</code> and <code>k_prime</code>, where</p>
+
+<p>$G(k, k&rsquo;)^{\lbrack l \rbrack} = \sum_{i}^{n<em>H}    \sum</em>{j}^{n_W} a(i,j,k) * a(i, j, k&rsquo;)$</p>
+
+<p>This is basically one matrix transposed, dot-multiplied by the other. If the output of this is high, the two channels are highly-correlated.</p>
+
+<p>Finally, we calculate the Style Loss between the Style Image and the Generated Image as</p>
+
+<p>$Jstyle(S, G) = \frac{1}{4n_W^2n_H^2n_C^2} ||G^{\lbrack l \rbrack (S)} - G^{\lbrack l \rbrack (G)}||^{2}$</p>
+
+<p>And this just is another (albeit, more-complicated) distance measure, with a normalizing factor out front to ease computation woes.</p>
+
+<h3 id="drawing-from-more-layers">Drawing From More Layers</h3>
+
+<p>We the intuition behind layer selection above. However, many implementations of neural style transfer instead draw from <em>multiple</em> hidden layers for each step, each with some pre-determined weighting that influences how things converge.</p>
+
+<p>$Jstyle(S, G) = \sum_{l} \lambda^{\lbrack l \rbrack} Jstyle^{\lbrack l \rbrack }(S, G)$</p>
+
+<h2 id="better-resources-than-my-shorthand">Better Resources than My Shorthand</h2>
+
+<ul>
+<li><a href="https://github.com/keras-team/keras/blob/master/examples/neural_style_transfer.py">Neural Style in Keras</a></li>
+<li><a href="https://medium.com/artists-and-machine-intelligence/neural-artistic-style-transfer-a-comprehensive-look-f54d8649c199">Intuition Post 1</a></li>
+<li><a href="https://medium.com/tensorflow/neural-style-transfer-creating-art-with-deep-learning-using-tf-keras-and-eager-execution-7d541ac31398">Intuition Post 2</a></li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

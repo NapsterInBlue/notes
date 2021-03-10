@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Column Objects" />
+<meta property="og:description" content="As mentioned at the end of the Anatomy of SparkSQL notebook, working with Column objects in SparkSQL is tricky enough to merit its own discussion
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Here, we&rsquo;re going to use the Iris Dataset with a bunch of NULL values peppered in.
+spark = pyspark.sql.SparkSession(sc) df = spark.read.csv(&#39;../data/somenulls.csv&#39;, header=True)df.show(5) &#43;----&#43;----&#43;---&#43;---&#43;----&#43; | a| b| c| d| e| &#43;----&#43;----&#43;---&#43;---&#43;----&#43; | 5.1| 3.5|1.4|0.2|null| | 4.9| 3|1." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/sparksql/columns/" />
+
+
+
+<meta property="article:published_time" content="2018-06-08T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-08T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Column Objects"/>
+<meta name="twitter:description" content="As mentioned at the end of the Anatomy of SparkSQL notebook, working with Column objects in SparkSQL is tricky enough to merit its own discussion
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Here, we&rsquo;re going to use the Iris Dataset with a bunch of NULL values peppered in.
+spark = pyspark.sql.SparkSession(sc) df = spark.read.csv(&#39;../data/somenulls.csv&#39;, header=True)df.show(5) &#43;----&#43;----&#43;---&#43;---&#43;----&#43; | a| b| c| d| e| &#43;----&#43;----&#43;---&#43;---&#43;----&#43; | 5.1| 3.5|1.4|0.2|null| | 4.9| 3|1."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Column Objects",
+  "url": "https://napsterinblue.github.io/notes/spark/sparksql/columns/",
+  "wordCount": "906",
+  "datePublished": "2018-06-08T00:00:00&#43;00:00",
+  "dateModified": "2018-06-08T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Column Objects</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Column Objects</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-08T00:00:00Z "> 08 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>As mentioned at the end of the <a href="https://napsterinblue.github.io/notes/spark/sparksql/overview/">Anatomy of SparkSQL</a> notebook, working with <code>Column</code> objects in <code>SparkSQL</code> is tricky enough to merit its own discussion</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span></code></pre></div>
+<p>Here, we&rsquo;re going to use the Iris Dataset with a bunch of NULL values peppered in.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="s1">&#39;../data/somenulls.csv&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+----+---+---+----+
+|   a|   b|  c|  d|   e|
++----+----+---+---+----+
+| 5.1| 3.5|1.4|0.2|null|
+| 4.9|   3|1.4|0.2|null|
+| 4.7|null|1.3|0.2|null|
+| 4.6| 3.1|1.5|0.2|   0|
+|null| 3.6|1.4|0.2|   0|
++----+----+---+---+----+
+only showing top 5 rows
+</code></pre>
+
+<h2 id="selection">Selection</h2>
+
+<p>Selecting a <code>Column</code> from a <code>DataFrame</code> is just using <code>dict</code>-syntax</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">a</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="n">a</span></code></pre></div>
+<pre><code>Column&lt;b'a'&gt;
+</code></pre>
+
+<p>And stuffing that inside of a <code>DataFrame.select()</code> call, followed by some retrieval function</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+
+|   a|
++----+
+| 5.1|
+| 4.9|
+| 4.7|
+| 4.6|
+|null|
++----+
+only showing top 5 rows
+</code></pre>
+
+<p>We could also use the <code>col</code> function to make an instance of the <code>Column</code> class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql.functions</span> <span class="kn">import</span> <span class="n">col</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">col</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Column&lt;b'a'&gt;
+</code></pre>
+
+<p>But this breaks quietly if you provide a name that doesn&rsquo;t exist</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">col</span><span class="p">(</span><span class="s1">&#39;nonsenseColumnName&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Column&lt;b'nonsenseColumnName'&gt;
+</code></pre>
+
+<p>until you go to pass it to the <code>DataFrame</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;nonsenseColumnName&#39;</span><span class="p">))</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;Doesn&#39;t exist, friendo&#34;</span><span class="p">)</span></code></pre></div>
+<pre><code>Doesn't exist, friendo
+</code></pre>
+
+<p>Anyhow, now we can do a few interesting things to modify our selection</p>
+
+<h3 id="aliasing-the-name">Aliasing the name</h3>
+
+<p>Maybe <code>a</code> isn&rsquo;t the most descriptive name we can come up with. The <code>alias</code> function is a pretty straight-forward fix.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">&#39;sepal_width&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Column&lt;b'a AS `sepal_width`'&gt;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">&#39;sepal_width&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-----------+
+|sepal_width|
++-----------+
+|        5.1|
+|        4.9|
+|        4.7|
+|        4.6|
+|       null|
++-----------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="transformations">Transformations</h3>
+
+<p>Just like <code>pandas.Series</code> operations, you can broadcast operations across the whole <code>Column</code> object. Like checking if a value is equal to zero.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">a</span> <span class="o">==</span> <span class="mi">0</span></code></pre></div>
+<pre><code>Column&lt;b'(a = 0)'&gt;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-------+
+|(a = 0)|
++-------+
+|  false|
+|  false|
+|  false|
+|  false|
+|   null|
++-------+
+only showing top 5 rows
+</code></pre>
+
+<p>Combining this with <code>alias</code> makes for a neater-named column</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">a</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s1">&#39;aIsZero&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-------+
+|aIsZero|
++-------+
+|  false|
+|  false|
+|  false|
+|  false|
+|   null|
++-------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="change-the-type">Change the Type</h3>
+
+<p>Currently, <code>a</code> is of type <code>string</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></code></pre></div>
+<pre><code>('a', 'string')
+</code></pre>
+
+<p>So if we were trying to scale the numbers by some arbitrary factor, <code>100</code>. Spark just figures out what to do.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---------+
+|(a / 100)|
++---------+
+|    0.051|
+|    0.049|
+|    0.047|
+|    0.046|
+|     null|
++---------+
+only showing top 5 rows
+</code></pre>
+
+<p><strong>BUT ASSUMING IT DIDN&rsquo;T</strong>, we could <code>cast</code> the column to an appropriate datatype.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span> <span class="n">FloatType</span>
+
+<span class="n">floatCol</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">FloatType</span><span class="p">())</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">floatCol</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+------------------------+
+|(CAST(a AS FLOAT) / 100)|
++------------------------+
+|    0.050999999046325684|
+|    0.049000000953674315|
+|     0.04699999809265137|
+|    0.045999999046325686|
+|                    null|
++------------------------+
+only showing top 5 rows
+</code></pre>
+
+<p>(Nevermind the fact that this is a data-ingestion problem fixed by passing the <code>inferSchema=True</code> argument at the first read)</p>
+
+<h2 id="sorting">Sorting</h2>
+
+<p>First/Last <code>n</code> records are commonplace in data analysis. The syntax to do that is a bit tricky.</p>
+
+<p>But before I do anything, I&rsquo;m going to drop all NULL records from our <code>DataFrame</code>, because the sort operation has no idea what to do about those values.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|4.6|3.1|1.5|0.2|  0|
+|5.4|3.9|1.7|0.4|  0|
+|5.8|  4|1.2|0.2|  0|
+|5.4|3.9|1.3|0.4|  0|
+|5.7|3.8|1.7|0.3|  0|
++---+---+---+---+---+
+only showing top 5 rows
+</code></pre>
+
+<p>First, we need to use the <code>Column</code> function <code>asc</code> or <code>desc</code> on a particular column to dictate our sort order.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sort_a_asc</span> <span class="o">=</span> <span class="n">noNulls</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">asc</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sort_a_desc</span> <span class="o">=</span> <span class="n">noNulls</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="p">()</span></code></pre></div>
+<p>Which just returns a column</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">sort_a_asc</span><span class="p">)</span></code></pre></div>
+<pre><code>pyspark.sql.column.Column
+</code></pre>
+
+<p>Then we do a regular <code>DataFrame</code> select, with an <code>orderBy</code> call chained near the end, passing in our sorted column, and the table <code>Row</code>s adjust accordingly.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">sort_a_asc</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|4.4|  3|1.3|0.2|  0|
+|4.5|2.3|1.3|0.3|  0|
+|4.6|3.1|1.5|0.2|  0|
+|4.6|3.6|  1|0.2|  0|
+|4.7|3.2|1.6|0.2|  0|
++---+---+---+---+---+
+only showing top 5 rows
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">sort_a_desc</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|7.7|2.6|6.9|2.3|  2|
+|7.7|3.8|6.7|2.2|  2|
+|7.7|  3|6.1|2.3|  2|
+|7.4|2.8|6.1|1.9|  2|
+|7.3|2.9|6.3|1.8|  2|
++---+---+---+---+---+
+only showing top 5 rows
+</code></pre>
+
+<p>We can also chain multiple sort conditions together by passing additional <code>Column</code>s to the <code>orderBy</code> method.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sort_b_desc</span> <span class="o">=</span> <span class="n">noNulls</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="p">()</span></code></pre></div>
+<p>Notice how the first 3 rows shuffle</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">sort_a_desc</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|7.7|2.6|6.9|2.3|  2|
+|7.7|3.8|6.7|2.2|  2|
+|7.7|  3|6.1|2.3|  2|
+|7.4|2.8|6.1|1.9|  2|
+|7.3|2.9|6.3|1.8|  2|
++---+---+---+---+---+
+only showing top 5 rows
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">noNulls</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">sort_a_desc</span><span class="p">,</span> <span class="n">sort_b_desc</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|7.7|3.8|6.7|2.2|  2|
+|7.7|  3|6.1|2.3|  2|
+|7.7|2.6|6.9|2.3|  2|
+|7.4|2.8|6.1|1.9|  2|
+|7.3|2.9|6.3|1.8|  2|
++---+---+---+---+---+
+only showing top 5 rows
+</code></pre>
+
+<h2 id="conditional-logic">Conditional Logic</h2>
+
+<p>Like above, we can broadcast boolean checks over our Columns to get a vector of True/False values</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">a_sevenPointSeven</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">7.7</span></code></pre></div>
+<p>Note, however, that <strong>this preserves NULLs</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">a_sevenPointSeven</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+---------+
+|   a|(a = 7.7)|
++----+---------+
+| 5.1|    false|
+| 4.9|    false|
+| 4.7|    false|
+| 4.6|    false|
+|null|     null|
++----+---------+
+only showing top 5 rows
+</code></pre>
+
+<p>And we can <code>filter</code> down our <code>DataFrame</code> based on the <code>True/False</code> values of the <code>Column</code> we created.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">a_sevenPointSeven</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>3
+</code></pre>
+
+<p><strong>AND HOT DAMN</strong> the <code>~</code> operator works here, too!</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="o">~</span><span class="n">a_sevenPointSeven</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>118
+</code></pre>
+
+<p>We can get even fancier with the <code>between</code> statement</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">b_threeish</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">between</span><span class="p">(</span><span class="mf">2.8</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">b_threeish</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+---------------------------+
+|   b|((b &gt;= 2.8) AND (b &lt;= 3.2))|
++----+---------------------------+
+| 3.5|                      false|
+|   3|                       true|
+|null|                       null|
+| 3.1|                       true|
+| 3.6|                      false|
++----+---------------------------+
+only showing top 5 rows
+</code></pre>
+
+<p>Or just ridiculous</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">c_secondDigit3</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;3&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">c_secondDigit3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+----------------------------------------+
+|  c|(substring(CAST(c AS STRING), 3, 1) = 3)|
++---+----------------------------------------+
+|1.4|                                   false|
+|1.4|                                   false|
+|1.3|                                    true|
+|1.5|                                   false|
+|1.4|                                   false|
++---+----------------------------------------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="combining-conditions">Combining Conditions</h3>
+
+<p>Works just like <code>pandas</code> :)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">b_threeish</span> <span class="o">&amp;</span> <span class="n">a_sevenPointSeven</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+---+---+---+---+---+
+|  a|  b|  c|  d|  e|
++---+---+---+---+---+
+|7.7|  3|6.1|2.3|  2|
++---+---+---+---+---+
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

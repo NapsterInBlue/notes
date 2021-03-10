@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Doing Basic SQL Things" />
+<meta property="og:description" content="It&rsquo;s called Spark SQL for a reason, right? How can we utilize Spark to do similar actions to things we&rsquo;re familiar when working in SQL?
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() If we want to interface with the Spark SQL API, we have to spin up a SparkSession object in our current SparkContext
+spark = pyspark.sql.SparkSession(sc) Our Data Say we have some simple structured data representing calls within the UK (curated by the authors of Learning Apache Spark)" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/sparksql/sql_basics/" />
+
+
+
+<meta property="article:published_time" content="2018-06-06T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-06T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Doing Basic SQL Things"/>
+<meta name="twitter:description" content="It&rsquo;s called Spark SQL for a reason, right? How can we utilize Spark to do similar actions to things we&rsquo;re familiar when working in SQL?
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() If we want to interface with the Spark SQL API, we have to spin up a SparkSession object in our current SparkContext
+spark = pyspark.sql.SparkSession(sc) Our Data Say we have some simple structured data representing calls within the UK (curated by the authors of Learning Apache Spark)"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Doing Basic SQL Things",
+  "url": "https://napsterinblue.github.io/notes/spark/sparksql/sql_basics/",
+  "wordCount": "962",
+  "datePublished": "2018-06-06T00:00:00&#43;00:00",
+  "dateModified": "2018-06-06T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Doing Basic SQL Things</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Doing Basic SQL Things</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-06T00:00:00Z "> 06 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>It&rsquo;s called Spark SQL for a reason, right? How can we utilize Spark to do similar actions to things we&rsquo;re familiar when working in SQL?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span></code></pre></div>
+<p>If we want to interface with the Spark SQL API, we have to spin up a <code>SparkSession</code> object in our current <code>SparkContext</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span></code></pre></div>
+<h2 id="our-data">Our Data</h2>
+
+<p>Say we have some simple structured data representing calls within the UK (curated by the authors of Learning Apache Spark)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="s1">&#39;../data/callDetails.json&#39;</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span></code></pre></div>
+<pre><code>pyspark.sql.dataframe.DataFrame
+</code></pre>
+
+<p>And because it&rsquo;s basically a table, we can neatly take a look at the first handful of records with <code>show</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+----------+-------------------+--------------+--------------+--------------+--------------+
+|CallCharge|           DateTime|          Dest|        Origin|OriginatingNum|TerminatingNum|
++----------+-------------------+--------------+--------------+--------------+--------------+
+|       549|02/11/2016 01:51:41|    Birmingham|        London|     797308107|     797131221|
+|      2645|05/02/2016 01:26:54|        London|    Manchester|     777121117|     777440392|
+|      1233|01/12/2016 21:12:54|    Manchester|      Victoria|     797009202|     784243404|
+|      2651|07/11/2016 01:07:34|      Victoria|    Twickenham|     777557705|     798420467|
+|      3162|02/11/2016 22:22:26|      Scotland|         Leeds|     785434022|     779086250|
+|      2246|05/01/2016 20:12:35|Virginia Water|      Bradford|     779716202|     795137353|
+|       571|04/12/2016 23:53:52|         Ascot|     Yorkshire|     775490102|     775019605|
+|      3291|06/11/2016 20:31:49|     Bracknell|    Birmingham|     787581376|     797043387|
+|      2270|03/12/2016 12:15:17|      Bradford|     Coventary|     789231956|     787649491|
+|      3420|06/02/2016 20:57:44|     Yorkshire|         Wales|     785969980|     789993090|
+|      3084|02/01/2016 02:44:27|    Birmingham|      Scotland|     797662091|     777765510|
+|      3037|09/01/2016 00:48:43|        Marlow|Virginia Water|     784036802|     798095485|
+|      3011|08/11/2016 20:19:19|   Sunningdale|         Ascot|     785160169|     797922170|
+|      1018|05/01/2016 11:24:28|         Lords|     Bracknell|     789519210|     774080821|
+|       771|02/12/2016 02:07:09|          Oval|        Marlow|     775617249|     786549418|
+|      3585|07/11/2016 03:43:23|     Coventary|   Sunningdale|     797932062|     788292522|
+|       908|06/01/2016 23:08:06|         Wales|         Lords|     777561966|     788455450|
+|        95|04/12/2016 24:17:54|      Scotland|          Oval|     777508024|     789954417|
+|      2754|03/11/2016 00:45:24|    Birmingham|    Birmingham|     777087537|     778710691|
+|      1327|03/01/2016 03:11:03|     Coventary|        London|     774688108|     797626213|
++----------+-------------------+--------------+--------------+--------------+--------------+
+only showing top 20 rows
+</code></pre>
+
+<p>Which is much more helpful than the default <code>__repr__</code> method, which basically just shows the schema.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span></code></pre></div>
+<pre><code>DataFrame[CallCharge: bigint, DateTime: string, Dest: string, Origin: string, OriginatingNum: bigint, TerminatingNum: bigint]
+</code></pre>
+
+<h2 id="familiar-sql-operations">Familiar SQL Operations</h2>
+
+<h3 id="shape">Shape</h3>
+
+<p>The <code>DataFrame</code> object doesn&rsquo;t have a <code>len()</code> representation, so when we want to determine the number of rows, we&rsquo;ll use the <code>count</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>100
+</code></pre>
+
+<p>It&rsquo;s a bit trickier to get at the width of our data. We&rsquo;re going to use <code>columns</code>, which returns a list, and then use <code>len()</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span></code></pre></div>
+<pre><code>6
+</code></pre>
+
+<h3 id="filtering-down-data">Filtering Down Data</h3>
+
+<p>We know the columns of our dataset and can pass SQL-like strings to the <code>filter</code> method to pare our data down.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="s2">&#34;Origin == &#39;London&#39;&#34;</span><span class="p">)</span></code></pre></div>
+<pre><code>DataFrame[CallCharge: bigint, DateTime: string, Dest: string, Origin: string, OriginatingNum: bigint, TerminatingNum: bigint]
+</code></pre>
+
+<p>Notice that this output is identical to what happened when we just called <code>calls</code> above. That&rsquo;s because this also returns a <code>DataFrame</code> object.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">calls</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="s2">&#34;Origin == &#39;London&#39;&#34;</span><span class="p">))</span></code></pre></div>
+<pre><code>pyspark.sql.dataframe.DataFrame
+</code></pre>
+
+<p>However, with much fewer records.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>100
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="s2">&#34;Origin == &#39;London&#39;&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>5
+</code></pre>
+
+<p>We can also chain together various <code>filter</code> calls to continue zeroing in on our intended population.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="n">calls</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="s2">&#34;Origin == &#39;London&#39;&#34;</span><span class="p">)</span>
+      <span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="s2">&#34;Dest == &#39;Manchester&#39;&#34;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">show</span><span class="p">())</span></code></pre></div>
+<pre><code>+----------+-------------------+----------+------+--------------+--------------+
+|CallCharge|           DateTime|      Dest|Origin|OriginatingNum|TerminatingNum|
++----------+-------------------+----------+------+--------------+--------------+
+|      2940|04/01/2016 01:19:28|Manchester|London|     775584064|     795017614|
++----------+-------------------+----------+------+--------------+--------------+
+</code></pre>
+
+<h3 id="specify-columns">Specify Columns</h3>
+
+<p>In a wider dataset, we might not want to select every single column of data. We have the option of either <em>including</em> what we want with <code>select</code> or getting everything and <em>excluding</em> with <code>drop</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">,</span> <span class="s1">&#39;DateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;Dest&#39;</span><span class="p">,</span> <span class="s1">&#39;Origin&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----------+-------------------+----------+----------+
+|CallCharge|           DateTime|      Dest|    Origin|
++----------+-------------------+----------+----------+
+|       549|02/11/2016 01:51:41|Birmingham|    London|
+|      2645|05/02/2016 01:26:54|    London|Manchester|
+|      1233|01/12/2016 21:12:54|Manchester|  Victoria|
+|      2651|07/11/2016 01:07:34|  Victoria|Twickenham|
+|      3162|02/11/2016 22:22:26|  Scotland|     Leeds|
++----------+-------------------+----------+----------+
+only showing top 5 rows
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;OriginatingNum&#39;</span><span class="p">,</span> <span class="s1">&#39;TerminatingNum&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----------+-------------------+----------+----------+
+|CallCharge|           DateTime|      Dest|    Origin|
++----------+-------------------+----------+----------+
+|       549|02/11/2016 01:51:41|Birmingham|    London|
+|      2645|05/02/2016 01:26:54|    London|Manchester|
+|      1233|01/12/2016 21:12:54|Manchester|  Victoria|
+|      2651|07/11/2016 01:07:34|  Victoria|Twickenham|
+|      3162|02/11/2016 22:22:26|  Scotland|     Leeds|
++----------+-------------------+----------+----------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="column-operations">Column Operations</h3>
+
+<p>We can do column operations using <code>withColumn</code>.</p>
+
+<p>If we specify the first argument with a name that doesn&rsquo;t exist, it will append it to the end of the <code>DataFrame</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;FreeCalls&#39;</span><span class="p">,</span> <span class="n">calls</span><span class="p">[</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----------+-------------------+----------+----------+--------------+--------------+---------+
+|CallCharge|           DateTime|      Dest|    Origin|OriginatingNum|TerminatingNum|FreeCalls|
++----------+-------------------+----------+----------+--------------+--------------+---------+
+|       549|02/11/2016 01:51:41|Birmingham|    London|     797308107|     797131221|        0|
+|      2645|05/02/2016 01:26:54|    London|Manchester|     777121117|     777440392|        0|
+|      1233|01/12/2016 21:12:54|Manchester|  Victoria|     797009202|     784243404|        0|
+|      2651|07/11/2016 01:07:34|  Victoria|Twickenham|     777557705|     798420467|        0|
+|      3162|02/11/2016 22:22:26|  Scotland|     Leeds|     785434022|     779086250|        0|
++----------+-------------------+----------+----------+--------------+--------------+---------+
+only showing top 5 rows
+</code></pre>
+
+<p>And if it does exist, it will overwrite whatever values are there.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">,</span> <span class="n">calls</span><span class="p">[</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----------+-------------------+----------+----------+--------------+--------------+
+|CallCharge|           DateTime|      Dest|    Origin|OriginatingNum|TerminatingNum|
++----------+-------------------+----------+----------+--------------+--------------+
+|         0|02/11/2016 01:51:41|Birmingham|    London|     797308107|     797131221|
+|         0|05/02/2016 01:26:54|    London|Manchester|     777121117|     777440392|
+|         0|01/12/2016 21:12:54|Manchester|  Victoria|     797009202|     784243404|
+|         0|07/11/2016 01:07:34|  Victoria|Twickenham|     777557705|     798420467|
+|         0|02/11/2016 22:22:26|  Scotland|     Leeds|     785434022|     779086250|
++----------+-------------------+----------+----------+--------------+--------------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="replacing-columns">Replacing Columns</h3>
+
+<p>So using a combination of the last two headers, we can develop some logic to overwrite existing columns in both name and the data they contain.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="n">calls</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">,</span> <span class="n">calls</span><span class="p">[</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">withColumnRenamed</span><span class="p">(</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">,</span> <span class="s1">&#39;FreeCall&#39;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span></code></pre></div>
+<pre><code>+--------+-------------------+----------+----------+--------------+--------------+
+|FreeCall|           DateTime|      Dest|    Origin|OriginatingNum|TerminatingNum|
++--------+-------------------+----------+----------+--------------+--------------+
+|       0|02/11/2016 01:51:41|Birmingham|    London|     797308107|     797131221|
+|       0|05/02/2016 01:26:54|    London|Manchester|     777121117|     777440392|
+|       0|01/12/2016 21:12:54|Manchester|  Victoria|     797009202|     784243404|
+|       0|07/11/2016 01:07:34|  Victoria|Twickenham|     777557705|     798420467|
+|       0|02/11/2016 22:22:26|  Scotland|     Leeds|     785434022|     779086250|
++--------+-------------------+----------+----------+--------------+--------------+
+only showing top 5 rows
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="n">calls</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;FreeCall&#39;</span><span class="p">,</span> <span class="n">calls</span><span class="p">[</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span></code></pre></div>
+<pre><code>+-------------------+----------+----------+--------------+--------------+--------+
+|           DateTime|      Dest|    Origin|OriginatingNum|TerminatingNum|FreeCall|
++-------------------+----------+----------+--------------+--------------+--------+
+|02/11/2016 01:51:41|Birmingham|    London|     797308107|     797131221|       0|
+|05/02/2016 01:26:54|    London|Manchester|     777121117|     777440392|       0|
+|01/12/2016 21:12:54|Manchester|  Victoria|     797009202|     784243404|       0|
+|07/11/2016 01:07:34|  Victoria|Twickenham|     777557705|     798420467|       0|
+|02/11/2016 22:22:26|  Scotland|     Leeds|     785434022|     779086250|       0|
++-------------------+----------+----------+--------------+--------------+--------+
+only showing top 5 rows
+</code></pre>
+
+<h3 id="aggregate-functions">Aggregate Functions</h3>
+
+<p>More on this in its own notebook, but you can also use <code>agg</code> and a column/function dictionary to get aggregate information</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;CallCharge&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;DateTime&#39;</span><span class="p">:</span> <span class="s1">&#39;min&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+---------------+-------------------+
+|sum(CallCharge)|      min(DateTime)|
++---------------+-------------------+
+|         187852|01/02/2016 03:07:33|
++---------------+-------------------+
+</code></pre>
+
+<h2 id="sql-fying-it">SQL-fying it</h2>
+
+<p>Or we could just go, wholesale, back to writing SQL after stuffing our <code>DataFrame</code> into a virtual temp table using <code>createOrReplaceTempView</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">calls</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="s1">&#39;calldetails&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">SELECT
+</span><span class="s1">    Dest,
+</span><span class="s1">    count(*) AS callCnt
+</span><span class="s1">    
+</span><span class="s1">    FROM   calldetails
+</span><span class="s1">    GROUP BY Dest
+</span><span class="s1">    ORDER BY callCnt DESC
+</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+--------------+-------+
+|          Dest|callCnt|
++--------------+-------+
+|    Birmingham|     10|
+|     Coventary|      8|
+|         Wales|      8|
+|         Ascot|      8|
+|     Bracknell|      8|
+|      Scotland|      8|
+|Virginia Water|      7|
+|     Yorkshire|      7|
+|      Bradford|      7|
+|        Marlow|      4|
+|         Lords|      4|
+|          Oval|      4|
+|   Sunningdale|      4|
+|      Victoria|      3|
+|    Manchester|      3|
+|         Leeds|      3|
+|        London|      3|
+|    Twickenham|      1|
++--------------+-------+
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Creating Pair RDDs" />
+<meta property="og:description" content="import findspark findspark.init() import pyspark sc = pyspark.SparkContext() You&rsquo;re not always going to get your data with a nice, tidy key/value schema. In fact, figuring out how to go from flat data to something that you can mine for insight usually involves some creativity in expressing your data in pairs.
+Another Damn Wordcount Example Imagine some wacky hypothetical that I&rsquo;ve been listening to a song with the following lyrics on repeat." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/basics/creating_pair_rdds/" />
+
+
+
+<meta property="article:published_time" content="2018-06-04T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-04T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating Pair RDDs"/>
+<meta name="twitter:description" content="import findspark findspark.init() import pyspark sc = pyspark.SparkContext() You&rsquo;re not always going to get your data with a nice, tidy key/value schema. In fact, figuring out how to go from flat data to something that you can mine for insight usually involves some creativity in expressing your data in pairs.
+Another Damn Wordcount Example Imagine some wacky hypothetical that I&rsquo;ve been listening to a song with the following lyrics on repeat."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Creating Pair RDDs",
+  "url": "https://napsterinblue.github.io/notes/spark/basics/creating_pair_rdds/",
+  "wordCount": "2257",
+  "datePublished": "2018-06-04T00:00:00&#43;00:00",
+  "dateModified": "2018-06-04T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Creating Pair RDDs</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Creating Pair RDDs</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-04T00:00:00Z "> 04 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span></code></pre></div>
+<p>You&rsquo;re not always going to get your data with a nice, tidy key/value schema. In fact, figuring out how to go from flat data to something that you can mine for insight usually involves some creativity in expressing your data in pairs.</p>
+
+<h2 id="another-damn-wordcount-example">Another Damn Wordcount Example</h2>
+
+<p>Imagine some wacky hypothetical that I&rsquo;ve been listening to a song with the following lyrics on repeat. And I find myself curious what the most popular words of the song are.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;..\data\hbfs.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]))</span></code></pre></div>
+<pre><code>Work it Make it Do it Make us Harder Better Faster Stronger More than Hour Our Never Ever After Work is Over Work it Make it Do it Make us Harder Better Faster Stronger Work it harder Make it better Do it faster Makes us stronger More than ever Hour after Our work is Never over Work it harder Make it better Do it faster Makes us stronger Work it harder Make it better Do it faster Makes us stronger Work it harder Make it better Do it faster Makes us stronger Work it harder Make it better Do it faster Makes us stronger Work it harder Make it better Do it faster Makes us stronger Work it harder Make it better Do it faster Makes us stronger Work it harder make it Do it faster makes us More than ever hour Our work is Work it harder make it Do it faster makes us More than ever hour Our work is never over Work it harder Make it better Do it faster Makes us stronger Work it harder make it Do it faster makes us More than ever hour Our work is Work it harder make it Do it faster makes us More than ever hour Our work is never over Work it harder Make it better Do it faster Makes us stronger Work it harder Do it faster More than ever Our work is never over Work it harder Make it better Do it faster Makes us stronger
+</code></pre>
+
+<p>Supposing I can&rsquo;t just load them into vanilla Python, I opt to load them into PySpark instead, using <code>flatMap</code> to ignore linebreaks.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">hbfs</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="s1">&#39;../data/hbfs.txt&#39;</span><span class="p">)</span>
+
+<span class="n">words</span> <span class="o">=</span> <span class="n">hbfs</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="n">words</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>['Work', 'it', 'Make', 'it', 'Do', 'it', 'Make', 'us', 'Harder', 'Better', 'Faster', 'Stronger', 'More', 'than', 'Hour', 'Our', 'Never', 'Ever', 'After', 'Work', 'is', 'Over', 'Work', 'it', 'Make', 'it', 'Do', 'it', 'Make', 'us', 'Harder', 'Better', 'Faster', 'Stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'More', 'than', 'ever', 'Hour', 'after', 'Our', 'work', 'is', 'Never', 'over', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'make', 'it', 'Do', 'it', 'faster', 'makes', 'us', 'More', 'than', 'ever', 'hour', 'Our', 'work', 'is', 'Work', 'it', 'harder', 'make', 'it', 'Do', 'it', 'faster', 'makes', 'us', 'More', 'than', 'ever', 'hour', 'Our', 'work', 'is', 'never', 'over', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'make', 'it', 'Do', 'it', 'faster', 'makes', 'us', 'More', 'than', 'ever', 'hour', 'Our', 'work', 'is', 'Work', 'it', 'harder', 'make', 'it', 'Do', 'it', 'faster', 'makes', 'us', 'More', 'than', 'ever', 'hour', 'Our', 'work', 'is', 'never', 'over', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger', 'Work', 'it', 'harder', 'Do', 'it', 'faster', 'More', 'than', 'ever', 'Our', 'work', 'is', 'never', 'over', 'Work', 'it', 'harder', 'Make', 'it', 'better', 'Do', 'it', 'faster', 'Makes', 'us', 'stronger']
+</code></pre>
+
+<h3 id="the-trick">The Trick</h3>
+
+<p>We want to perform a count-by-key operation, where the keys are each unique word. And what&rsquo;s a count of something, but a sum of <code>1</code>&rsquo;s for each observation? That&rsquo;s precisely what we&rsquo;ll do.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pairs</span> <span class="o">=</span> <span class="n">words</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('Work', 1), ('it', 1), ('Make', 1), ('it', 1), ('Do', 1), ('it', 1), ('Make', 1), ('us', 1), ('Harder', 1), ('Better', 1), ('Faster', 1), ('Stronger', 1), ('More', 1), ('than', 1), ('Hour', 1), ('Our', 1), ('Never', 1), ('Ever', 1), ('After', 1), ('Work', 1), ('is', 1), ('Over', 1), ('Work', 1), ('it', 1), ('Make', 1), ('it', 1), ('Do', 1), ('it', 1), ('Make', 1), ('us', 1), ('Harder', 1), ('Better', 1), ('Faster', 1), ('Stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('More', 1), ('than', 1), ('ever', 1), ('Hour', 1), ('after', 1), ('Our', 1), ('work', 1), ('is', 1), ('Never', 1), ('over', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('Do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('More', 1), ('than', 1), ('ever', 1), ('hour', 1), ('Our', 1), ('work', 1), ('is', 1), ('Work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('Do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('More', 1), ('than', 1), ('ever', 1), ('hour', 1), ('Our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('Do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('More', 1), ('than', 1), ('ever', 1), ('hour', 1), ('Our', 1), ('work', 1), ('is', 1), ('Work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('Do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('More', 1), ('than', 1), ('ever', 1), ('hour', 1), ('Our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Do', 1), ('it', 1), ('faster', 1), ('More', 1), ('than', 1), ('ever', 1), ('Our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('Work', 1), ('it', 1), ('harder', 1), ('Make', 1), ('it', 1), ('better', 1), ('Do', 1), ('it', 1), ('faster', 1), ('Makes', 1), ('us', 1), ('stronger', 1)]
+</code></pre>
+
+<p>But on inspection, it looks like we&rsquo;ve got mixed-cases for a few of our words. For instance, faster vs Faster</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;faster&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1), ('faster', 1)]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Faster&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('Faster', 1), ('Faster', 1)]
+</code></pre>
+
+<p>So we&rsquo;ll just revise our definition of <code>x</code> in the pair to be the lower-case version of each word.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pairs</span> <span class="o">=</span> <span class="n">words</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="mi">1</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('work', 1), ('it', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('make', 1), ('us', 1), ('harder', 1), ('better', 1), ('faster', 1), ('stronger', 1), ('more', 1), ('than', 1), ('hour', 1), ('our', 1), ('never', 1), ('ever', 1), ('after', 1), ('work', 1), ('is', 1), ('over', 1), ('work', 1), ('it', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('make', 1), ('us', 1), ('harder', 1), ('better', 1), ('faster', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('more', 1), ('than', 1), ('ever', 1), ('hour', 1), ('after', 1), ('our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('more', 1), ('than', 1), ('ever', 1), ('hour', 1), ('our', 1), ('work', 1), ('is', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('more', 1), ('than', 1), ('ever', 1), ('hour', 1), ('our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('more', 1), ('than', 1), ('ever', 1), ('hour', 1), ('our', 1), ('work', 1), ('is', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('more', 1), ('than', 1), ('ever', 1), ('hour', 1), ('our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1), ('work', 1), ('it', 1), ('harder', 1), ('do', 1), ('it', 1), ('faster', 1), ('more', 1), ('than', 1), ('ever', 1), ('our', 1), ('work', 1), ('is', 1), ('never', 1), ('over', 1), ('work', 1), ('it', 1), ('harder', 1), ('make', 1), ('it', 1), ('better', 1), ('do', 1), ('it', 1), ('faster', 1), ('makes', 1), ('us', 1), ('stronger', 1)]
+</code></pre>
+
+<h3 id="bring-it-home">Bring it Home</h3>
+
+<p>Our goal was to count things up by key, so let&rsquo;s <code>reduceByKey</code> with a summing operation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pairs</span><span class="o">.</span><span class="n">reduceByKey</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>[('work', 24),
+ ('make', 18),
+ ('do', 17),
+ ('us', 16),
+ ('stronger', 12),
+ ('more', 7),
+ ('than', 7),
+ ('never', 5),
+ ('ever', 7),
+ ('after', 2),
+ ('is', 7),
+ ('it', 50),
+ ('harder', 17),
+ ('better', 12),
+ ('faster', 17),
+ ('hour', 6),
+ ('our', 7),
+ ('over', 5),
+ ('makes', 14)]
+</code></pre>
+
+<p>Ah, but that&rsquo;s in an unhelpful order.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">reduceByKey</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">sortBy</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('it', 50),
+ ('work', 24),
+ ('make', 18),
+ ('do', 17),
+ ('harder', 17),
+ ('faster', 17),
+ ('us', 16),
+ ('makes', 14),
+ ('stronger', 12),
+ ('better', 12),
+ ('more', 7),
+ ('than', 7),
+ ('ever', 7),
+ ('is', 7),
+ ('our', 7),
+ ('hour', 6),
+ ('never', 5),
+ ('over', 5),
+ ('after', 2)]
+</code></pre>
+
+<p>Lastly, let&rsquo;s remove some of those filler words by updating our definition for <code>pairs</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pairs</span> <span class="o">=</span> <span class="p">(</span><span class="n">words</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span>
+              <span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="n">pairs</span><span class="o">.</span><span class="n">reduceByKey</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">sortBy</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>[('work', 24),
+ ('make', 18),
+ ('harder', 17),
+ ('faster', 17),
+ ('makes', 14),
+ ('stronger', 12),
+ ('better', 12),
+ ('more', 7),
+ ('than', 7),
+ ('ever', 7),
+ ('our', 7),
+ ('hour', 6),
+ ('never', 5),
+ ('over', 5),
+ ('after', 2)]
+</code></pre>
+
+<h2 id="now-i-m-just-curious">Now I&rsquo;m Just Curious</h2>
+
+<p>The title of the song is <em>Harder, Better, Faster, Stronger</em>, but they appear a disproportionate number of times.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">titular</span> <span class="o">=</span> <span class="n">hbfs</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;harder&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
+                                 <span class="s1">&#39;better&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
+                                 <span class="s1">&#39;faster&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
+                                 <span class="s1">&#39;stronger&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">titular</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>['Harder', 'Better', 'Faster', 'Stronger', 'Harder', 'Better', 'Faster', 'Stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder make it', 'Do it faster makes us', 'Work it harder make it', 'Do it faster makes us', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder make it', 'Do it faster makes us', 'Work it harder make it', 'Do it faster makes us', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger', 'Work it harder', 'Do it faster', 'Work it harder', 'Make it better', 'Do it faster', 'Makes us stronger']
+</code></pre>
+
+<p>Well now that we&rsquo;ve basically copied the whole damn song, lol&hellip;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">phrases</span> <span class="o">=</span> <span class="n">titular</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">phrases</span><span class="o">.</span><span class="n">reduceByKey</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>[('Harder', 2),
+ ('Better', 2),
+ ('Do it faster', 11),
+ ('Work it harder make it', 4),
+ ('Do it faster makes us', 4),
+ ('Faster', 2),
+ ('Stronger', 2),
+ ('Work it harder', 11),
+ ('Make it better', 10),
+ ('Makes us stronger', 10)]
+</code></pre>
+
+<p>There I go value-counting again. But this time at the phrase level&ndash; not the word.</p>
+
+<p>And hey, it looks like the phrases <code>Work it harder make it</code> and <code>Do it faster makes us</code> are what&rsquo;s causing the imbalance.</p>
+
+<p>Neat!</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

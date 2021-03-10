@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Bayesian Updates and the Dice Problem" />
+<meta property="og:description" content="An interesting application of our Bayesian Approach, the author of Think Bayes introduces a toy problem where we&rsquo;ve got a bag of D&amp;D dice, randomly select a die and roll it. From here, we want to know the probability that the die was a d4, d6, ..., d20.
+What makes this problem novel/interesting is how repeated rolls of the selected die allow us to update our estimation.
+Rolled a 6 In the simple case, imagine that we pulled out a die and rolled a 6." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/bayes/dice/" />
+
+
+
+<meta property="article:published_time" content="2020-04-27T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-27T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bayesian Updates and the Dice Problem"/>
+<meta name="twitter:description" content="An interesting application of our Bayesian Approach, the author of Think Bayes introduces a toy problem where we&rsquo;ve got a bag of D&amp;D dice, randomly select a die and roll it. From here, we want to know the probability that the die was a d4, d6, ..., d20.
+What makes this problem novel/interesting is how repeated rolls of the selected die allow us to update our estimation.
+Rolled a 6 In the simple case, imagine that we pulled out a die and rolled a 6."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bayesian Updates and the Dice Problem",
+  "url": "https://napsterinblue.github.io/notes/stats/bayes/dice/",
+  "wordCount": "621",
+  "datePublished": "2020-04-27T00:00:00&#43;00:00",
+  "dateModified": "2020-04-27T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Bayesian Updates and the Dice Problem</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Bayesian Updates and the Dice Problem</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-27T00:00:00Z "> 27 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>An interesting application of our Bayesian Approach, the author of Think Bayes introduces a toy problem where we&rsquo;ve got a bag of D&amp;D dice, randomly select a die and roll it. From here, we want to know the probability that the die was a <code>d4, d6, ..., d20</code>.</p>
+
+<p>What makes this problem novel/interesting is how repeated rolls of the selected die allow us to update our estimation.</p>
+
+<h3 id="rolled-a-6">Rolled a 6</h3>
+
+<p>In the simple case, imagine that we pulled out a die and rolled a 6.</p>
+
+<p>Let&rsquo;s construct our table as before.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/die_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="dice_2_0.png" alt="png" /></p>
+
+<p>The hypothesis is simply all of the &ldquo;d<code>N</code>&rdquo; values and our prior, <code>P(Hyp)</code> is simply a uniform distribution of <code>1/n</code> where <code>n</code> is the number of different possible dice.</p>
+
+<p>Then, filling in the value for our likelihoods, <code>P(Data | Hyp)</code>, is a matter of setting to <code>0</code> if the die can&rsquo;t attain the number (as with the <code>d4</code>), or <code>1/faces</code>, per die.</p>
+
+<p>The last two columns are our usual plug-and-chug.</p>
+
+<p>Note that our most likely candidate is the <code>d6</code> at this point.</p>
+
+<h3 id="rolling-again-8">Rolling again, 8</h3>
+
+<p>Imagine now, that we re-reroll that die and get an 8. Not only does this rule out the possibility of it being a <code>d6</code>, it also <em>reinforces</em> whatever posterior distribution that we&rsquo;ve formed to this point.</p>
+
+<p>What the author shows computationally, but doesn&rsquo;t belabor, is that we essentially redo our table method, but crucially, <strong>using the Posterior Distribution of having rolled a 6, as our prior.</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/dice_6_then_8.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="dice_4_0.png" alt="png" /></p>
+
+<p>It shouldn&rsquo;t be a shocking characteristic, but perhaps merits mentioning that if we&rsquo;d instead rolled an 8 and then a 6, we&rsquo;d have the same posterior distribution for &ldquo;having rolled a 6 and an 8&rdquo;, regardless of the order</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/dice_8_then_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="dice_6_0.png" alt="png" /></p>
+
+<p>This is simply due to the Commutative property that we get through independence of the results.</p>
+
+<h3 id="rolling-again-13">Rolling again, 13</h3>
+
+<p>Continuing, we re-roll the die a third time and it shows 13. As you&rsquo;d expect, this excludes <code>d4, d6, d8, d10</code> and basically normalizes the probability of being <code>d12</code> or <code>d20</code> to sum to 1.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/dice_8_then_6_then_12.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="dice_8_0.png" alt="png" /></p>
+
+<h2 id="object-oriented">Object Oriented</h2>
+
+<p>By now, the &ldquo;Table method&rdquo; should be pretty straight-forward. The only trickiness lies in appropriate coding of the Likelihood column.</p>
+
+<p>To facilitate ease of computation and cut back on code reuse, the author builds out a <code>Suite</code> object to basically hold the contents of these tables. However, when he does it, he kind of dumps a bunch of code, scattered out over 15 or so pages&ndash; and never together. Reading examples is a mess without having the whole object in front of you (lots of references to object attributes, but without the <code>self.</code>, and vice-versa).</p>
+
+<p>Basically, the idea is:</p>
+
+<ul>
+<li>Instantiate a class with your priors</li>
+<li>Code up the Likelihood function</li>
+</ul>
+
+<p>Then the class gives you access to a useful <code>.Normalize()</code> method, which will scale your prior probabilities such that they add up to 1.</p>
+
+<p>Then we get access to an <code>.Update()</code> method, which takes in observed &ldquo;Data&rdquo;</p>
+
+<p>Like in the third column of our Table Method, the class looks up the Likelihood of seeing our Data, given our Hypothesis. But then under the hood, it uses these values to multiply by our Priors, and then call <code>.Normalize()</code> once more, essentially doing all of the last 3 columns in one shot.</p>
+
+<p>Once you get the hang of the design (and upgrade from Python 2&hellip;), the value of building out the <code>Suite</code> object becomes obvious when calling such code</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">dicebag</span> <span class="kn">import</span> <span class="n">DiceBag</span>
+
+<span class="n">bag</span> <span class="o">=</span> <span class="n">DiceBag</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">roll</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+    <span class="n">bag</span><span class="o">.</span><span class="n">Update</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span></code></pre></div>
+<p>and all of the posteriors are automatically carried forward as the next call&rsquo;s priors, or can be output after all of your rolls are complete to get your final conjoint posterior probabilities.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

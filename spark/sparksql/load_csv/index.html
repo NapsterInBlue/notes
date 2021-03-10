@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Loading a csv" />
+<meta property="og:description" content="The good majority of the data you work with when starting out with PySpark is saved in csv format. Getting it all under your fingers, however, is a bit tricker than you might expect if you, like me, find yourself coming from pandas.
+Prelims import findspark findspark.init() import pyspark sc = pyspark.SparkContext() spark = pyspark.sql.SparkSession(sc) Dataset is recycled from the Academy Award blogpost I did earlier this year.
+fpath = &#39;." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/sparksql/load_csv/" />
+
+
+
+<meta property="article:published_time" content="2018-06-06T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-06T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Loading a csv"/>
+<meta name="twitter:description" content="The good majority of the data you work with when starting out with PySpark is saved in csv format. Getting it all under your fingers, however, is a bit tricker than you might expect if you, like me, find yourself coming from pandas.
+Prelims import findspark findspark.init() import pyspark sc = pyspark.SparkContext() spark = pyspark.sql.SparkSession(sc) Dataset is recycled from the Academy Award blogpost I did earlier this year.
+fpath = &#39;."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Loading a csv",
+  "url": "https://napsterinblue.github.io/notes/spark/sparksql/load_csv/",
+  "wordCount": "727",
+  "datePublished": "2018-06-06T00:00:00&#43;00:00",
+  "dateModified": "2018-06-06T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Loading a csv</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Loading a csv</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-06T00:00:00Z "> 06 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>The good majority of the data you work with when starting out with PySpark is saved in <code>csv</code> format. Getting it all under your fingers, however, is a bit tricker than you might expect if you, like me, find yourself coming from <code>pandas</code>.</p>
+
+<h2 id="prelims">Prelims</h2>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span></code></pre></div>
+<p>Dataset is recycled from <a href="https://napsterinblue.github.io/blog/2018/01/12/best-picture-consolation-prizes/">the Academy Award blogpost I did earlier this year</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fpath</span> <span class="o">=</span> <span class="s1">&#39;../data/movieData.csv&#39;</span></code></pre></div>
+<h3 id="load-the-data">Load the Data</h3>
+
+<p>Spoiler alert, figuring out the proper function call to load a csv is going to take some revisioning. Let&rsquo;s append arguments and values as we go</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movieArgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></code></pre></div>
+<p><code>movieArgs</code> unpacks to nothing at the moment. Let&rsquo;s see what a vanilla <code>read.csv</code> call gets us.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movies</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="o">**</span><span class="n">movieArgs</span><span class="p">)</span>
+<span class="n">movies</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+| _c0|        _c1|             _c2|     _c3|          _c4|     _c5|        _c6| _c7|       _c8|               _c9|_c10|  _c11|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+|Rank|WeeklyGross|PctChangeWkGross|Theaters|DeltaTheaters|  AvgRev|GrossToDate|Week|  Thursday|              name|year|Winner|
+|17.0|     967378|            null|    14.0|         null| 69098.0|     967378|   1|1990-11-18|dances with wolves|1990|  True|
+| 9.0|    3871641|           300.0|    14.0|         null|276546.0|    4839019|   2|1990-11-25|dances with wolves|1990|  True|
+| 3.0|   12547813|           224.0|  1048.0|       1034.0| 11973.0|   17386832|   3|1990-12-02|dances with wolves|1990|  True|
+| 4.0|    9246632|           -26.3|  1053.0|          5.0|  8781.0|   26633464|   4|1990-12-09|dances with wolves|1990|  True|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+only showing top 5 rows
+</code></pre>
+
+<p>Okay. So Spark expected <em>not</em> to see a header in the file. That&rsquo;s alright. We&rsquo;ll just tell it to look for one.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movieArgs</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">movies</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="o">**</span><span class="n">movieArgs</span><span class="p">)</span>
+<span class="n">movies</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+|Rank|WeeklyGross|PctChangeWkGross|Theaters|DeltaTheaters|  AvgRev|GrossToDate|Week|  Thursday|              name|year|Winner|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+|17.0|     967378|            null|    14.0|         null| 69098.0|     967378|   1|1990-11-18|dances with wolves|1990|  True|
+| 9.0|    3871641|           300.0|    14.0|         null|276546.0|    4839019|   2|1990-11-25|dances with wolves|1990|  True|
+| 3.0|   12547813|           224.0|  1048.0|       1034.0| 11973.0|   17386832|   3|1990-12-02|dances with wolves|1990|  True|
+| 4.0|    9246632|           -26.3|  1053.0|          5.0|  8781.0|   26633464|   4|1990-12-09|dances with wolves|1990|  True|
+| 4.0|    7272350|           -21.4|  1051.0|         -2.0|  6919.0|   33905814|   5|1990-12-16|dances with wolves|1990|  True|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+only showing top 5 rows
+</code></pre>
+
+<p>That looks better.</p>
+
+<p><code>pandas</code> might struggle with the <code>Thursday</code> column. Did PySpark?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movies</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>[('Rank', 'string'),
+ ('WeeklyGross', 'string'),
+ ('PctChangeWkGross', 'string'),
+ ('Theaters', 'string'),
+ ('DeltaTheaters', 'string'),
+ ('AvgRev', 'string'),
+ ('GrossToDate', 'string'),
+ ('Week', 'string'),
+ ('Thursday', 'string'),
+ ('name', 'string'),
+ ('year', 'string'),
+ ('Winner', 'string')]
+</code></pre>
+
+<p>Well, I suppose technically it didn&rsquo;t. You have to make an effort to struggle, yeah?</p>
+
+<p>Let&rsquo;s tell it to take a crack at figuring out the schema.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movieArgs</span><span class="p">[</span><span class="s1">&#39;inferSchema&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">movies</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="o">**</span><span class="n">movieArgs</span><span class="p">)</span>
+<span class="n">movies</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>[('Rank', 'double'),
+ ('WeeklyGross', 'int'),
+ ('PctChangeWkGross', 'double'),
+ ('Theaters', 'double'),
+ ('DeltaTheaters', 'double'),
+ ('AvgRev', 'double'),
+ ('GrossToDate', 'int'),
+ ('Week', 'int'),
+ ('Thursday', 'timestamp'),
+ ('name', 'string'),
+ ('year', 'int'),
+ ('Winner', 'boolean')]
+</code></pre>
+
+<p>Cool. This is really coming along. Let&rsquo;s pull our data down to do some local analysis in <code>pandas</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">movies</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span></code></pre></div>
+<pre><code>---------------------------------------------------------------------------
+
+TypeError                                 Traceback (most recent call last)
+
+&lt;ipython-input-8-4d7b35f0345e&gt; in &lt;module&gt;()
+----&gt; 1 df = movies.toPandas()
+
+
+C:\opt\Spark\spark-2.3.0-bin-hadoop2.7\python\pyspark\sql\dataframe.py in toPandas(self)
+   1989                     if isinstance(field.dataType, TimestampType):
+   1990                         pdf[field.name] = \
+-&gt; 1991                             _check_series_convert_timestamps_local_tz(pdf[field.name], timezone)
+   1992                 return pdf
+   1993 
+
+
+C:\opt\Spark\spark-2.3.0-bin-hadoop2.7\python\pyspark\sql\types.py in _check_series_convert_timestamps_local_tz(s, timezone)
+   1835     :return pandas.Series where if it is a timestamp, has been converted to tz-naive
+   1836     &quot;&quot;&quot;
+-&gt; 1837     return _check_series_convert_timestamps_localize(s, None, timezone)
+   1838 
+   1839 
+
+
+C:\opt\Spark\spark-2.3.0-bin-hadoop2.7\python\pyspark\sql\types.py in _check_series_convert_timestamps_localize(s, from_timezone, to_timezone)
+   1821         # `s.dt.tz_localize('tzlocal()')` doesn't work properly when including NaT.
+   1822         return s.apply(
+-&gt; 1823             lambda ts: ts.tz_localize(from_tz, ambiguous=False).tz_convert(to_tz).tz_localize(None)
+   1824             if ts is not pd.NaT else pd.NaT)
+   1825     else:
+
+
+C:\Users\Nick\Anaconda3\lib\site-packages\pandas\core\series.py in apply(self, func, convert_dtype, args, **kwds)
+   2353             else:
+   2354                 values = self.asobject
+-&gt; 2355                 mapped = lib.map_infer(values, f, convert=convert_dtype)
+   2356 
+   2357         if len(mapped) and isinstance(mapped[0], Series):
+
+
+pandas/_libs/src\inference.pyx in pandas._libs.lib.map_infer()
+
+
+C:\opt\Spark\spark-2.3.0-bin-hadoop2.7\python\pyspark\sql\types.py in &lt;lambda&gt;(ts)
+   1822         return s.apply(
+   1823             lambda ts: ts.tz_localize(from_tz, ambiguous=False).tz_convert(to_tz).tz_localize(None)
+-&gt; 1824             if ts is not pd.NaT else pd.NaT)
+   1825     else:
+   1826         return s
+
+
+pandas/_libs/tslib.pyx in pandas._libs.tslib.Timestamp.tz_convert (pandas\_libs\tslib.c:13875)()
+
+
+TypeError: Cannot convert tz-naive Timestamp, use tz_localize to localize
+</code></pre>
+
+<h2 id="fear-not">Fear Not</h2>
+
+<p>That&rsquo;s certainly not an inviting error message. <a href="https://napsterinblue.github.io/notes/spark/sparksql/topandas_datetime_error/">I wrestled with it myself less than an hour ago</a>.</p>
+
+<p>Here&rsquo;s a usable-enough workaround I found to finish this out.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">movies</span> <span class="o">=</span> <span class="n">movies</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;Thursday&#39;</span><span class="p">,</span> <span class="n">movies</span><span class="p">[</span><span class="s1">&#39;Thursday&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">movies</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Thursday&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Thursday&#39;</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rank</th>
+      <th>WeeklyGross</th>
+      <th>PctChangeWkGross</th>
+      <th>Theaters</th>
+      <th>DeltaTheaters</th>
+      <th>AvgRev</th>
+      <th>GrossToDate</th>
+      <th>Week</th>
+      <th>Thursday</th>
+      <th>name</th>
+      <th>year</th>
+      <th>Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17.0</td>
+      <td>967378</td>
+      <td>NaN</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>69098.0</td>
+      <td>967378</td>
+      <td>1</td>
+      <td>1990-11-18</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9.0</td>
+      <td>3871641</td>
+      <td>300.0</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>276546.0</td>
+      <td>4839019</td>
+      <td>2</td>
+      <td>1990-11-25</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>12547813</td>
+      <td>224.0</td>
+      <td>1048.0</td>
+      <td>1034.0</td>
+      <td>11973.0</td>
+      <td>17386832</td>
+      <td>3</td>
+      <td>1990-12-02</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>9246632</td>
+      <td>-26.3</td>
+      <td>1053.0</td>
+      <td>5.0</td>
+      <td>8781.0</td>
+      <td>26633464</td>
+      <td>4</td>
+      <td>1990-12-09</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4.0</td>
+      <td>7272350</td>
+      <td>-21.4</td>
+      <td>1051.0</td>
+      <td>-2.0</td>
+      <td>6919.0</td>
+      <td>33905814</td>
+      <td>5</td>
+      <td>1990-12-16</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

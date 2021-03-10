@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Simulating stdin Inputs from User" />
+<meta property="og:description" content="I recently ran into a problem where I was trying to automate unit testing for a function that paused, mid-execution, and waited for a user to input some value.
+For example
+def dummy_fn(): name = input() return(&#39;Hello, &#39;, name)dummy_fn() Nick (&#39;Hello, &#39;, &#39;Nick&#39;)  Simulating a user input wound up being a non-trivial thing to figure out, so I figured it beared writing a note involving:
+ The StringIO class Temporarily overwriting sys." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/sim_stdin/" />
+
+
+
+<meta property="article:published_time" content="2018-07-03T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-07-03T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Simulating stdin Inputs from User"/>
+<meta name="twitter:description" content="I recently ran into a problem where I was trying to automate unit testing for a function that paused, mid-execution, and waited for a user to input some value.
+For example
+def dummy_fn(): name = input() return(&#39;Hello, &#39;, name)dummy_fn() Nick (&#39;Hello, &#39;, &#39;Nick&#39;)  Simulating a user input wound up being a non-trivial thing to figure out, so I figured it beared writing a note involving:
+ The StringIO class Temporarily overwriting sys."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Simulating stdin Inputs from User",
+  "url": "https://napsterinblue.github.io/notes/python/development/sim_stdin/",
+  "wordCount": "358",
+  "datePublished": "2018-07-03T00:00:00&#43;00:00",
+  "dateModified": "2018-07-03T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Simulating stdin Inputs from User</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Simulating stdin Inputs from User</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-07-03T00:00:00Z "> 03 Jul 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>I recently ran into a problem where I was trying to automate unit testing for a function that paused, mid-execution, and waited for a user to input some value.</p>
+
+<p>For example</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">dummy_fn</span><span class="p">():</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">input</span><span class="p">()</span>
+    <span class="k">return</span><span class="p">(</span><span class="s1">&#39;Hello, &#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dummy_fn</span><span class="p">()</span></code></pre></div>
+<pre><code>Nick
+
+
+
+
+
+('Hello, ', 'Nick')
+</code></pre>
+
+<p>Simulating a user input wound up being a non-trivial thing to figure out, so I figured it beared writing a note involving:</p>
+
+<ul>
+<li>The <code>StringIO</code> class</li>
+<li>Temporarily overwriting <code>sys.stdin</code></li>
+</ul>
+
+<h3 id="stringio">StringIO</h3>
+
+<p><code>io.StringIO</code> is used to convert your typical string into something that can be read as a <em>stream of inputs</em>, much like reading lines in a file.</p>
+
+<p>For instance, imagine we&rsquo;re trying to simulate loading a <code>.csv</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">import</span> <span class="nn">csv</span></code></pre></div>
+<p>Here, the iterator is considering each unique character. Because every other &ldquo;line&rdquo; is &ldquo;a comma that splits two empty strings&rdquo; we get a bunch of nonsense.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="s1">&#39;a,b,c,d,e&#39;</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">char</span><span class="p">)</span></code></pre></div>
+<pre><code>['a']
+['', '']
+['b']
+['', '']
+['c']
+['', '']
+['d']
+['', '']
+['e']
+</code></pre>
+
+<p>Whereas using <code>StringIO</code>, we can tell python to read our input as one unified line.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">f</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;a,b,c,d,e&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">char</span><span class="p">)</span></code></pre></div>
+<pre><code>['a', 'b', 'c', 'd', 'e']
+</code></pre>
+
+<h3 id="temporarily-overwriting-sys-stdin">Temporarily Overwriting <code>sys.stdin</code></h3>
+
+<p><code>sys.stdin</code> is the default that gets called when you find yourself writing something that that uses the standard <code>input()</code> function. It&rsquo;s got this cryptic <code>TextIOWrapper</code> for a repr, but it essentially takes whatever a user submits to standard in by typing and hitting Enter.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">stdin</span></code></pre></div>
+<pre><code>&lt;_io.TextIOWrapper name='&lt;stdin&gt;' mode='r' encoding='cp1252'&gt;
+</code></pre>
+
+<p>But if we inspect, this <code>TextIOWrapper</code> inherits from the same base class as <code>StringIO</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">__base__</span></code></pre></div>
+<pre><code>_io._TextIOBase
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">StringIO</span><span class="o">.</span><span class="n">__base__</span></code></pre></div>
+<pre><code>_io._TextIOBase
+</code></pre>
+
+<p>Meaning we can leverage the same underlying functionality if we spoof a function designed to call <code>sys.stdin</code>. In this case, <code>input()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;asdf&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">stdin</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">f</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&#34;&#39;&#34;</span> <span class="o">+</span> <span class="nb">input</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&#34;&#39; wasn&#39;t actually typed at the command line&#34;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">stdin</span></code></pre></div>
+<pre><code> 'asdf' wasn't actually typed at the command line
+</code></pre>
+
+<p>(Note: Because Jupyter Notebooks use a different <code>stdin</code> scheme, this, ironically, is just markdown. But running it in IPython or regular ol&rsquo; Python works just fine)</p>
+
+<h2 id="putting-it-all-together">Putting it All Together</h2>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;Nick&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">stdin</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">f</span>
+    <span class="n">dummy_fn</span><span class="p">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">stdin</span></code></pre></div>
+<pre><code>('Hello', 'Nick') 
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Convolution Intuition" />
+<meta property="og:description" content="What Is It? Convolution is a technique that is largely used in Image data as a method of abstracting simple features such as edges or color scale. It is an elegant technique, used in earlier layers of deep image networks to dramatically reduce computation and extract component features used in assembling more complicated features for later layers in the network.
+Furthermore, in addition to learning the simple-feature characteristics on your data, the convolutional filter also *implicitly encodes the location* as well." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_intuition/" />
+
+
+
+<meta property="article:published_time" content="2018-09-24T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-24T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Convolution Intuition"/>
+<meta name="twitter:description" content="What Is It? Convolution is a technique that is largely used in Image data as a method of abstracting simple features such as edges or color scale. It is an elegant technique, used in earlier layers of deep image networks to dramatically reduce computation and extract component features used in assembling more complicated features for later layers in the network.
+Furthermore, in addition to learning the simple-feature characteristics on your data, the convolutional filter also *implicitly encodes the location* as well."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Convolution Intuition",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_intuition/",
+  "wordCount": "613",
+  "datePublished": "2018-09-24T00:00:00&#43;00:00",
+  "dateModified": "2018-09-24T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Convolution Intuition</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Convolution Intuition</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-24T00:00:00Z "> 24 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="what-is-it">What Is It?</h2>
+
+<p>Convolution is a technique that is largely used in Image data as a method of abstracting simple features such as edges or color scale. It is an elegant technique, used in earlier layers of deep image networks to dramatically reduce computation and extract component features used in <strong>assembling more complicated features</strong> for later layers in the network.</p>
+
+<p>Furthermore, in addition to learning the simple-feature characteristics on your data, the convolutional filter also *implicitly encodes <strong>the location</strong>* as well.</p>
+
+<h3 id="sliding-scale">Sliding Scale</h3>
+
+<p>Essentially, the convolution operation involves taking a <strong>convolution filter</strong> of some fixed shape and values and sliding over our image and evaluating:</p>
+
+<ul>
+<li>An element-wise product</li>
+<li>A combined sum</li>
+</ul>
+
+<p>And assigning it to a single cell in the output matrix, as below</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/conv_sliding.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_5_0.png" alt="png" /></p>
+
+<h3 id="edge-detection">Edge Detection</h3>
+
+<p>The filter above can be used to detect vertical edges when scanned over the image</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/conv_vert_edge.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_8_0.png" alt="png" /></p>
+
+<p>Similarly, you could find horizontal edges using the following</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/conv_horiz_edge.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_10_0.png" alt="png" /></p>
+
+<h3 id="as-parameters">As Parameters</h3>
+
+<p>Of course, not every edge or visual feature worth detecting fits a neat, linear boundary where you can employ close relatives to identity matricies.</p>
+
+<p>Thus, your trained features in a Convolutional Layer are the actual weights of the filters you use to convolve over your image.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/conv_variable_filter.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_13_0.png" alt="png" /></p>
+
+<h2 id="in-3d">In 3d</h2>
+
+<p>We can also apply these same techniques to data expressed in multiple dimension. For instance, whereas the greyscale images above were simple pixels with values between 0 and 255, color images have that same structure but with a dimension for each RGB channel.</p>
+
+<p>No matter, though, <strong>as long as the final dimension of our filter is the same as our original image</strong>, we can do basically the same convolution operation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/convolving_3d.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_16_0.png" alt="png" /></p>
+
+<h2 id="why-convolution">Why Convolution</h2>
+
+<p>Intuitively, the idea of &ldquo;find simple features and assemble them into complex features at later layers&rdquo; makes sense, but as mentioned above, there are also great mechanical benefits of using convolution to process image data.</p>
+
+<p>Andrew Ng does a great job outlining this.</p>
+
+<h4 id="reduced-complexity">Reduced Complexity</h4>
+
+<p>Say our input data is RGB and <code>32x32</code>.</p>
+
+<p>We know that we want to represent the first hidden layer as <code>28x28x6</code>. By using a traditional Neural Network layer, we&rsquo;d wind up training a weight <em>for every single pair of nodes betwen the two</em>, which amounts to nearly 14 million weights.</p>
+
+<p>On the other hand, training 6 <code>5x5</code> filters (plus a bias unit for each) gives us <em>dramatically</em> less weights for our model to sweat over.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/why_conv_size.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_21_0.png" alt="png" /></p>
+
+<h4 id="parameter-sharing">Parameter Sharing</h4>
+
+<p>Similarly, if something like &ldquo;vertical edge detection&rdquo; is useful for our model, it&rsquo;s a no-brainer that we&rsquo;d want to learn how to do <em>that</em> than hope that we independently learn both the existence and potential usefulness of each vertical edge in a given image.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/why_conv_features.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_24_0.png" alt="png" /></p>
+
+<h4 id="sparsity-of-connections">Sparsity of Connections</h4>
+
+<p>Finally, Andrew also outlines a concept called <em>translation invariance</em> wherein the learned convolution features don&rsquo;t get hung up when your picture of a cat is on the left half of your image vs your right. Early layers detect the general shapes, which activate later layers to send those areas of the image to the &ldquo;is this cat-like&rdquo; layers&ndash; never accidentally defining &ldquo;cat-ness&rdquo; with respect to any sort of location (which is sound science, as we all know that cats are more liquid than solid).</p>
+
+<h2 id="best-practices-in-deep-network-architectures">Best Practices in Deep Network Architectures</h2>
+
+<p>Again, convolution serves to develop a series of <em>simple</em> features up front, which are then used by later layers to generate increasingly complex features. Thus, <strong>the number of convolutional filters increases as we go deeper.</strong></p>
+
+<p>To elaborate more, early filters can only see <em>some</em> of the data, so there can only be <em>a few patterns</em>. Later layers can see exponentially more patterns, so we expand our number of filters accordingly.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/translation_tolerance.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="conv_intuition_29_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

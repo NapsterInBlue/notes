@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Building Blocks" />
+<meta property="og:description" content="Survival Analysis, broadly-speaking, is a corner of statistics that deals with answering questions regarding &ldquo;time to event&rdquo; for a given population. It has applications in all kinds of contexts, from healthcare, to marketing, to manufacturing, etc.
+There&rsquo;s all sorts of nuance and rabbit-holing to be done, learning the ins and outs, but first, it&rsquo;d help to establish some of the fundamental concepts and their derivations.
+The Data Obviously, if we&rsquo;re trying to train a model to make predictions on time and events, we need data that informs us of time spent as well as event occurences." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/survival_analysis/building_blocks/" />
+
+
+
+<meta property="article:published_time" content="2020-04-02T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-02T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Building Blocks"/>
+<meta name="twitter:description" content="Survival Analysis, broadly-speaking, is a corner of statistics that deals with answering questions regarding &ldquo;time to event&rdquo; for a given population. It has applications in all kinds of contexts, from healthcare, to marketing, to manufacturing, etc.
+There&rsquo;s all sorts of nuance and rabbit-holing to be done, learning the ins and outs, but first, it&rsquo;d help to establish some of the fundamental concepts and their derivations.
+The Data Obviously, if we&rsquo;re trying to train a model to make predictions on time and events, we need data that informs us of time spent as well as event occurences."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Building Blocks",
+  "url": "https://napsterinblue.github.io/notes/stats/survival_analysis/building_blocks/",
+  "wordCount": "808",
+  "datePublished": "2020-04-02T00:00:00&#43;00:00",
+  "dateModified": "2020-04-02T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Building Blocks</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Building Blocks</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-02T00:00:00Z "> 02 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Survival Analysis, broadly-speaking, is a corner of statistics that deals with answering questions regarding &ldquo;time to event&rdquo; for a given population. It has applications in all kinds of contexts, from healthcare, to marketing, to manufacturing, etc.</p>
+
+<p>There&rsquo;s all sorts of nuance and rabbit-holing to be done, learning the ins and outs, but first, it&rsquo;d help to establish some of the fundamental concepts and their derivations.</p>
+
+<h2 id="the-data">The Data</h2>
+
+<p>Obviously, if we&rsquo;re trying to train a model to make predictions on time and events, we need data that informs us of time spent as well as event occurences. Later, we&rsquo;ll explore how to layer in more information than that, but for purposes of this notebook we can assume that our data will be several rows of observations with attributes <code>(time_event_occurred, did_event_occur)</code>.</p>
+
+<p>In most other modeling applications, you&rsquo;d need to take careful consideration of how you select your data&ndash; do you take records that never have an event occur? Do you throw out records that have the event occur right out of the gate? How do you weight records proportional to the information you can gain from them?</p>
+
+<p>The key strength of using survival analysis lies in the fact that all of these questions are managed for you. This image from the documentation for the <code>lifelines</code> Python library does a great job highlighting the fact.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/survival_analysis_intro_censoring.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="building_blocks_2_0.png" alt="png" /></p>
+
+<p>In the dataset used to generate this plot, the blue records have <code>time_event_occurred</code> values far past their peers, if even at all. But in construction of our Survival Analysis, we made the contextual decision to stop observations at <code>t=10</code>. This is called <em>right-censoring</em> our data and is a fundamental element of Survival Analysis.</p>
+
+<p>Indeed, the functions that we&rsquo;ll use to approximate this behavior will all take <code>t</code> as their input.</p>
+
+<h2 id="key-equations">Key Equations</h2>
+
+<h3 id="f-f"><code>f, F</code></h3>
+
+<p>For starters, we assume that <code>t</code> follows some probability distribution with pdf <code>f(t)</code>. To rephrase, the values of <code>t</code> corresponding to events occurring within this population follow a distribution <code>f(t)</code>.</p>
+
+<p>Extending from this, we can say that the integral of this pdf, <code>F(t)</code> will represent the probability that an event will have occurred by time <code>t</code>. Or</p>
+
+<p>$F(t) = P(T &lt; t)$</p>
+
+<p>More generally, if you look at the figure above, we might expect the value of <code>F(9)</code> to be very high, as it represents the proportion of our population that will have had an event occur by <code>t=9</code>. Eyeballing, it looks like only <code>3</code> of our <code>25</code> records are still blue by that point, thus <code>F(9) ~ (22/25) = .88</code></p>
+
+<h3 id="survival-function-s-t">Survival Function, <code>S(t)</code></h3>
+
+<p>The counterpart to <code>F(t)</code>, the proportion of our population that has had an event occur, is <code>S(t)</code>, or the proportion of the population that has <em>not</em> had an event occur. Because these methods were originally developed in the context of diagnosis and healthcare, this is known as the survival function.</p>
+
+<p>Restating in terms of probability</p>
+
+<p><code>S(t) = Pr(T &gt; t)</code></p>
+
+<p>Borrowing once more from the <code>lifeline</code> docs, we expect <code>S(t)</code> to generally look like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/intro_survival_function.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="building_blocks_4_0.png" alt="png" /></p>
+
+<p>With particular emphasis on the fact that <code>S(t)</code> is a <em>monotonically-decreasing</em> function. No resurrection in this model :)</p>
+
+<h3 id="hazard-function">Hazard Function</h3>
+
+<p>The last piece of this puzzle is the <em>hazard function</em>, which expresses the point-in-time risk of an event happening at time <code>t</code>, given that the population has survived that long. Or stated as a probability:</p>
+
+<p>$h(t) = Pr(t &lt; T \leq t + dt | T &gt; t)$</p>
+
+<p>We can rewrite this conditional probability as</p>
+
+<p>$\frac{Pr(t &lt; T \leq t + dt)}{\Pr(T &gt; t)}$</p>
+
+<p>And that denominator should look familiar</p>
+
+<p>$\frac{Pr(t &lt; T \leq t + dt)}{S(t)}$</p>
+
+<p>Now let&rsquo;s break down the numerator.</p>
+
+<p>$Pr(t &lt; T \leq t + dt)$</p>
+
+<p>We want to know the incremental risk between two points in time, <code>t, t+dt</code>. Sounds like a slope to me. Because <code>S(t)</code> is a strictly <em>decreasing</em> function, we&rsquo;ll write it in order of size.</p>
+
+<p>$\frac{S(t) - S(t + dt)}{dt}$</p>
+
+<p>Next we&rsquo;ll do a bit of substitution based on the definition of <code>S(t)</code></p>
+
+<p>$\frac{(1 - F(t)) - (1 - F(t + dt))}{dt}$</p>
+
+<p>Reducing, we&rsquo;re conveniently left with the following, thanks to the definition of a derivative</p>
+
+<p>$\frac{F(t + dt) - F(t)}{dt} = f(t)$</p>
+
+<p>Putting it all together, we have</p>
+
+<p>$h(t) = \frac{f(t)}{S(t)}$</p>
+
+<h2 id="translating">Translating</h2>
+
+<p>It&rsquo;s worth noting that that last equation can be rearranged as</p>
+
+<p>$S(t) = \exp(-H(t))$</p>
+
+<p>where <code>H(t)</code> is the <em>cumulative hazard function</em>.</p>
+
+<p>Picking up where we left off, we have</p>
+
+<p>$h(t) = \frac{f(t)}{S(t)} = \frac{f(t)}{1 - F(t)}$</p>
+
+<p>But a clever application of the chain rule gives us</p>
+
+<p>$h(t) = - \frac{d}{dt} log(1 - F(t))$</p>
+
+<p>converting back, moving the negative, and integrating both sides, we get</p>
+
+<p>$-H(t) = log(S(t))$</p>
+
+<p>finally, we exponentiate and flip left and right to get</p>
+
+<p>$S(t) = \exp(-H(t))$</p>
+
+<p>As stated.</p>
+
+<p>From here, the author of <code>lifelines</code> geeks about how easy it is to dance around the various equations with simple translations, haha</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/map.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="building_blocks_6_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

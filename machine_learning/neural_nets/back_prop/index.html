@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Back Propagation" />
+<meta property="og:description" content="Back Propagation is essentially a \$2 way of saying &ldquo;make an incremental change to your weights and biases, relative to our error.&rdquo; Like Gradient Descent, the main goal is doing a bunch of Chain Rule magic™ to find all of our partial derivatives. Then we calculate our error by taking a simple (actual - expected) and marching backwards through the Net using some small learning rate, and adjustments to each of the matricies." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/neural_nets/back_prop/" />
+
+
+
+<meta property="article:published_time" content="2018-08-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-08-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Back Propagation"/>
+<meta name="twitter:description" content="Back Propagation is essentially a \$2 way of saying &ldquo;make an incremental change to your weights and biases, relative to our error.&rdquo; Like Gradient Descent, the main goal is doing a bunch of Chain Rule magic™ to find all of our partial derivatives. Then we calculate our error by taking a simple (actual - expected) and marching backwards through the Net using some small learning rate, and adjustments to each of the matricies."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Back Propagation",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/neural_nets/back_prop/",
+  "wordCount": "415",
+  "datePublished": "2018-08-10T00:00:00&#43;00:00",
+  "dateModified": "2018-08-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Back Propagation</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Back Propagation</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-08-10T00:00:00Z "> 10 Aug 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Back Propagation is essentially a \$2 way of saying &ldquo;make an incremental change to your weights and biases, relative to our error.&rdquo; Like Gradient Descent, the main goal is doing a bunch of Chain Rule magic™ to find all of our partial derivatives. Then we calculate our error by taking a simple (actual - expected) and marching backwards through the Net using some small learning rate, and adjustments to each of the matricies.</p>
+
+<h3 id="vs-logistic-regression-gradient-descent">vs Logistic Regression Gradient Descent</h3>
+
+<p>Recall our vectorized implementation for Gradient Descent with Logistic Regressions</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># predict</span>
+<span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+
+<span class="c1"># gradient descent</span>
+<span class="n">dZ</span> <span class="o">=</span> <span class="n">A</span> <span class="o">-</span> <span class="n">Y</span>
+
+<span class="n">dw</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dZ</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">db</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dZ</span><span class="p">)</span>
+
+<span class="c1"># update</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">dw</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">db</span></code></pre></div>
+<p>The implementation for Back Propagation is very, very similar. The update step is basically the same, and the predict step is replaced by Forward Prop.</p>
+
+<p>The biggest difference lies in the gradient descent section, and even that should look pretty familiar.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dZ2</span> <span class="o">=</span> <span class="n">A2</span> <span class="o">-</span> <span class="n">Y</span>                                      
+<span class="n">dW2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dZ2</span><span class="p">,</span> <span class="n">A1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>                   
+<span class="n">db2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dZ2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">dZ1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W2</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dZ2</span><span class="p">),</span> <span class="n">activation_fn_deriv</span><span class="p">(</span><span class="n">Z1</span><span class="p">))</span>
+<span class="n">dW1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dZ1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">db1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dZ1</span> <span class="o">*</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></code></pre></div>
+<p>Note, however, the second chunk of calculations, and how they depend on the output of the section above&ndash; calculating backwards through the Net.</p>
+
+<h3 id="why-can-t-i-hold-all-of-these-derivatives">Why Can&rsquo;t I Hold All of These Derivatives?</h3>
+
+<p>The equation for <code>dZ1</code> might throw you for a loop, but it&rsquo;s easy when you consider the chain of calculations that get you to your Loss Function that use <code>Z1</code>. First, we start with our hypothesis function.</p>
+
+<p>$Z^{[1]} = W^{[1]}X + b^{[1]}$</p>
+
+<p>which, of course, gets piped into our activation function to become <code>A1</code></p>
+
+<p>$A^{[1]} = g(Z^{[1]})$</p>
+
+<p>The nesting becomes pretty cumbersome by the second layer <code>Z2</code></p>
+
+<p>$Z^{[2]} = W^{[2]} g^{[2]}(A^{[1]}) + b^{[2]}$</p>
+
+<p>$Z^{[2]} = W^{[2]} g^{[2]}(g^{[1]}(Z^{[1]})) + b^{[2]}$</p>
+
+<p>And so if we&rsquo;re looking for the derivative of the overall Cost Function, with respect to <code>Z1</code>, we&rsquo;ve got our work cut out for ourselves doing Chain Rule stuff (we&rsquo;ve omitted <code>A2</code> and <code>cost</code> for simplicity)</p>
+
+<p>But looking at this you see that it just follows typical Chain Rule fashion&ndash; We&rsquo;re multiplying the derivative of the function (the <code>np.dot()</code> portion) by the derivative of the inside. <strong>Also note</strong>, this is element-wise multiplication, not the dot product metween the two matricies.</p>
+
+<p><code>dW1</code> and <code>db1</code> are comparably-trivial calculations, and our update step looks like normal.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

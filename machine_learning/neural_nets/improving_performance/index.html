@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Model Improvement Strategy Heuristics" />
+<meta property="og:description" content="In the Bias, Variance, and Regularization notebook, we touched on different strategies for improvimg model performance, depending on where we were seeing deficiencies in the cost/loss functions. This notebook will elaborate and provide a more-general approach.
+Different Benchmarks Irrespective of which accuracy measure you focus on (precision, recall, etc), when deciding where and how to make model improvements, it&rsquo;s all about comparing accuracy levels between benchmarks.
+We&rsquo;ll use three comparison benchmarks for model performance:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/neural_nets/improving_performance/" />
+
+
+
+<meta property="article:published_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Model Improvement Strategy Heuristics"/>
+<meta name="twitter:description" content="In the Bias, Variance, and Regularization notebook, we touched on different strategies for improvimg model performance, depending on where we were seeing deficiencies in the cost/loss functions. This notebook will elaborate and provide a more-general approach.
+Different Benchmarks Irrespective of which accuracy measure you focus on (precision, recall, etc), when deciding where and how to make model improvements, it&rsquo;s all about comparing accuracy levels between benchmarks.
+We&rsquo;ll use three comparison benchmarks for model performance:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Model Improvement Strategy Heuristics",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/neural_nets/improving_performance/",
+  "wordCount": "256",
+  "datePublished": "2018-09-14T00:00:00&#43;00:00",
+  "dateModified": "2018-09-14T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Model Improvement Strategy Heuristics</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Model Improvement Strategy Heuristics</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-14T00:00:00Z "> 14 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>In the <a href="https://napsterinblue.github.io/notes/machine_learning/neural_nets/regularization/">Bias, Variance, and Regularization</a> notebook, we touched on different strategies for improvimg model performance, depending on where we were seeing deficiencies in the cost/loss functions. This notebook will elaborate and provide a more-general approach.</p>
+
+<h2 id="different-benchmarks">Different Benchmarks</h2>
+
+<p>Irrespective of which accuracy measure you focus on (precision, recall, etc), when deciding where and how to make model improvements, it&rsquo;s all about comparing accuracy levels between benchmarks.</p>
+
+<p>We&rsquo;ll use three comparison benchmarks for model performance:</p>
+
+<ul>
+<li>Training Error</li>
+<li>Dev Error</li>
+<li>Human-Level</li>
+</ul>
+
+<h3 id="training-error">Training Error</h3>
+
+<p>The final error value you have at the end of training. This is the optimization condition that guides your model training.</p>
+
+<h3 id="dev-error">Dev Error</h3>
+
+<p>The error that your trained model has when you run your testing/holdout dataset through it.</p>
+
+<h3 id="human-level-error">&ldquo;Human-Level&rdquo; Error</h3>
+
+<p>For whatever you&rsquo;re trying to predict, the reasonable level of accuracy you&rsquo;d expect a human to get. For instance:</p>
+
+<ul>
+<li>Simple computer vision object-classification problems have a very <em>low</em> human-level error</li>
+<li>More esoteric things like sports outcome prediction have a higher level of error</li>
+</ul>
+
+<h2 id="relating-the-benchmarks">Relating the Benchmarks</h2>
+
+<p>Depending on where you&rsquo;re getting the biggest discrepancies in accuracy, you&rsquo;ll want to employ different model-tuning strategies.</p>
+
+<p><strong>Avoidable Bias</strong> is the difference between Human-Level accuracy and your Training error. If this is high, there&rsquo;s obviously something we&rsquo;re missing network-design-wise if a human can reliably outperform our complicated network.</p>
+
+<p><strong>Variance</strong> is the difference between the Training and Dev Errors. If this is high, it means that we have overfit to our training set and our model doesn&rsquo;t generalize well.</p>
+
+<p>Andrew Ng recommends the following heuristics.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/model_improvement_heuristics.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="improving_performance_16_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

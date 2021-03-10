@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Gated Recurrent Units" />
+<meta property="og:description" content="The problem with regular Recurrent Neural Networks is that, due to the vanishing gradient problem, they struggle to remember specific information over a period of time. For instance the following sentences
+The cat ate ... and was full The cats ate ... and were full  might be completely identical, save for the plurality of the subject, and by extension the tense of &ldquo;was&rdquo; vs &ldquo;were&rdquo;
+Memory Cells Gated Recurrent Units have this concept of a memory cell, c that learns and carries information from once layer to the next." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/rnns/gru/" />
+
+
+
+<meta property="article:published_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Gated Recurrent Units"/>
+<meta name="twitter:description" content="The problem with regular Recurrent Neural Networks is that, due to the vanishing gradient problem, they struggle to remember specific information over a period of time. For instance the following sentences
+The cat ate ... and was full The cats ate ... and were full  might be completely identical, save for the plurality of the subject, and by extension the tense of &ldquo;was&rdquo; vs &ldquo;were&rdquo;
+Memory Cells Gated Recurrent Units have this concept of a memory cell, c that learns and carries information from once layer to the next."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Gated Recurrent Units",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/rnns/gru/",
+  "wordCount": "300",
+  "datePublished": "2018-10-22T00:00:00&#43;00:00",
+  "dateModified": "2018-10-22T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Gated Recurrent Units</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Gated Recurrent Units</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-22T00:00:00Z "> 22 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>The problem with regular Recurrent Neural Networks is that, due to the vanishing gradient problem, they struggle to remember specific information over a period of time. For instance the following sentences</p>
+
+<pre><code>The cat ate ... and was full
+The cats ate ... and were full
+</code></pre>
+
+<p>might be completely identical, save for the plurality of the subject, and by extension the tense of &ldquo;was&rdquo; vs &ldquo;were&rdquo;</p>
+
+<h2 id="memory-cells">Memory Cells</h2>
+
+<p>Gated Recurrent Units have this concept of a <em>memory cell</em>, <code>c</code> that learns and carries information from once layer to the next. The reason we call it <strong>Gated</strong> is because at each step along the way, the cell could potentially accept or ignore carry-over information.</p>
+
+<p>We calculate a layer&rsquo;s <em>candidate values</em> using information from the last memory cell as well as this layer&rsquo;s input. We want the values to be between <code>-1</code> and <code>1</code>, so we use the <code>tanh()</code> function.</p>
+
+<p>$\tilde{c}^{\langle t \rangle} = tanh(Wcc^{\langle t-1 \rangle} + Wcx^{\langle t \rangle} + b_c)$</p>
+
+<p>Next, we define the <em>update gate</em>, which creates a sort of value-level mask.</p>
+
+<p>$\Gamma_u = \sigma(Wuc^{\langle t-1 \rangle} + Wux^{\langle t \rangle} + b_u)$</p>
+
+<p>Finally, we combine the two, element-wise. Intuitively, this can be interpreted as:</p>
+
+<ol>
+<li>&ldquo;Calculate the <em>values</em> that we want to carry over, assuming we&rsquo;re carrying everything over&rdquo;</li>
+<li>&ldquo;Decide <em>what to carry over</em> from one step to the next&rdquo;</li>
+</ol>
+
+<p>$c^{\langle t \rangle} = \Gamma_u * \tilde{c}^{\langle t \rangle} + (1 - \Gamma_u) * c^{\langle t-1 \rangle}$</p>
+
+<p>This should make sense, as the Gamma and 1-minus-Gamma values sum to one. We can interpret this as &ldquo;keep the first half, forget the second half, which was already in the cell.&rdquo;</p>
+
+<h2 id="visually">Visually</h2>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/gru.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="gru_12_0.png" alt="png" /></p>
+
+<p>We can also have an output <code>y_t</code> at each layer, but this diagram is intended to highlight the memory-construction that happens within each cell.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

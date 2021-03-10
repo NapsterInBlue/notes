@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Attributes and Subclasses" />
+<meta property="og:description" content="Namespaces in Classes In much the same way that modules and packages create namespaces and hold objects inside for use in scripts, classes hold attributes within each class definition for use in instances.
+Motivation By using the the &lsquo;__dict__&rsquo; hidden method, we can interrogate the attributes of a class.
+Vanilla case class Klass(object): def __init__(self): self.a = 1 ex = Klass()ex.__dict__ {&#39;a&#39;: 1}  Nested class Now if we make a class that inherits from our last class." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/oop/attributes_and_subclasses/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Attributes and Subclasses"/>
+<meta name="twitter:description" content="Namespaces in Classes In much the same way that modules and packages create namespaces and hold objects inside for use in scripts, classes hold attributes within each class definition for use in instances.
+Motivation By using the the &lsquo;__dict__&rsquo; hidden method, we can interrogate the attributes of a class.
+Vanilla case class Klass(object): def __init__(self): self.a = 1 ex = Klass()ex.__dict__ {&#39;a&#39;: 1}  Nested class Now if we make a class that inherits from our last class."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Attributes and Subclasses",
+  "url": "https://napsterinblue.github.io/notes/python/oop/attributes_and_subclasses/",
+  "wordCount": "427",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Attributes and Subclasses</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Attributes and Subclasses</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h1 id="namespaces-in-classes">Namespaces in Classes</h1>
+
+<p>In much the same way that modules and packages create namespaces and hold objects inside for use in scripts, classes hold <em>attributes</em> within each class definition for use in <em>instances</em>.</p>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>By using the the &lsquo;<code>__dict__</code>&rsquo; hidden method, we can interrogate the attributes of a class.</p>
+
+<h4 id="vanilla-case">Vanilla case</h4>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">Klass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span>
+    
+<span class="n">ex</span> <span class="o">=</span> <span class="n">Klass</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>{'a': 1}
+</code></pre>
+
+<h4 id="nested-class">Nested class</h4>
+
+<p>Now if we make a class that inherits from our last class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">SubKlass</span><span class="p">(</span><span class="n">Klass</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="n">ex</span> <span class="o">=</span> <span class="n">SubKlass</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>{'a': 1}
+</code></pre>
+
+<p>We still get the same dict.</p>
+
+<h4 id="the-catch">The Catch</h4>
+
+<p>It&rsquo;s poor style, but we can add attributes to a class object without going through the typical <code>__init__</code> protocol.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Klass</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Klass</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">ex</span> <span class="o">=</span> <span class="n">Klass</span><span class="p">()</span></code></pre></div>
+<p>However, when investigating the instance&rsquo;s <code>__dict__</code> method for attributes, <code>b</code> and <code>c</code> are nowhere to be found.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>{'a': 1}
+</code></pre>
+
+<p>Spookily, though. We can still use them.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">ex</span><span class="o">.</span><span class="n">c</span><span class="p">)</span></code></pre></div>
+<pre><code>2 3
+</code></pre>
+
+<p>If we investigate the contents of our intance with the <code>dir</code> function, we see that <code>b</code> and <code>c</code> are readliy available.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">list</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">))</span></code></pre></div>
+<pre><code>['a', 'b', 'c']
+</code></pre>
+
+<h2 id="dict-instance-vs-class"><code>__dict__</code>: instance vs class</h2>
+
+<p>To bring this example home, let&rsquo;s see what happens when we call <code>__dict__</code> on a class vs an instance.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Klass</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>mappingproxy({'__dict__': &lt;attribute '__dict__' of 'Klass' objects&gt;,
+              '__doc__': None,
+              '__init__': &lt;function __main__.Klass.__init__&gt;,
+              '__module__': '__main__',
+              '__weakref__': &lt;attribute '__weakref__' of 'Klass' objects&gt;,
+              'b': 2,
+              'c': 3})
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>{'a': 1}
+</code></pre>
+
+<p>Concretely, the class has the <code>b</code> and <code>c</code> attributes available and the instance knows how to get to them. This is achieved under the hood by a recursive scan through everything that &ldquo;makes&rdquo; the instance.</p>
+
+<p>To investigate this behavior, we can check the built-in <code>__class__</code> attribute to see what class an instance was created with.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__class__</span></code></pre></div>
+<pre><code>__main__.Klass
+</code></pre>
+
+<p>We can then chain that operation to see what the <code>__dict__</code> looks like for that class (which is essentially what we did at the beginning of this header).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ex</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__dict__</span></code></pre></div>
+<pre><code>mappingproxy({'__dict__': &lt;attribute '__dict__' of 'Klass' objects&gt;,
+              '__doc__': None,
+              '__init__': &lt;function __main__.Klass.__init__&gt;,
+              '__module__': '__main__',
+              '__weakref__': &lt;attribute '__weakref__' of 'Klass' objects&gt;,
+              'b': 2,
+              'c': 3})
+</code></pre>
+
+<p>Notice that we&rsquo;re looking at this fancy-pants <code>mappingproxy</code> object. This is essentially a representation of the underlying <code>__dict__</code>, but that we can&rsquo;t explicitly make changes to. It&rsquo;s all derived from whatever lives in the class through assignment.</p>
+
+<p><strong>But to summarize:</strong></p>
+
+<p>When an object is instantiated from a class, it has access to every attribute all the way up the inheritence chain. However, it can be difficult to know what&rsquo;s available if you&rsquo;re not explicitly assigning things in the proper <code>__init__</code> format.</p>
+
+<p>So use <code>__init__</code>.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

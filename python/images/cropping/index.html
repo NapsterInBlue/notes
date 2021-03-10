@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Cropping an Image" />
+<meta property="og:description" content="I had a picture of my dog that I wanted to trim down a bit. The picture itself had width 400 and height 553.
+from IPython.display import Image Image(&#39;images/daisy.jpg&#39;) Using PIL Load in the image
+from PIL import Image im = Image.open(&#39;images/daisy.jpg&#39;) im Inspecting the docstring for im.crop() had me scratching my head a bit
+Returns a rectangular region from this image. The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/images/cropping/" />
+
+
+
+<meta property="article:published_time" content="2018-09-24T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-24T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cropping an Image"/>
+<meta name="twitter:description" content="I had a picture of my dog that I wanted to trim down a bit. The picture itself had width 400 and height 553.
+from IPython.display import Image Image(&#39;images/daisy.jpg&#39;) Using PIL Load in the image
+from PIL import Image im = Image.open(&#39;images/daisy.jpg&#39;) im Inspecting the docstring for im.crop() had me scratching my head a bit
+Returns a rectangular region from this image. The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cropping an Image",
+  "url": "https://napsterinblue.github.io/notes/python/images/cropping/",
+  "wordCount": "227",
+  "datePublished": "2018-09-24T00:00:00&#43;00:00",
+  "dateModified": "2018-09-24T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Cropping an Image</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Cropping an Image</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-24T00:00:00Z "> 24 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>I had a picture of my dog that I wanted to trim down a bit. The picture itself had width <code>400</code> and height <code>553</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/daisy.jpg&#39;</span><span class="p">)</span></code></pre></div>
+<h3 id="using-pil">Using PIL</h3>
+
+<p>Load in the image</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">im</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;images/daisy.jpg&#39;</span><span class="p">)</span>
+<span class="n">im</span></code></pre></div>
+<p><img src="cropping_5_0.png" alt="png" /></p>
+
+<p>Inspecting the docstring for <code>im.crop()</code> had me scratching my head a bit</p>
+
+<pre><code>Returns a rectangular region from this image. The box is a
+        4-tuple defining the left, upper, right, and lower pixel
+        coordinate.
+</code></pre>
+
+<p>But then I realized that this was looking for 4 values that make up two cooridinates:</p>
+
+<ul>
+<li>The first two are the upper-left corner of the box I want</li>
+<li>The last two are the bottom-right corner</li>
+</ul>
+
+<p>It figures out where to place the upper-right and bottom-left accordingly.</p>
+
+<p>Finally, since the image array has values <code>(0, 0)</code> in the upper-left corner of the image, and is positive in both dimensions toward the bottom-right, I played around a bit to find the right values that got me my pooch.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">im</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">325</span><span class="p">))</span></code></pre></div>
+<p><img src="cropping_9_0.png" alt="png" /></p>
+
+<h3 id="using-cv2">Using cv2</h3>
+
+<p>Again, because <code>cv2</code> means you should think <code>numpy</code>, we&rsquo;ll use array slicing to do our cropping.</p>
+
+<p>Conveniently, this also follows the same numerical design as <code>PIL</code> with <code>(0, 0)</code> in the upper-left, axis-0 as height, and axis-1 as width.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">cv2</span>
+
+<span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;images/daisy.jpg&#39;</span><span class="p">)</span>
+<span class="n">cropped</span> <span class="o">=</span> <span class="n">im</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span><span class="mi">325</span><span class="p">,</span> <span class="mi">100</span><span class="p">:</span><span class="mi">300</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cropped</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">);</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p><img src="cropping_13_1.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

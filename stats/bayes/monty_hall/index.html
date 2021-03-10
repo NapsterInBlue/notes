@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Monty Hall and Bayes" />
+<meta property="og:description" content="Overview A bit of a brain-wrinkler, the Monty Hall is one of the more famous problems to come out of probability theory.
+You probably know the setup:
+- 3 Doors: A, B, C - 1 has a prize, 2 have a dud - You pick a door - Monty Hall opens a second door, revealing a dud - Do you switch to the open door?  You might have memorized that the optimal solution is &ldquo;always switch." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/bayes/monty_hall/" />
+
+
+
+<meta property="article:published_time" content="2020-04-27T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-27T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Monty Hall and Bayes"/>
+<meta name="twitter:description" content="Overview A bit of a brain-wrinkler, the Monty Hall is one of the more famous problems to come out of probability theory.
+You probably know the setup:
+- 3 Doors: A, B, C - 1 has a prize, 2 have a dud - You pick a door - Monty Hall opens a second door, revealing a dud - Do you switch to the open door?  You might have memorized that the optimal solution is &ldquo;always switch."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Monty Hall and Bayes",
+  "url": "https://napsterinblue.github.io/notes/stats/bayes/monty_hall/",
+  "wordCount": "643",
+  "datePublished": "2020-04-27T00:00:00&#43;00:00",
+  "dateModified": "2020-04-27T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Monty Hall and Bayes</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Monty Hall and Bayes</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-27T00:00:00Z "> 27 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>A bit of a brain-wrinkler, the Monty Hall is one of the more famous problems to come out of probability theory.</p>
+
+<p>You probably know the setup:</p>
+
+<pre><code>- 3 Doors: A, B, C
+- 1 has a prize, 2 have a dud
+- You pick a door
+- Monty Hall opens a second door, revealing a dud
+- Do you switch to the open door?
+</code></pre>
+
+<p>You might have memorized that the optimal solution is &ldquo;always switch.&rdquo; But memorizing the intuition, all you have to remember is the phrase &ldquo;You picked A and he chose B.&rdquo;</p>
+
+<p>We&rsquo;ll get into the math of it in a minute, but using this phrase, let&rsquo;s examine all of the 3 scenarios for where the prize is.</p>
+
+<p><strong>It was actually behind A.</strong> If <em>you picked A and he chose B</em>, then his B choice would have been at random between two bad doors.</p>
+
+<p><strong>It was actually behind B.</strong> If <em>you picked A and he chose B</em> then he would have revealed the prize, which he wouldn&rsquo;t do.</p>
+
+<p><strong>If it was actually behind C.</strong> If <em>you picked A and he chose B</em>, then he would have picked the only door that wouldn&rsquo;t reveal the prize.</p>
+
+<p>Also worth noting that it doesn&rsquo;t matter which of the 3 doors we pick at the beginning&ndash; this strategy holds regardless.</p>
+
+<h3 id="with-tables">With Tables</h3>
+
+<p>Working through this problem using <a href="https://napsterinblue.github.io/notes/stats/bayes/basics_tables/">our table method</a> involves careful population of the various cells.</p>
+
+<p>For starters, our &ldquo;Data&rdquo; that we observed will continue to be the phrase &ldquo;You picked A and he chose B.&rdquo; Similarly, the Hypothesis is &ldquo;Which door contains the prize?&rdquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/monty_table_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="monty_hall_2_0.png" alt="png" /></p>
+
+<ul>
+<li>Because all 3 doors are equally likely at first, Column <code>B</code> is trivial.</li>
+<li>Column <code>C</code> follows from our scenario checking above</li>
+<li>Column <code>D</code> and <code>E</code> are straight-up math, just like our last notebook.</li>
+</ul>
+
+<p>Looking at this table, it&rsquo;s clear that the &ldquo;Switch&rdquo; strategy yields a win <sup>2</sup>&frasl;<sub>3</sub> of the time.</p>
+
+<h2 id="variations">Variations</h2>
+
+<p>There are a couple interesting variations worth exploring to cement your intuition for this problem.</p>
+
+<h3 id="100-doors">100 Doors</h3>
+
+<p><a href="https://www.youtube.com/watch?v=4Lb-6rxZxx0">In a short YouTube video on the topic</a>, Numberphile restates the problem, but instead of having 3 doors and revealing 1, we instead have 100 doors and the host reveals 98 of them.</p>
+
+<p>They go on to say that this is intuitively more palatable because you can &ldquo;feel&rdquo; the possibility of door 37 being correct &ldquo;concentrating&rdquo; around it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/monty_numberphile.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="monty_hall_4_0.png" alt="png" /></p>
+
+<p>Interestingly, though, reconstructing this table to account for the 98 doors that are eliminated (<code>B...Y</code>), we can see that the resulting &ldquo;switch and win&rdquo; still yields the same <sup>1</sup>&frasl;<sub>3</sub> : <sup>2</sup>&frasl;<sub>3</sub> relationship</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/monty_table_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="monty_hall_6_0.png" alt="png" /></p>
+
+<h3 id="4-doors-open-1">4 Doors, Open 1</h3>
+
+<p>So the number of opened doors doesn&rsquo;t change our strategy as long as it comes down to a decision between Switch and Stay, but what if we trim down to <em>more than 2</em>?</p>
+
+<p>Remembering our throughline &ldquo;Data observation&rdquo; of &ldquo;You picked A and he chose B&rdquo;, we construct a new table.</p>
+
+<p>Again, column <code>B</code> is trivial. And <code>D</code> and <code>E</code> are, again, plug-and-chug. The interesting part of this problem comes in how we fill out Column <code>C</code>. Going through the options.</p>
+
+<p><strong>The prize is behind A</strong>. &ldquo;You picked A and he chose B.&rdquo; Then B was a random choice, because any of the 3 remaining doors wouldn&rsquo;t have a car.
+<strong>The prize was behind B</strong>. &ldquo;You picked A and he chose B.&rdquo; Again, impossible.
+<strong>The prize was behind C</strong>. &ldquo;You picked A and he chose B.&rdquo; So Monty can either select B or D and still not show a car.
+<strong>The prize was behidn D</strong>. Same as above, but with C or D.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/monty_table_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="monty_hall_9_0.png" alt="png" /></p>
+
+<p>An interesting consequence of this is that even though we don&rsquo;t enjoy the same &ldquo;two times more likely to win&rdquo; property as before, we <em>still</em> have a better shot at finding a prize if we elect to switch and randomly pick from the remaining doors.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="How Imports Cache" />
+<meta property="og:description" content="Caching Imports Whenever Python encounters an import or &quot;from _ import _&quot; statement, it:
+1) Looks for that module in the Module Import Path
+2) Compiles the file into byte code (maybe)
+3) Runs the compiled byte code
+Steps 1 and 2 can be pretty taxing, so to ease on computation it will
+ Leave behind a __pycache__ file to skip out on step 2
+ Make it easier to look up the module file next time" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/how_imports_cache/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="How Imports Cache"/>
+<meta name="twitter:description" content="Caching Imports Whenever Python encounters an import or &quot;from _ import _&quot; statement, it:
+1) Looks for that module in the Module Import Path
+2) Compiles the file into byte code (maybe)
+3) Runs the compiled byte code
+Steps 1 and 2 can be pretty taxing, so to ease on computation it will
+ Leave behind a __pycache__ file to skip out on step 2
+ Make it easier to look up the module file next time"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How Imports Cache",
+  "url": "https://napsterinblue.github.io/notes/python/development/how_imports_cache/",
+  "wordCount": "272",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>How Imports Cache</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">How Imports Cache</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="caching-imports">Caching Imports</h2>
+
+<p>Whenever Python encounters an <code>import</code> or <code>&quot;from _ import _&quot;</code> statement, it:</p>
+
+<p>1) Looks for that module in the Module Import Path</p>
+
+<p>2) Compiles the file into byte code (maybe)</p>
+
+<p>3) Runs the compiled byte code</p>
+
+<p>Steps 1 and 2 can be pretty taxing, so to ease on computation it will</p>
+
+<ul>
+<li><p>Leave behind a <code>__pycache__</code> file to skip out on step 2</p></li>
+
+<li><p>Make it easier to look up the module file next time</p></li>
+</ul>
+
+<h2 id="sys-modules">sys.modules</h2>
+
+<p><code>sys.modules</code> is a dictionary that maps each module import to the explicit filepath of that module&rsquo;s <code>.py</code> file.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span></code></pre></div>
+<pre><code>dict
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;re&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>&lt;module 're' from 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\re.py'&gt;
+</code></pre>
+
+<p>There are a ton of modules that come pre-mapped in Anaconda</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span></code></pre></div>
+<pre><code>862
+</code></pre>
+
+<p>Importing a new module appends the value to <code>sys.modules</code>. For example</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;localscript&#39;</span><span class="p">]</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>    </code></pre></div>
+<pre><code>'localscript'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">localscript</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;localscript&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>&lt;module 'localscript' from 'C:\\Users\\nhounshell\\Documents\\github\\BlackBook\\Python\\Modules and Packages\\localscript.py'&gt;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span></code></pre></div>
+<pre><code>863
+</code></pre>
+
+<h3 id="package-imports">Package imports</h3>
+
+<p>Importing a package actually means first importing the top-level <code>.py</code> file and all of its methods and objects&hellip;</p>
+
+<ul>
+<li>&hellip;then importing all of <em>its</em> import statements and objects&hellip;</li>
+<li>&hellip;then importing all of <em>those files&rsquo;</em> import statements and objects&hellip;</li>
+<li>&hellip;until everything&rsquo;s been imported.</li>
+</ul>
+
+<p>For instance, the library <code>pytz</code> contains subdirectories called <code>exceptions</code>, <code>lazy</code>, <code>tzinfo</code>, and <code>tzfile</code> alongside its top-level script.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pytz</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">ModuleType</span>
+
+<span class="n">pytzContents</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="vm">__dict__</span>
+
+<span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pytzContents</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pytzContents</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="o">==</span> <span class="n">ModuleType</span><span class="p">]</span></code></pre></div>
+<pre><code>['sys', 'datetime', 'os', 'exceptions', 'lazy', 'tzinfo', 'tzfile']
+</code></pre>
+
+<p><code>sys.modules</code> just gets all of them.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;pytz&#39;</span><span class="p">),</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">))</span></code></pre></div>
+<pre><code>['pytz', 'pytz.exceptions', 'pytz.lazy', 'pytz.tzinfo', 'pytz.tzfile']
+</code></pre>
+
+<p>So importing something with a ton of submodules, like <code>pandas</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span></code></pre></div>
+<p>blows up the number of individual modules that <code>sys.modules</code> keeps track of.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span></code></pre></div>
+<pre><code>1180
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Sampling Distributions" />
+<meta property="og:description" content="Populations follow distributions, which are likelihoods of values we expect to see. Not to be confused with an individual sample, a sampling distribution is the distribution of a particular statistic (mean, median, etc) across multiple repeated samples of the same size from the same population.
+But what effect does sampling have on what you can infer that from your population?
+Does the ratio of &ldquo;4 out of 5 dentists&rdquo; that recommend something extrapolate to all dentists or would it be more accurate to say &ldquo;4 out of the 5 dentists that we asked&rdquo;?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/basics/sampling_distributions/" />
+
+
+
+<meta property="article:published_time" content="2018-07-14T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-07-14T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Sampling Distributions"/>
+<meta name="twitter:description" content="Populations follow distributions, which are likelihoods of values we expect to see. Not to be confused with an individual sample, a sampling distribution is the distribution of a particular statistic (mean, median, etc) across multiple repeated samples of the same size from the same population.
+But what effect does sampling have on what you can infer that from your population?
+Does the ratio of &ldquo;4 out of 5 dentists&rdquo; that recommend something extrapolate to all dentists or would it be more accurate to say &ldquo;4 out of the 5 dentists that we asked&rdquo;?"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Sampling Distributions",
+  "url": "https://napsterinblue.github.io/notes/stats/basics/sampling_distributions/",
+  "wordCount": "492",
+  "datePublished": "2018-07-14T00:00:00&#43;00:00",
+  "dateModified": "2018-07-14T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Sampling Distributions</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Sampling Distributions</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-07-14T00:00:00Z "> 14 Jul 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Populations follow <strong>distributions</strong>, which are likelihoods of values we expect to see. Not to be confused with an individual <em>sample</em>, a <strong>sampling distribution</strong> is the <em>distribution</em> of a particular statistic (mean, median, etc) across multiple repeated <em>samples</em> of the <em>same size from the same population.</em></p>
+
+<p>But what effect does sampling have on what you can infer that from your population?</p>
+
+<p>Does the ratio of &ldquo;4 out of 5 dentists&rdquo; that recommend something extrapolate to <em>all dentists</em> or would it be more accurate to say &ldquo;4 out of the 5 dentists that we asked&rdquo;?</p>
+
+<h2 id="ex-coin-flipping">Ex: Coin Flipping</h2>
+
+<p>There&rsquo;s no real &ldquo;population&rdquo; of coin flips&ndash; you can perform the flip an infinite number of times, so it&rsquo;d be impossible to gather all values and calculate the true population parameters. Nevertheless, we know that the distribution of a fair coin is <sup>50</sup>&frasl;<sub>50</sub>.</p>
+
+<p>But, for the sake of argument, say you only flipped one coin and recored that it landed on heads. That heads result obviously doesn&rsquo;t extrapolate to every other coin. Or to put it differently, we can&rsquo;t then infer that the &ldquo;probability of getting heads is 100%,&rdquo; based on the result of our one coin-flip.</p>
+
+<h3 id="simulating-a-lot-of-coin-flips">Simulating a Lot of Coin Flips</h3>
+
+<p>Here, let&rsquo;s assign the value <code>1</code> to any coin that lands on heads, and <code>0</code> for tails.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>So we have a function that will give the sample proportion of a coin that was flipped <code>n</code> times</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">coinflip_prop</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">coinflip_prop</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span></code></pre></div>
+<pre><code>0.40000000000000002
+</code></pre>
+
+<p>And build a way to sample that flip multiple times</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">samples_of_coinflips</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">nFlips</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coinflip_prop</span><span class="p">(</span><span class="n">nFlips</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples</span><span class="p">)])</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span></code></pre></div>
+<pre><code>array([ 0.5,  0.6,  0.3,  0.5,  0.4])
+</code></pre>
+
+<h3 id="a-few-samples">A Few Samples</h3>
+
+<p>We can take a look at what happens <strong>to the distribution of results, when we monitor the <em>sample proportion</em></strong>.</p>
+
+<p>For 25 samples of &ldquo;fair coin flipped 10 times&rdquo;, we get</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tenFlips</span> <span class="o">=</span> <span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">_</span>  <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">tenFlips</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">tenFlips</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">tenFlips</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.436, 0.18736061485808589)
+</code></pre>
+
+<p><img src="sampling_distributions_18_1.png" alt="png" /></p>
+
+<p>And again</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tenFlips</span> <span class="o">=</span> <span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">_</span>  <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">tenFlips</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">tenFlips</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">tenFlips</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.47599999999999992, 0.110562199688682)
+</code></pre>
+
+<p><img src="sampling_distributions_20_1.png" alt="png" /></p>
+
+<h3 id="big-sample-size">Big Sample Size</h3>
+
+<p>Whereas if we did 1000 flips, 25 times, we see that the average value for all flips is perfectly centered around the value we expect, .5</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">thousandFlips</span> <span class="o">=</span> <span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">_</span>  <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">thousandFlips</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">thousandFlips</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">thousandFlips</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.50087999999999999, 0.013865987162838432)
+</code></pre>
+
+<p><img src="sampling_distributions_23_1.png" alt="png" /></p>
+
+<p>Thus, <strong>the larger your sample size, the less variability in your sampling distribution</strong></p>
+
+<h3 id="a-lot-of-samples">A Lot of Samples</h3>
+
+<p>Conversely, if we only ever look at 10 flips at a time, but repeat that sample thousands of times</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tenFlips</span> <span class="o">=</span> <span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">250000</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">_</span>  <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">tenFlips</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">tenFlips</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">tenFlips</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.4997975999999999, 0.15809452563020646)
+</code></pre>
+
+<p><img src="sampling_distributions_27_1.png" alt="png" /></p>
+
+<p>we find that the sampling distribution starts to look like a normal curve</p>
+
+<h3 id="a-lot-of-both">A Lot of Both</h3>
+
+<p>Indeed, when we take a ton of samples, each sampling a lot of coin flips, we can see that <strong>the distribution of the sample mean follows a normal distribution</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">hundredFlips</span> <span class="o">=</span> <span class="n">samples_of_coinflips</span><span class="p">(</span><span class="mi">250000</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">hundredFlips</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;density&#39;</span><span class="p">)</span>
+<span class="n">hundredFlips</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">hundredFlips</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>(0.50011791999999988, 0.049848230609256333)
+</code></pre>
+
+<p><img src="sampling_distributions_31_1.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

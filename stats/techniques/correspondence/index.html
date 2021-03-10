@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Correspondence Analysis" />
+<meta property="og:description" content="Often described as &ldquo;the categorical analogue to PCA&rdquo;, Correspondence Analysis is a dimension-reduction technique that describes the relationship and distribution between two categorical variables.
+Reading papers on the topic proved to be needlessly dense and uninformative&ndash; my lightbulb moment on this topic came when I stumbled across Francois Husson&rsquo;s fantastic tutorial series on YouTube. 100% worth the watch and is where I&rsquo;ll pull many of my images from.
+Intuition For starters, this analysis assumes that our data is prepared as a cross-tabulation of two categorical variables." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/techniques/correspondence/" />
+
+
+
+<meta property="article:published_time" content="2020-04-13T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-13T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Correspondence Analysis"/>
+<meta name="twitter:description" content="Often described as &ldquo;the categorical analogue to PCA&rdquo;, Correspondence Analysis is a dimension-reduction technique that describes the relationship and distribution between two categorical variables.
+Reading papers on the topic proved to be needlessly dense and uninformative&ndash; my lightbulb moment on this topic came when I stumbled across Francois Husson&rsquo;s fantastic tutorial series on YouTube. 100% worth the watch and is where I&rsquo;ll pull many of my images from.
+Intuition For starters, this analysis assumes that our data is prepared as a cross-tabulation of two categorical variables."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Correspondence Analysis",
+  "url": "https://napsterinblue.github.io/notes/stats/techniques/correspondence/",
+  "wordCount": "1728",
+  "datePublished": "2020-04-13T00:00:00&#43;00:00",
+  "dateModified": "2020-04-13T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Correspondence Analysis</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Correspondence Analysis</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-13T00:00:00Z "> 13 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Often described as &ldquo;the categorical analogue to PCA&rdquo;, Correspondence Analysis is a dimension-reduction technique that describes the relationship and distribution between two categorical variables.</p>
+
+<p>Reading papers on the topic proved to be needlessly dense and uninformative&ndash; my lightbulb moment on this topic came when I stumbled across Francois Husson&rsquo;s <a href="https://www.youtube.com/watch?v=Z5Lo1hvZ9fA">fantastic tutorial series on YouTube</a>. 100% worth the watch and is where I&rsquo;ll pull many of my images from.</p>
+
+<h2 id="intuition">Intuition</h2>
+
+<p>For starters, this analysis assumes that our data is prepared as a cross-tabulation of two categorical variables. In the illustration below, there are <code>L</code> records, each with two categorical variables. This leads to a cross-tab matrix with all <code>I</code> distinct <code>V_1</code> variables as rows and <code>J</code> distinct <code>V_2</code> variables as columns.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_data.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_2_0.png" alt="png" /></p>
+
+<p>More concretely, the dataset that Francois uses looks at the distribution of Nobel Prize wins by Category and Country</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;nobel_data.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;Country&#39;</span><span class="p">)</span>
+<span class="n">df</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Chemistry</th>
+      <th>Economics</th>
+      <th>Literature</th>
+      <th>Medicine</th>
+      <th>Peace</th>
+      <th>Physics</th>
+    </tr>
+    <tr>
+      <th>Country</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Canada</th>
+      <td>4</td>
+      <td>3</td>
+      <td>2</td>
+      <td>4</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>France</th>
+      <td>8</td>
+      <td>3</td>
+      <td>11</td>
+      <td>12</td>
+      <td>10</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Germany</th>
+      <td>24</td>
+      <td>1</td>
+      <td>8</td>
+      <td>18</td>
+      <td>5</td>
+      <td>24</td>
+    </tr>
+    <tr>
+      <th>Italy</th>
+      <td>1</td>
+      <td>1</td>
+      <td>6</td>
+      <td>5</td>
+      <td>1</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Japan</th>
+      <td>6</td>
+      <td>0</td>
+      <td>2</td>
+      <td>3</td>
+      <td>1</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>Russia</th>
+      <td>4</td>
+      <td>3</td>
+      <td>5</td>
+      <td>2</td>
+      <td>3</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>UK</th>
+      <td>23</td>
+      <td>6</td>
+      <td>7</td>
+      <td>26</td>
+      <td>11</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>USA</th>
+      <td>51</td>
+      <td>43</td>
+      <td>8</td>
+      <td>70</td>
+      <td>19</td>
+      <td>66</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="conditional-probabilities">Conditional Probabilities</h3>
+
+<p>Unpacking further, the explanation that finally stuck for me was deeply rooted in conditional probability. Here, the row, column, and total sums play a crucial role in computation. This allows us to start expressing conditional probabilities, predicated on overall counts (for this, he uses notation that I&rsquo;ve never seen before, as I&rsquo;ve highlighted below)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_probs.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_6_0.png" alt="png" /></p>
+
+<p>Ultimately, the core mechanic of Correspondence Analysis is an examination of how much our data deviates from an assumption of complete independence. This is a direct extension of <a href="https://napsterinblue.github.io/notes/stats/basics/chi_squared/">the Chi Squared Test</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_chi_sq.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_8_0.png" alt="png" /></p>
+
+<p>In the context of a cross-tab, if our variables all had independence, we&rsquo;d assume that the values in our rows would be distributed consistently with the proportion of the totals, and similarly for the columns.</p>
+
+<p>These two graphics do a fantastic job representing this notion. For example, we can see that <code>Italy</code> has a <code>Literature</code> proportion way off of the mean row value, and <code>Economics</code> prizes are disproportionally won by people from the <code>US</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_row_profile.PNG&#39;</span><span class="p">))</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_col_profile.PNG&#39;</span><span class="p">))</span></code></pre></div>
+<p><img src="correspondence_10_0.png" alt="png" /></p>
+
+<p><img src="correspondence_10_1.png" alt="png" /></p>
+
+<p>Bringing it home, we can then plot all of the conditional probabilities into a point cloud.</p>
+
+<p>The point <code>G</code> represents the center of gravity for the cloud.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_row_cloud.PNG&#39;</span><span class="p">))</span></code></pre></div>
+<p><img src="correspondence_12_0.png" alt="png" /></p>
+
+<p>However, <code>G</code> has a neater intuitive meaning. In the case that our data is all independent, all of the points will just sink to the center of gravity and it will be point, not a point <em>cloud</em>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_col_cloud.PNG&#39;</span><span class="p">))</span></code></pre></div>
+<p><img src="correspondence_14_0.png" alt="png" /></p>
+
+<p>The fact that we instead represent all of the conditional probabilities with a cloud, however, means that there is some measure of deviation from the origin, <code>G</code>. We call this the <strong>interia</strong> of the point cloud.</p>
+
+<p>To restate: <em>Intertia measures the deviation from independence.</em></p>
+
+<p>Finally, the whole purpose of Correspondence Analysis is to get our data to this point and then find the orthogonal projections that explain the most inertia.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_max_intertia.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_16_0.png" alt="png" /></p>
+
+<p><a href="https://napsterinblue.github.io/notes/stats/techniques/pca/">Now where have we heard this before?</a></p>
+
+<h3 id="translating">Translating</h3>
+
+<p>The two point-clouds are generated from the same dataset, so it stands to reason that there should be some way to translate from one to the other, yeah?</p>
+
+<p>For this, Correspondence Analysis borrows a $2 word from astrophysics, called <em>barycenter</em>, which is basically the center of mass between arbitrarily-many objects. Per wikipedia, in the <code>n=2</code> case, where the red <code>+</code> is the barycenter:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/barycenter.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_18_0.png" alt="png" /></p>
+
+<p>As it relates to our usecase, the barycenter of a row on a given axis can be thought of as a weighted average of the column representation.</p>
+
+<p>For a given derived axis <code>s</code>, the columnar representation <code>G(j)</code> is weighted by the sum of all conditional probabilities across those columns, then finally scaled by the <code>lambda</code> value for that axis (more on this below).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_barycenters.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_20_0.png" alt="png" /></p>
+
+<p>This is a bit of a mouthful to take in, but this allows us two nice properties:</p>
+
+<ul>
+<li>The reverse is true&ndash; we can swap the <code>G</code> and <code>F</code> terms and this still works</li>
+<li>Because of this, when we the rows and columns in the new space defined by the various <code>s</code> axes, the rows are closest to columns that it&rsquo;s most associated and vice-versa.</li>
+</ul>
+
+<h3 id="relationship-to-svd">Relationship to SVD</h3>
+
+<p>As mentioned above, the literature on Correspondence Analysis is (in my estimation) needlessly dense. For example, <a href="http://statmath.wu.ac.at/courses/CAandRelMeth/caipA.pdf">this pdf</a> begins</p>
+
+<blockquote>
+<p>CA is based on fairly straightforward, classical results in matrix theory</p>
+</blockquote>
+
+<p>and makes a real hurry of throwing a lot of Greek at you. I might come back and revise this notebook, but for the time being, I think Francois&rsquo; explanation is all the know-how we&rsquo;re going to need on this matter, save for &ldquo;how do we actually find the axes?&rdquo;</p>
+
+<p>For this, first refer to my <a href="https://napsterinblue.github.io/notes/stats/lin_alg/understanding_svd/">notes on SVD</a>.</p>
+
+<p>Then grabbing a small chunk of the equations they throw at you, I want to highlight two things:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_paper.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_22_0.png" alt="png" /></p>
+
+<p>We get the following for free:</p>
+
+<ul>
+<li><code>N</code> and <code>n</code> represent the crosstab matrix and total counts</li>
+<li>These are used to build a simple matrix of probabilities <code>P</code></li>
+<li><code>r</code> and <code>c</code> represent the row and column proportions, which both add to <code>1</code></li>
+<li><code>D_r</code> and <code>D_c</code> are the diagonal matrices of the row and column spaces</li>
+</ul>
+
+<p>And so it looks like equations <code>A.8-10</code> are the nuts and bolts of representing our newfound axes <code>s</code>. Moreover, it looks like we can get this if we can get the values in <code>A.6-7</code>, which in turn need values <code>U</code> and <code>V</code>, which are typical results of doing SVD, in <code>A.5</code>.</p>
+
+<p>The trick to all of is answering &ldquo;SVD on <em>what</em>?&rdquo; For which, we can cleverly construct a matrix, <code>S</code>, of standardized residuals. Once that sentence makes sense to you, you can close the pdf. Residuals should make you think of error, and error should mean difference between predicted and observed, and as mentioned &ldquo;predicted&rdquo; actually means &ldquo;the assumption that everything just follows the population distribution, <code>P</code>.</p>
+
+<p>Armed with that intuition, <code>S</code> becomes the key used to unlock the rest. Of course, there&rsquo;s a handy Python package to keep all of this math straight for us.</p>
+
+<h2 id="on-our-dataset">On Our Dataset</h2>
+
+<p>So running CA on the dataset above, Francois plots out the points from the cross-tab, relative to the new axes he found.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_scatter.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_24_0.png" alt="png" /></p>
+
+<p>The first thing he points is distance to center of the scatter plot.</p>
+
+<p>Broadly-speaking, this is a good proxy for &ldquo;how dissimilar to &lsquo;everything follows the same distribution&rsquo;&rdquo;.</p>
+
+<p>For example, <code>UK</code> is basically on the axis, and we can see below that the distribution of awards won looks VERY close to the sample distribution. <code>Italy</code>, on the other hand, has won dramatically more of the green aand is thus far-flung from the origin.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_uk_zoomed.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_26_0.png" alt="png" /></p>
+
+<p>Similarly, the <code>Economics</code> prizes seem disproportionally won by the <code>US</code> (orange), so it&rsquo;s pretty far off-origin. However, the <code>US</code> <em>does</em> seem to win a respectable proportion of the prizes in each category.</p>
+
+<p>A better example to look at is <code>Italy</code> (teal). On average, they make up a tiny speck of overall awards, but because they&rsquo;re a good 20% of the <code>Literature</code> prize winners, their point is the furthest-right of the whole shebang.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_econ_zoomed.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_28_0.png" alt="png" /></p>
+
+<h2 id="metrics">Metrics</h2>
+
+<h3 id="eigenvalues-and-explained-inertia">Eigenvalues and Explained Inertia</h3>
+
+<p>So after we find our othogonal axes that best-span the point cloud, the eigenvalues that we find represent the explained Inertia of a given axis</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_eigen_value.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_30_0.png" alt="png" /></p>
+
+<p>Then, because our axes are orthogonal, we can add the eigenvalues together and divide by the total inertia to get a look at how well an axis captures the overall spread of our point-cloud</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_avg_inertia.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_32_0.png" alt="png" /></p>
+
+<p>An eigenvalue equaling <code>1</code> means that it accounts for a perfect separation between two blocks in the data. As a toy example, Francois cooks up a small table of taste profiles. The rows are whether a tasted sample <em>was</em> sweet, sour, or bitter. The columns are how they were percieved by tasters.</p>
+
+<p>The first CA-generated axis helps separate our data into two distinct groups, &ldquo;Sweet&rdquo; and &ldquo;Maybe sour or bitter&rdquo;, with perfect accuracy.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_eigen_val_is_one.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_34_0.png" alt="png" /></p>
+
+<p>On the other hand, let&rsquo;s look at two slightly-adjusted version of the dataset. The second axis should help us determine the difference between sour and bitter.</p>
+
+<p>The data on the left is better-separated than the one on the right, and thus the <code>Axis 2</code> eigenvalue is higher and the points scattered are more spread apart.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_eigen_val_isnt_one.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_36_0.png" alt="png" /></p>
+
+<h3 id="total-explained-inertia">Total Explained Inertia</h3>
+
+<p>This intuition in mind, when we revisit the Nobel dataset, two things stand out:</p>
+
+<ul>
+<li>The explained inertia for the first axis is far less than 1, so there&rsquo;s no straight-forward cut in the data</li>
+<li>The total explained inertia is much less than <code>5</code> (a heuristic value, I suppose), so the data isn&rsquo;t as well-separated as we might have thought at first glance.</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ca_revisit_nobel.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="correspondence_38_0.png" alt="png" /></p>
+
+<h2 id="in-python">In Python</h2>
+
+<p>Correspondence Analysis is made pretty simple by the <code>prince</code> library.</p>
+
+<p>Continuing with our original dataset, we&rsquo;ll follow a workflow similar to what we&rsquo;d do in <code>sklearn</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">prince</span> <span class="kn">import</span> <span class="n">CA</span>
+
+<span class="n">ca</span> <span class="o">=</span> <span class="n">CA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">ca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code></pre></div>
+<pre><code>CA(benzecri=False, check_input=True, copy=True, engine='auto', n_components=2,
+   n_iter=10, random_state=None)
+</code></pre>
+
+<p>we&rsquo;ve deconstructed the countries into two principal components and can see a good deal of separation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">ca</span><span class="o">.</span><span class="n">row_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">))</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">row_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Canada</th>
+      <td>0.047235</td>
+      <td>-0.113463</td>
+    </tr>
+    <tr>
+      <th>France</th>
+      <td>-0.498328</td>
+      <td>-0.273206</td>
+    </tr>
+    <tr>
+      <th>Germany</th>
+      <td>-0.158403</td>
+      <td>0.319637</td>
+    </tr>
+    <tr>
+      <th>Italy</th>
+      <td>-0.712666</td>
+      <td>-0.265207</td>
+    </tr>
+    <tr>
+      <th>Japan</th>
+      <td>-0.175512</td>
+      <td>0.515635</td>
+    </tr>
+    <tr>
+      <th>Russia</th>
+      <td>-0.356149</td>
+      <td>-0.048568</td>
+    </tr>
+    <tr>
+      <th>UK</th>
+      <td>-0.035672</td>
+      <td>0.040835</td>
+    </tr>
+    <tr>
+      <th>USA</th>
+      <td>0.267488</td>
+      <td>-0.071423</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><img src="correspondence_42_2.png" alt="png" /></p>
+
+<p>similarly, we can look at how the columns are mapped in this new space.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">ca</span><span class="o">.</span><span class="n">column_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">))</span>
+<span class="n">ca</span><span class="o">.</span><span class="n">column_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Chemistry</th>
+      <td>0.058167</td>
+      <td>0.211959</td>
+    </tr>
+    <tr>
+      <th>Economics</th>
+      <td>0.461605</td>
+      <td>-0.351199</td>
+    </tr>
+    <tr>
+      <th>Literature</th>
+      <td>-0.789820</td>
+      <td>-0.185986</td>
+    </tr>
+    <tr>
+      <th>Medicine</th>
+      <td>0.107692</td>
+      <td>-0.066187</td>
+    </tr>
+    <tr>
+      <th>Peace</th>
+      <td>-0.203421</td>
+      <td>-0.207777</td>
+    </tr>
+    <tr>
+      <th>Physics</th>
+      <td>-0.004938</td>
+      <td>0.163765</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><img src="correspondence_44_1.png" alt="png" /></p>
+
+<p>But even cooler, it&rsquo;s super easy to plot the two together via the expressive <code>plot_coordinates()</code> function. This looks like the images we&rsquo;ve been looking at all along, just flipped across a couple axes.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ca</span><span class="o">.</span><span class="n">plot_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">));</span></code></pre></div>
+<p><img src="correspondence_46_0.png" alt="png" /></p>
+
+<p>Finally, we can easily inspect the various metrics that we want to pay attention to.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ca</span><span class="o">.</span><span class="n">eigenvalues_</span></code></pre></div>
+<pre><code>[0.08333122262451487, 0.03744306648476863]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ca</span><span class="o">.</span><span class="n">total_inertia_</span></code></pre></div>
+<pre><code>0.1522091104308082
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ca</span><span class="o">.</span><span class="n">explained_inertia_</span></code></pre></div>
+<pre><code>[0.5474785470374054, 0.24599753837855615]
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

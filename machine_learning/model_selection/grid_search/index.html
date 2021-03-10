@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Grid Search" />
+<meta property="og:description" content="Once you&rsquo;ve got the modeling basics down, you should have a reasonable grasp on what tool to use in what instance.
+But after that step, the difference between a good model and a great model lies in the way you implement that solution. How many splits can your Decision Tree do? How do we normalize our Linear Regression (if at all!)?
+To answer these types of questions, we might turn to the GridSearchCV object in sklearn." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/model_selection/grid_search/" />
+
+
+
+<meta property="article:published_time" content="2018-06-01T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-01T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Grid Search"/>
+<meta name="twitter:description" content="Once you&rsquo;ve got the modeling basics down, you should have a reasonable grasp on what tool to use in what instance.
+But after that step, the difference between a good model and a great model lies in the way you implement that solution. How many splits can your Decision Tree do? How do we normalize our Linear Regression (if at all!)?
+To answer these types of questions, we might turn to the GridSearchCV object in sklearn."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Grid Search",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/model_selection/grid_search/",
+  "wordCount": "668",
+  "datePublished": "2018-06-01T00:00:00&#43;00:00",
+  "dateModified": "2018-06-01T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Grid Search</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Grid Search</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-01T00:00:00Z "> 01 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Once you&rsquo;ve got the modeling basics down, you should have a reasonable grasp on what tool to use in what instance.</p>
+
+<p>But after that step, the difference between a good model and a great model lies in <em>the way you implement</em> that solution. How many splits can your Decision Tree do? How do we normalize our Linear Regression (if at all!)?</p>
+
+<p>To answer these types of questions, we might turn to the <code>GridSearchCV</code> object in <code>sklearn</code>.</p>
+
+<h2 id="basic-model">Basic Model</h2>
+
+<p>Let&rsquo;s use the Boston Housing dataset</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_boston</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">()</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span></code></pre></div>
+<p>And fit a simple Decision Tree to it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span></code></pre></div>
+<pre><code>DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,
+           max_leaf_nodes=None, min_impurity_decrease=0.0,
+           min_impurity_split=None, min_samples_leaf=1,
+           min_samples_split=2, min_weight_fraction_leaf=0.0,
+           presort=False, random_state=None, splitter='best')
+</code></pre>
+
+<p>Scoring the accuracy with Root Mean Squared Error</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">),</span> <span class="n">test_y</span><span class="p">))</span></code></pre></div>
+<pre><code>5.91187248005845
+</code></pre>
+
+<p>Pretty good!</p>
+
+<h2 id="but-could-we-be-better">But Could we be Better?</h2>
+
+<p>How many different params could we have called <code>DecisionTreeRegressor</code> with?</p>
+
+<p>Inspecting the class header yields a lot of optional parameters.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">min_impurity_split</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">presort</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
+<p>By my count, there are 12 different parameters we could give diferent attributes to.</p>
+
+<p>I&rsquo;m no mathematician, but I think if each of these had 3 possible options, you&rsquo;d have a ton of different possible combinations of inputs. We might naively accomplish this via some sort of for loop mayhem.</p>
+
+<p>Or we could use the <code>GridSearchCV</code> object.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;max_depth&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+     <span class="s1">&#39;max_features&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]}</span>
+<span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">grid_search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                           <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_squared_error&#39;</span><span class="p">)</span>
+<span class="n">grid_search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>GridSearchCV(cv=5, error_score='raise',
+       estimator=DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,
+           max_leaf_nodes=None, min_impurity_decrease=0.0,
+           min_impurity_split=None, min_samples_leaf=1,
+           min_samples_split=2, min_weight_fraction_leaf=0.0,
+           presort=False, random_state=None, splitter='best'),
+       fit_params=None, iid=True, n_jobs=1,
+       param_grid=[{'max_depth': [3, 5, 10], 'max_features': [3, 4, 5]}],
+       pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
+       scoring='neg_mean_squared_error', verbose=0)
+</code></pre>
+
+<p>Running this will affix a <code>cv_results</code> attribute to our <code>GridSearchCV</code> object that houses the error/params combinations of each of our runs.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">results</span> <span class="o">=</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">cv_results_</span>
+<span class="k">for</span> <span class="n">mean_score</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;mean_test_score&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">mean_score</span><span class="p">),</span> <span class="n">params</span><span class="p">)</span></code></pre></div>
+<pre><code>5.820944521035298 {'max_depth': 3, 'max_features': 3}
+7.059099610542761 {'max_depth': 3, 'max_features': 4}
+6.1065003798330375 {'max_depth': 3, 'max_features': 5}
+6.638482778664762 {'max_depth': 5, 'max_features': 3}
+7.1317520786530295 {'max_depth': 5, 'max_features': 4}
+5.906653954960339 {'max_depth': 5, 'max_features': 5}
+7.6379616368530305 {'max_depth': 10, 'max_features': 3}
+6.244301426278941 {'max_depth': 10, 'max_features': 4}
+5.874556989282094 {'max_depth': 10, 'max_features': 5}
+</code></pre>
+
+<p>Alternatively, we can just look at what parameters worked best.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span></code></pre></div>
+<pre><code>{'max_depth': 3, 'max_features': 3}
+</code></pre>
+
+<p>Or just return the object that contained the best params.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">grid_search</span><span class="o">.</span><span class="n">best_estimator_</span></code></pre></div>
+<pre><code>DecisionTreeRegressor(criterion='mse', max_depth=3, max_features=3,
+           max_leaf_nodes=None, min_impurity_decrease=0.0,
+           min_impurity_split=None, min_samples_leaf=1,
+           min_samples_split=2, min_weight_fraction_leaf=0.0,
+           presort=False, random_state=None, splitter='best')
+</code></pre>
+
+<h2 id="more-complicated-grid-searching">More Complicated Grid Searching</h2>
+
+<p>Notice how <code>param_grid</code> was actually a list of dictionaries.</p>
+
+<p>We can pass multiple dicts and as long as they&rsquo;re valid features for our model, it will go through all of the combinatorics for you all the same.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;max_depth&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="s1">&#39;max_features&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]},</span>
+    <span class="p">{</span><span class="s1">&#39;random_state&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;min_samples_split&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span>    
+<span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">grid_search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                           <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_squared_error&#39;</span><span class="p">)</span>
+<span class="n">grid_search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>GridSearchCV(cv=5, error_score='raise',
+       estimator=DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,
+           max_leaf_nodes=None, min_impurity_decrease=0.0,
+           min_impurity_split=None, min_samples_leaf=1,
+           min_samples_split=2, min_weight_fraction_leaf=0.0,
+           presort=False, random_state=None, splitter='best'),
+       fit_params=None, iid=True, n_jobs=1,
+       param_grid=[{'max_depth': [3, 5, 10], 'max_features': [3, 4, 5]}, {'random_state': [0, 1, 2, 3, 4], 'min_samples_split': [2, 3, 4]}],
+       pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
+       scoring='neg_mean_squared_error', verbose=0)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">results</span> <span class="o">=</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">cv_results_</span>
+<span class="k">for</span> <span class="n">mean_score</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;mean_test_score&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">mean_score</span><span class="p">),</span> <span class="n">params</span><span class="p">)</span></code></pre></div>
+<pre><code>6.88084255884404 {'max_depth': 3, 'max_features': 3}
+7.728310368407599 {'max_depth': 3, 'max_features': 4}
+5.631728384408785 {'max_depth': 3, 'max_features': 5}
+7.077161055401675 {'max_depth': 5, 'max_features': 3}
+6.434248762749995 {'max_depth': 5, 'max_features': 4}
+5.50623176204322 {'max_depth': 5, 'max_features': 5}
+9.7960528608141 {'max_depth': 10, 'max_features': 3}
+6.433002196722848 {'max_depth': 10, 'max_features': 4}
+6.867305774249494 {'max_depth': 10, 'max_features': 5}
+6.443989447539467 {'min_samples_split': 2, 'random_state': 0}
+6.175426246670204 {'min_samples_split': 2, 'random_state': 1}
+6.221729739278025 {'min_samples_split': 2, 'random_state': 2}
+6.584041672337973 {'min_samples_split': 2, 'random_state': 3}
+6.26683188047851 {'min_samples_split': 2, 'random_state': 4}
+6.424937519881992 {'min_samples_split': 3, 'random_state': 0}
+6.10162414392069 {'min_samples_split': 3, 'random_state': 1}
+6.117777664913318 {'min_samples_split': 3, 'random_state': 2}
+6.349692656967317 {'min_samples_split': 3, 'random_state': 3}
+6.458894807502856 {'min_samples_split': 3, 'random_state': 4}
+6.3317342045359615 {'min_samples_split': 4, 'random_state': 0}
+6.329991447195127 {'min_samples_split': 4, 'random_state': 1}
+6.304369707153886 {'min_samples_split': 4, 'random_state': 2}
+6.206741512775601 {'min_samples_split': 4, 'random_state': 3}
+6.2498656112033935 {'min_samples_split': 4, 'random_state': 4}
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

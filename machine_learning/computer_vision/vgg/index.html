@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="VGG Architecture" />
+<meta property="og:description" content="One of the more popular Convolutional Network architectures is called VGG-16, named such because it was created by the Visual Geometry Group and contains 16 hidden layers (more on this below).
+Essentially, it&rsquo;s architecture can be described as:
+ Multiple convolutional layers A max pooling layer Rinse, repeat for awhile A couple Fully Connected Layers SoftMax for multiclass predection  And that&rsquo;s it. The key advantage of VGG is its simplicty." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/vgg/" />
+
+
+
+<meta property="article:published_time" content="2018-10-05T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-05T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="VGG Architecture"/>
+<meta name="twitter:description" content="One of the more popular Convolutional Network architectures is called VGG-16, named such because it was created by the Visual Geometry Group and contains 16 hidden layers (more on this below).
+Essentially, it&rsquo;s architecture can be described as:
+ Multiple convolutional layers A max pooling layer Rinse, repeat for awhile A couple Fully Connected Layers SoftMax for multiclass predection  And that&rsquo;s it. The key advantage of VGG is its simplicty."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "VGG Architecture",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/vgg/",
+  "wordCount": "504",
+  "datePublished": "2018-10-05T00:00:00&#43;00:00",
+  "dateModified": "2018-10-05T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>VGG Architecture</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">VGG Architecture</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-05T00:00:00Z "> 05 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>One of the more popular Convolutional Network architectures is called VGG-16, named such because it was created by the Visual Geometry Group and contains 16 hidden layers (more on this below).</p>
+
+<p>Essentially, it&rsquo;s architecture can be described as:</p>
+
+<ul>
+<li>Multiple convolutional layers</li>
+<li>A max pooling layer</li>
+<li>Rinse, repeat for awhile</li>
+<li>A couple Fully Connected Layers</li>
+<li>SoftMax for multiclass predection</li>
+</ul>
+
+<p>And that&rsquo;s it. The key advantage of VGG is its simplicty.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/vgg.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="vgg_2_0.png" alt="png" /></p>
+
+<p>Few things to point out here:</p>
+
+<ul>
+<li>The width and height of each layer gradually down</li>
+<li>Conversely, the number of channels go up the deeper into the network you go&ndash; this is how we abstract complicated features</li>
+<li>Traditionally, we don&rsquo;t consider Pooling layers as &ldquo;layers,&rdquo; as they don&rsquo;t have any trainable parameters. Thus, 13 Conv layers, 2 FC layers, and 1 Softmax layers sum to 16, its namesake
+
+<ul>
+<li>You could also employ VGG19, but the tradeoff between computation and performance increase is sort of moot</li>
+</ul></li>
+</ul>
+
+<h3 id="using-it">Using It</h3>
+
+<p>The model was trained on the <a href="http://image-net.org/">ImageNet dataset</a>, and is readily available in <code>keras</code> under the <code>applications.vgg16</code> namespace.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.applications.vgg16</span> <span class="kn">import</span> <span class="n">VGG16</span></code></pre></div>
+<pre><code>Using TensorFlow backend.
+</code></pre>
+
+<p><code>keras</code> will download it locally if you don&rsquo;t already have it hwen you instantiate the class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">VGG16</span><span class="p">()</span></code></pre></div>
+<p>Note: This is a pretty hefty model, so be prepared to wait if you haven&rsquo;t downloaded it already.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_1 (InputLayer)         (None, 224, 224, 3)       0         
+_________________________________________________________________
+block1_conv1 (Conv2D)        (None, 224, 224, 64)      1792      
+_________________________________________________________________
+block1_conv2 (Conv2D)        (None, 224, 224, 64)      36928     
+_________________________________________________________________
+block1_pool (MaxPooling2D)   (None, 112, 112, 64)      0         
+_________________________________________________________________
+block2_conv1 (Conv2D)        (None, 112, 112, 128)     73856     
+_________________________________________________________________
+block2_conv2 (Conv2D)        (None, 112, 112, 128)     147584    
+_________________________________________________________________
+block2_pool (MaxPooling2D)   (None, 56, 56, 128)       0         
+_________________________________________________________________
+block3_conv1 (Conv2D)        (None, 56, 56, 256)       295168    
+_________________________________________________________________
+block3_conv2 (Conv2D)        (None, 56, 56, 256)       590080    
+_________________________________________________________________
+block3_conv3 (Conv2D)        (None, 56, 56, 256)       590080    
+_________________________________________________________________
+block3_pool (MaxPooling2D)   (None, 28, 28, 256)       0         
+_________________________________________________________________
+block4_conv1 (Conv2D)        (None, 28, 28, 512)       1180160   
+_________________________________________________________________
+block4_conv2 (Conv2D)        (None, 28, 28, 512)       2359808   
+_________________________________________________________________
+block4_conv3 (Conv2D)        (None, 28, 28, 512)       2359808   
+_________________________________________________________________
+block4_pool (MaxPooling2D)   (None, 14, 14, 512)       0         
+_________________________________________________________________
+block5_conv1 (Conv2D)        (None, 14, 14, 512)       2359808   
+_________________________________________________________________
+block5_conv2 (Conv2D)        (None, 14, 14, 512)       2359808   
+_________________________________________________________________
+block5_conv3 (Conv2D)        (None, 14, 14, 512)       2359808   
+_________________________________________________________________
+block5_pool (MaxPooling2D)   (None, 7, 7, 512)         0         
+_________________________________________________________________
+flatten (Flatten)            (None, 25088)             0         
+_________________________________________________________________
+fc1 (Dense)                  (None, 4096)              102764544 
+_________________________________________________________________
+fc2 (Dense)                  (None, 4096)              16781312  
+_________________________________________________________________
+predictions (Dense)          (None, 1000)              4097000   
+=================================================================
+Total params: 138,357,544
+Trainable params: 138,357,544
+Non-trainable params: 0
+_________________________________________________________________
+None
+</code></pre>
+
+<p>Generally speaking, once you&rsquo;ve got these weights, you want to mentally divide everything before and after the <code>flatten</code> layer into &ldquo;feature extraction&rdquo; and &ldquo;classification&rdquo;.</p>
+
+<p>Depending on your use case, you might want to only retrain the classification section. Or you might want to derive some new features by un-freezing the last convolutional block or two. This is where the art aspect comes in.</p>
+
+<p>Regardless, though, you&rsquo;ll want to reinitialize the classifier layer before training, as it&rsquo;s engineered for ImageNet.</p>
+
+<p>See <a href="https://keras.io/applications/#fine-tune-inceptionv3-on-a-new-set-of-classes">the keras documentation</a> for the nitty-gritty.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

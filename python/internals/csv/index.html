@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="The csv module" />
+<meta property="og:description" content="Overview The csv standard library is used for interfacting with&ndash; strangely enough&ndash; csv files.
+Mechanically, working with csv files involves breaking up by lines, then by delimiter, and using the values.
+However, these files aren&rsquo;t beholden to a consistent format. Different rules regarding quotes, delimiters, and line separation can arise, kneecapping your ability to generalize how to work with the files.
+The csv standard library can be handily leveraged as a translation layer in your data pipeline to resolve inconsistencies between these formats." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/internals/csv/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="The csv module"/>
+<meta name="twitter:description" content="Overview The csv standard library is used for interfacting with&ndash; strangely enough&ndash; csv files.
+Mechanically, working with csv files involves breaking up by lines, then by delimiter, and using the values.
+However, these files aren&rsquo;t beholden to a consistent format. Different rules regarding quotes, delimiters, and line separation can arise, kneecapping your ability to generalize how to work with the files.
+The csv standard library can be handily leveraged as a translation layer in your data pipeline to resolve inconsistencies between these formats."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The csv module",
+  "url": "https://napsterinblue.github.io/notes/python/internals/csv/",
+  "wordCount": "1260",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>The csv module</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">The csv module</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>The <code>csv</code> standard library is used for interfacting with&ndash; strangely enough&ndash; csv files.</p>
+
+<p>Mechanically, working with csv files involves breaking up by lines, then by delimiter, and using the values.</p>
+
+<p>However, these files aren&rsquo;t beholden to a consistent format. Different rules regarding quotes, delimiters, and line separation can arise, kneecapping your ability to generalize how to work with the files.</p>
+
+<p>The <code>csv</code> standard library can be handily leveraged as a translation layer in your data pipeline to resolve inconsistencies between these formats.</p>
+
+<h2 id="our-data">Our Data</h2>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span></code></pre></div>
+<p>Printing the first few rows of the iris dataset, we can see that the data is split into rows, and each entry is separated by a comma.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;data/iris.csv&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">195</span><span class="p">])</span></code></pre></div>
+<pre><code>sepal_length,sepal_width,petal_length,petal_width,species
+5.1,3.5,1.4,0.2,setosa
+4.9,3.0,1.4,0.2,setosa
+4.7,3.2,1.3,0.2,setosa
+4.6,3.1,1.5,0.2,setosa
+5.0,3.6,1.4,0.2,setosa
+5.4,3.9,1.7,0.4,setosa
+</code></pre>
+
+<p>But it could be just as easily have been separated by a bar.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;data/iris_bar.csv&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">195</span><span class="p">])</span></code></pre></div>
+<pre><code>sepal_length|sepal_width|petal_length|petal_width|species
+5.1|3.5|1.4|0.2|setosa
+4.9|3.0|1.4|0.2|setosa
+4.7|3.2|1.3|0.2|setosa
+4.6|3.1|1.5|0.2|setosa
+5.0|3.6|1.4|0.2|setosa
+5.4|3.9|1.7|0.4|setosa
+</code></pre>
+
+<p>Or, inexplicably, by ™&rsquo;s</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;data/iris_tm.csv&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">190</span><span class="p">])</span></code></pre></div>
+<pre><code>sepal_length™sepal_width™petal_length™petal_width™species
+5.1™3.5™1.4™0.2™setosa
+4.9™3.0™1.4™0.2™setosa
+4.7™3.2™1.3™0.2™setosa
+4.6™3.1™1.5™0.2™setosa
+5.0™3.6™1.4™0.2™setosa
+5.4™3.9™1.7™0.4™s
+</code></pre>
+
+<h2 id="reading-and-writing">Reading and Writing</h2>
+
+<p>Both the <code>Reader</code> and <code>Writer</code> in the <code>csv</code> module operate using <code>Dialects</code> that essentially describe the rules the file is to be written/read with.</p>
+
+<p>Both <code>csv.reader</code> and <code>csv.writer</code> can take either a <code>dialect</code> argument (more on this below), or individual arguments that would be found within a <code>Dialect</code>. Often, you won&rsquo;t need to finagle with much more than the <code>delimiter</code>.</p>
+
+<h3 id="reader">Reader</h3>
+
+<p>Takes in a csv file that supports an iterator and whose <code>__next__</code> method returns a <code>str</code>. The object itself is a lightweight wrapper to an iterator.</p>
+
+<p>The default reader handles vanilla csv files just fine</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+['5.1', '3.5', '1.4', '0.2', 'setosa']
+['4.9', '3.0', '1.4', '0.2', 'setosa']
+['4.7', '3.2', '1.3', '0.2', 'setosa']
+['4.6', '3.1', '1.5', '0.2', 'setosa']
+</code></pre>
+
+<p>But as mentioned above, you can specify the <code>reader</code>&rsquo;s <code>Dialect</code>, or pass parameters that modify the defaults.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_bar.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+['5.1', '3.5', '1.4', '0.2', 'setosa']
+['4.9', '3.0', '1.4', '0.2', 'setosa']
+['4.7', '3.2', '1.3', '0.2', 'setosa']
+['4.6', '3.1', '1.5', '0.2', 'setosa']
+</code></pre>
+
+<p>Additionally, the <code>csv.reader</code> has a <code>line_num</code> attribute that is useful in searching a file</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_bar.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">csvreader</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;5.0&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0.2&#39;</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">csvreader</span><span class="o">.</span><span class="n">line_num</span><span class="p">)</span></code></pre></div>
+<pre><code>6
+9
+27
+37
+51
+</code></pre>
+
+<p>Or, obviously, in logging with a <code>try</code>/<code>except</code> block</p>
+
+<h2 id="writer">Writer</h2>
+
+<p>Similarly, you can use <code>csv.writer</code> to specify some <code>Dialect</code> attributes and write either:</p>
+
+<p>per row</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">)</span>
+    <span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">csvwriter</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>sepal_length,sepal_width,petal_length,petal_width,species
+5.1,3.5,1.4,0.2,setosa
+4.9,3.0,1.4,0.2,setosa
+4.7,3.2,1.3,0.2,setosa
+4.6,3.1,1.5,0.2,setosa
+</code></pre>
+
+<p>Or multiple rows at once</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">)</span>
+    <span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    
+    <span class="n">fiveLines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    
+    <span class="n">csvwriter</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">fiveLines</span><span class="p">)</span></code></pre></div>
+<pre><code>sepal_length,sepal_width,petal_length,petal_width,species
+5.1,3.5,1.4,0.2,setosa
+4.9,3.0,1.4,0.2,setosa
+4.7,3.2,1.3,0.2,setosa
+4.6,3.1,1.5,0.2,setosa
+</code></pre>
+
+<p>This is very handy because it allows you to neatly translate between <code>Dialect</code>s. Here, we can quickly change the delimiter from <code>','</code> to <code>'|'</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">)</span>
+    <span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">csvwriter</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>sepal_length|sepal_width|petal_length|petal_width|species
+5.1|3.5|1.4|0.2|setosa
+4.9|3.0|1.4|0.2|setosa
+4.7|3.2|1.3|0.2|setosa
+4.6|3.1|1.5|0.2|setosa
+</code></pre>
+
+<h2 id="dialects">Dialects</h2>
+
+<p>Of course, data is often messy.</p>
+
+<p>Thus, we have a need to communicate the &ldquo;rules&rdquo; that a csv file follows. In the <code>csv</code> library this is implemented as <strong>dialects.</strong></p>
+
+<p>Dialects are implemented as Python classes and have attributes that fall into two categories:</p>
+
+<ul>
+<li>How to break up a file</li>
+<li>What to do about quotes when writing</li>
+</ul>
+
+<h4 id="breaking-up-files">Breaking up files</h4>
+
+<p><code>delimiter</code>: What the file rows are split up over. <em>Can only be a single character</em>.</p>
+
+<p>If we pass the correct delimiter for a given file, each row becomes a list of that many entries</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_bar.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+['5.1', '3.5', '1.4', '0.2', 'setosa']
+['4.9', '3.0', '1.4', '0.2', 'setosa']
+['4.7', '3.2', '1.3', '0.2', 'setosa']
+['4.6', '3.1', '1.5', '0.2', 'setosa']
+</code></pre>
+
+<p>If we don&rsquo;t, it becomes one record per row</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">csvreader</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<pre><code>['sepal_length,sepal_width,petal_length,petal_width,species']
+['5.1,3.5,1.4,0.2,setosa']
+['4.9,3.0,1.4,0.2,setosa']
+['4.7,3.2,1.3,0.2,setosa']
+['4.6,3.1,1.5,0.2,setosa']
+</code></pre>
+
+<p><code>lineterminator</code>: What character(s) used to terminate lines when <em>writing.</em></p>
+
+<p><code>skipinitialspace</code>: Some csvs have a bunch of whitespace after each delimiter. This reads past that.</p>
+
+<h4 id="dealing-with-quotes">Dealing with Quotes</h4>
+
+<p>Let&rsquo;s assume a simple dataset. 3 rows with columns &ldquo;Index&rdquo; and &ldquo;Letter&rdquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nums</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">letters</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">64</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">letters</span><span class="p">)))</span></code></pre></div>
+<pre><code>[(1, 'A'), (2, 'B'), (3, 'C')]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">write_3</span><span class="p">(</span><span class="o">**</span><span class="n">quoteargs</span><span class="p">):</span>
+    <span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="o">**</span><span class="n">quoteargs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">letters</span><span class="p">):</span>
+        <span class="n">csvwriter</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></code></pre></div>
+<p>Out of the box, this works fine.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">()</span></code></pre></div>
+<pre><code>1,A
+2,B
+3,C
+</code></pre>
+
+<p>Using the <code>quoting</code> argument, we can choose to include or ignore quotes, regardless of type</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_ALL</span><span class="p">)</span></code></pre></div>
+<pre><code>&quot;1&quot;,&quot;A&quot;
+&quot;2&quot;,&quot;B&quot;
+&quot;3&quot;,&quot;C&quot;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONE</span><span class="p">)</span></code></pre></div>
+<pre><code>1,A
+2,B
+3,C
+</code></pre>
+
+<p>However, this gets dicey when you try to quote <em>and have quote characters within your values</em>.</p>
+
+<p>Let&rsquo;s overwrite our <code>C</code> with <code>&quot;C&quot;</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">letters</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#34;C&#34;&#39;</span></code></pre></div>
+<p><code>csv</code> doesn&rsquo;t know what to do with itself now.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONE</span><span class="p">)</span></code></pre></div>
+<pre><code>1,A
+2,B
+
+
+
+---------------------------------------------------------------------------
+
+Error                                     Traceback (most recent call last)
+
+&lt;ipython-input-19-bd14db3002e5&gt; in &lt;module&gt;()
+----&gt; 1 write_3(quoting=csv.QUOTE_NONE)
+
+
+&lt;ipython-input-14-d8e006bede05&gt; in write_3(**quoteargs)
+      2     csvwriter = csv.writer(sys.stdout, **quoteargs)
+      3     for line in zip(nums, letters):
+----&gt; 4         csvwriter.writerow(line)
+
+
+Error: need to escape, but no escapechar set
+</code></pre>
+
+<p>A few options here.</p>
+
+<p>We use the <code>quotechar</code> argument to tell <code>csv</code> that we quote using something besides <code>&quot;</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONE</span><span class="p">,</span> <span class="n">quotechar</span><span class="o">=</span><span class="s2">&#34;&#39;&#34;</span><span class="p">)</span></code></pre></div>
+<pre><code>1,A
+2,B
+3,&quot;C&quot;
+</code></pre>
+
+<p>Or use the <code>escapechar</code> argument to denote where the character was already in the string</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONE</span><span class="p">,</span> <span class="n">escapechar</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>1,A
+2,B
+3,\&quot;C\&quot;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONNUMERIC</span><span class="p">)</span></code></pre></div>
+<pre><code>1,&quot;A&quot;
+2,&quot;B&quot;
+3,&quot;&quot;&quot;C&quot;&quot;&quot;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_ALL</span><span class="p">)</span></code></pre></div>
+<pre><code>&quot;1&quot;,&quot;A&quot;
+&quot;2&quot;,&quot;B&quot;
+&quot;3&quot;,&quot;&quot;&quot;C&quot;&quot;&quot;
+</code></pre>
+
+<p><strong>The easiest way</strong> is to just use <code>QUOTE_MINIMAL</code>, which is the default behavior</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">write_3</span><span class="p">(</span><span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_MINIMAL</span><span class="p">)</span></code></pre></div>
+<pre><code>1,A
+2,B
+3,&quot;&quot;&quot;C&quot;&quot;&quot;
+</code></pre>
+
+<h3 id="standard-dialects">Standard Dialects</h3>
+
+<p><code>csv</code> comes pre-loaded with some common dialects that are produced by popular csv-creating software</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">csv</span><span class="o">.</span><span class="n">list_dialects</span><span class="p">()</span></code></pre></div>
+<pre><code>['excel', 'excel-tab', 'unix']
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">print_dialect_attrs</span><span class="p">(</span><span class="n">dialect</span><span class="p">):</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">dialect</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dialect</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">excel</span><span class="p">)</span></code></pre></div>
+<pre><code>delimiter        : ','
+doublequote      : True
+escapechar       : None
+lineterminator   : '\r\n'
+quotechar        : '&quot;'
+quoting          : 0
+skipinitialspace : False
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">excel_tab</span><span class="p">)</span></code></pre></div>
+<pre><code>delimiter        : '\t'
+doublequote      : True
+escapechar       : None
+lineterminator   : '\r\n'
+quotechar        : '&quot;'
+quoting          : 0
+skipinitialspace : False
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">get_dialect</span><span class="p">(</span><span class="s1">&#39;unix&#39;</span><span class="p">))</span></code></pre></div>
+<pre><code>delimiter        : ','
+doublequote      : 1
+escapechar       : None
+lineterminator   : '\n'
+quotechar        : '&quot;'
+quoting          : 1
+skipinitialspace : 0
+strict           : 0
+</code></pre>
+
+<h3 id="sniffer">Sniffer</h3>
+
+<p>As we saw above, accounting for all of the csv behavior can be a headache.</p>
+
+<p>Thankfully, we can lean on a really useful <code>csv</code> utility called <code>sniffer</code>.</p>
+
+<h4 id="has-header">has_header</h4>
+
+<p>Sniffer can investigate a file to see if it&rsquo;s got header columns or not.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">Sniffer</span><span class="p">()</span><span class="o">.</span><span class="n">has_header</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span></code></pre></div>
+<pre><code>True
+</code></pre>
+
+<h4 id="sniff">sniff</h4>
+
+<p>But the real power of the <code>Sniffer</code> class is in its ability to determine how things are broken up in a given csv and assign its findings to a <code>Dialect</code> class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_bar.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">dialect</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">Sniffer</span><span class="p">()</span><span class="o">.</span><span class="n">sniff</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">dialect</span><span class="p">)</span></code></pre></div>
+<pre><code>delimiter        : '|'
+doublequote      : False
+escapechar       : None
+lineterminator   : '\r\n'
+quotechar        : '&quot;'
+quoting          : 0
+skipinitialspace : False
+</code></pre>
+
+<p>Of course, it&rsquo;s not always right&ndash; so use caution.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_tm.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">dialect</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">Sniffer</span><span class="p">()</span><span class="o">.</span><span class="n">sniff</span><span class="p">(</span><span class="n">csvfile</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">dialect</span><span class="p">)</span></code></pre></div>
+<pre><code>delimiter        : '.'
+doublequote      : False
+escapechar       : None
+lineterminator   : '\r\n'
+quotechar        : '&quot;'
+quoting          : 0
+skipinitialspace : True
+</code></pre>
+
+<p>Manually correcting</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/iris_tm.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;™&#39;</span><span class="p">)</span>
+    <span class="n">print_dialect_attrs</span><span class="p">(</span><span class="n">csvreader</span><span class="o">.</span><span class="n">dialect</span><span class="p">)</span></code></pre></div>
+<pre><code>delimiter        : '™'
+doublequote      : 1
+escapechar       : None
+lineterminator   : '\r\n'
+quotechar        : '&quot;'
+quoting          : 0
+skipinitialspace : 0
+strict           : 0
+</code></pre>
+
+<h2 id="resources">Resources</h2>
+
+<p><a href="https://docs.python.org/3.6/library/csv.html">https://docs.python.org/3.6/library/csv.html</a></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Linear Transformations" />
+<meta property="og:description" content="Rethinking One of the best, earliest insights that I got from watching 3blue1brown&rsquo;s excellent videos on The Essence of Linear Algebra is how to conceptualize a linear transformation performed by a matrix, A.
+For starters, he conceptualizes everything he talks about relative to the unit vectors i and j, which are vectors of magnitude 1 that point in the x and y directions, respectively.
+from IPython.display import Image Image(&#39;images/basis_unit_vectors.PNG&#39;) Thus, for any matrix, A, that defines a linear transformation, we should make it a habit to immediately identify the columns of A as mappings for these unit vectors." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/lin_alg/linear_transformations/" />
+
+
+
+<meta property="article:published_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Linear Transformations"/>
+<meta name="twitter:description" content="Rethinking One of the best, earliest insights that I got from watching 3blue1brown&rsquo;s excellent videos on The Essence of Linear Algebra is how to conceptualize a linear transformation performed by a matrix, A.
+For starters, he conceptualizes everything he talks about relative to the unit vectors i and j, which are vectors of magnitude 1 that point in the x and y directions, respectively.
+from IPython.display import Image Image(&#39;images/basis_unit_vectors.PNG&#39;) Thus, for any matrix, A, that defines a linear transformation, we should make it a habit to immediately identify the columns of A as mappings for these unit vectors."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Linear Transformations",
+  "url": "https://napsterinblue.github.io/notes/stats/lin_alg/linear_transformations/",
+  "wordCount": "315",
+  "datePublished": "2019-10-07T00:00:00&#43;00:00",
+  "dateModified": "2019-10-07T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Linear Transformations</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Linear Transformations</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-10-07T00:00:00Z "> 07 Oct 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h3 id="rethinking">Rethinking</h3>
+
+<p>One of the best, earliest insights that I got from watching <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">3blue1brown&rsquo;s excellent videos on The Essence of Linear Algebra</a> is how to conceptualize a linear transformation performed by a matrix, <code>A</code>.</p>
+
+<p>For starters, he conceptualizes everything he talks about relative to the unit vectors <code>i</code> and <code>j</code>, which are vectors of magnitude <code>1</code> that point in the <code>x</code> and <code>y</code> directions, respectively.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/basis_unit_vectors.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_transformations_3_0.png" alt="png" /></p>
+
+<p>Thus, for any matrix, <code>A</code>, that defines a linear transformation, we should make it a habit to immediately identify the columns of <code>A</code> as mappings for these unit vectors.</p>
+
+<p>That&rsquo;s to say that for a matrix that looks like</p>
+
+<pre><code>a b
+c d
+</code></pre>
+
+<p>Then the first column, <code>[a c]^T</code>, corresponds to where the <code>i</code> vector winds up. Similarly, <code>[b d]^T</code> is where <code>j</code> does.</p>
+
+<p>Verifying this computationally is trivial (and a little tedious), but internalizing the relationship between columns of <code>A</code> and unit vectors makes framing <em>what&rsquo;s actually happening</em> in the transformation a breeze.</p>
+
+<h3 id="composition">Composition</h3>
+
+<p>He expands on this visual intuition <a href="https://www.youtube.com/watch?v=XkY2DOUCWMU&amp;list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&amp;index=4">in his video on compositions of multiple linear transformations</a>, encouraging you to think of the product of two matricies <code>M3 = (M2)(M1)</code> as the same as &ldquo;applying <code>M1</code>, then applying <code>M2</code>&rdquo; but in one step.</p>
+
+<p>Moreover, we can lean on our intuitive, &ldquo;first column of <code>M1</code> is where <code>i</code> goes&rdquo;, and think of the <code>M2</code>, <code>M1</code> multiplication step in two parts:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/composition_i.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_transformations_5_0.png" alt="png" /></p>
+
+<h2 id="preserves-spacing">Preserves Spacing</h2>
+
+<p>Finally, he iterates again and again throughout his series that a nice consequence of a linear transformation is that all parallel and evenly spaced points/gridlines in our original space <em>continue being parallel and evenly spaced after our linear transformation</em>. In this image, the gray lines represent our typical <code>(x, y)</code> space, and the blue and white lines represent our transformation to a new space using the matrix</p>
+
+<pre><code>1 1
+0 2
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/gridlines.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_transformations_8_0.png" alt="png" /></p>
+
+<p>this property comes up a ton in later sections</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

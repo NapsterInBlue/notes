@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Bootstrapping" />
+<meta property="og:description" content="Motivation The majority of the time, our standard &ldquo;build a model&rdquo; workflow involves splitting a dataset up into train, test, and validation sets. However, this is all predicated on having enough data to split and derive meaningful inference.
+In the event that we have a smaller dataset, we might employ the bootstrap method of oversampling from our population, with replacement, many times. Done enough times, we arrive at
+Example, Before Bootstrap Chapter 5 of ISL has a suggests some hypothetical statistic that they want to measure." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/validation/bootstrap/" />
+
+
+
+<meta property="article:published_time" content="2019-09-17T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-17T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bootstrapping"/>
+<meta name="twitter:description" content="Motivation The majority of the time, our standard &ldquo;build a model&rdquo; workflow involves splitting a dataset up into train, test, and validation sets. However, this is all predicated on having enough data to split and derive meaningful inference.
+In the event that we have a smaller dataset, we might employ the bootstrap method of oversampling from our population, with replacement, many times. Done enough times, we arrive at
+Example, Before Bootstrap Chapter 5 of ISL has a suggests some hypothetical statistic that they want to measure."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bootstrapping",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/validation/bootstrap/",
+  "wordCount": "658",
+  "datePublished": "2019-09-17T00:00:00&#43;00:00",
+  "dateModified": "2019-09-17T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Bootstrapping</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Bootstrapping</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-17T00:00:00Z "> 17 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="motivation">Motivation</h2>
+
+<p>The majority of the time, our standard &ldquo;build a model&rdquo; workflow involves splitting a dataset up into train, test, and validation sets. However, this is all predicated on having enough data to split and derive meaningful inference.</p>
+
+<p>In the event that we have a smaller dataset, we might employ the <em>bootstrap</em> method of oversampling from our population, with replacement, many times. Done enough times, we arrive at</p>
+
+<h3 id="example-before-bootstrap">Example, Before Bootstrap</h3>
+
+<p>Chapter 5 of ISL has a suggests some hypothetical statistic that they want to measure.</p>
+
+<p>Basically you&rsquo;ve got two stock portfolios, <code>X</code> and <code>Y</code>, and you want to spend <code>alpha</code> percent of your money on one and <code>1 - alpha</code> on the other. How might we find an <code>alpha</code> value that minimizes the variance?</p>
+
+<p>$\min_\alpha Var(\alpha X + (1 - \alpha) Y)$</p>
+
+<p>Using Math™, we arrive at an equation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bootstrap_alpha.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="bootstrap_6_0.png" alt="png" /></p>
+
+<p>Then, if we took 1000 samples, each with 100 pairs <code>(X, Y)</code>, we could calculate these <code>sigma</code> values for each sample, plug them in, and get <em>one</em> value for <code>alpha</code>.</p>
+
+<p>Done enough times, we get a <em>mean</em> value for this statistic.</p>
+
+<p>They calculated this to be <code>0.5996</code></p>
+
+<p>Similarly, the standard deviation for the estimate is</p>
+
+<p>$\sqrt{\frac{1}{1000 - 1}\sum_{r=1}^{1000}(\hat{\alpha}_r - \bar{\alpha})^2}$</p>
+
+<p>Equaling <code>0.083</code>.</p>
+
+<p>Thus, we&rsquo;d want to set our strategy according to</p>
+
+<p>$\alpha = 0.5996 \pm 0.083$</p>
+
+<p>However, what if our original dataset wasn&rsquo;t big enough for us to draw multiple samples of size 100?</p>
+
+<p>Furthermore, this approach becomes less-valid when</p>
+
+<h3 id="example-with-bootstrap">Example, with Bootstrap</h3>
+
+<p>For demonstration, what if our data still followed the same distribution, but only contained <em>3 points</em>?</p>
+
+<p>We still want to generate 1000 sampled datasets using our original data, but as stated above, the bootstrap method involves sampling from our original population <em>with replacement</em> and following the same approach as above for calculating our desired statistic, <code>alpha</code>.</p>
+
+<p>This looks like the following</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_5_11.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="bootstrap_14_0.png" alt="png" /></p>
+
+<p>Calculating the average value of the <code>alpha</code> statistic is still a naive &ldquo;sum of <code>alpha</code>, divided by the count&rdquo;.</p>
+
+<p>And generalizing the formula for the Standard Error looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bootstrap_se_alpha.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="bootstrap_16_0.png" alt="png" /></p>
+
+<p>Where:</p>
+
+<ul>
+<li><code>B</code> is the number of Bootstrap samples</li>
+<li>The <code>1/B ... a_hat^*r'</code> term is the average value for <code>alpha</code></li>
+</ul>
+
+<p>But as for as busy as this looks, this is <em>very</em> similar to your basic standard error calculation&ndash; we find the sample mean, then find the standard deviation of it as the square root of the sum of squared distances.</p>
+
+<p>The only, and critical, difference here is that we take <strong>many</strong> Bootstrap samples when calculating the &ldquo;mean value&rdquo; with which we do the sum of squared residual calculation on.</p>
+
+<p>Following with the example in the book, the calculated Standard Error for <code>alpha</code> was <code>0.087</code>, which is obviously <em>very</em> close to the value calculated above.</p>
+
+<p>This should highlight the power of using the Bootstrap technique, espcially for estimating Standard Errors, and by extension Confidence Intervals&ndash; something that a method like Cross Validation does not.</p>
+
+<h2 id="sampling-probability">Sampling Probability</h2>
+
+<p>An interesting consequence of using the bootstrap method is that <strong>we wind up using about <sup>2</sup>&frasl;<sub>3</sub> of the data points in our population</strong>, as highlighted by Exercise 5.2 in ISL.</p>
+
+<p>The intuition is as follows:</p>
+
+<ul>
+<li>If we have <code>n</code> points, then the probability that we pick a point <code>j</code> in our bootstrapping is <code>1/n</code></li>
+<li>Conversely, the probability for any given pick that we <em>don&rsquo;t have</em> <code>j</code> is <code>1 - 1/n</code>, with replacement</li>
+<li>So if we pick two bootstrap observations, the probability of not finding the point <code>j</code>, is the probability of not finding <code>j</code>, squared.</li>
+<li>Extending, if we drew <code>n</code> observations from <code>n</code> numbers, the probability of not finding <code>j</code> is <code>(1 - 1/n)^n</code></li>
+<li>Reversing once more, <em>one minus this term</em> gives us &ldquo;what&rsquo;s the probability that <code>j</code> is <strong>in</strong> the sample?</li>
+<li>This allows us to answer for when <code>n=5</code></li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span> <span class="o">**</span> <span class="mi">5</span></code></pre></div>
+<pre><code>0.6723199999999999
+</code></pre>
+
+<p><code>n=100</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">100</span><span class="p">))</span> <span class="o">**</span> <span class="mi">100</span></code></pre></div>
+<pre><code>0.6339676587267709
+</code></pre>
+
+<p><code>n=10000000</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">10000000</span><span class="p">))</span> <span class="o">**</span> <span class="mi">10000000</span></code></pre></div>
+<pre><code>0.632120577028895
+</code></pre>
+
+<p>So not necessarily <code>.666667</code>, but damn close, eh?</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

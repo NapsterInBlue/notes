@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Eigenvectors and Eigenvalues" />
+<meta property="og:description" content="Motivation Following along with 3blue1brown&rsquo;s series on The Essence of Linear Algebra, the topic of Eigenvectors and Eigenvalues shows up nearly last.
+When I learned this in undergrad, it was a series of equations and operations that I memorized. However, revisiting to write this notebook, I&rsquo;ve now got a good intuition for conceptualizing eigenvectors represent, as well as understand their use/role in Linear Algebra.
+For starters, he presents a matrix A that represents a simple linear transformation and encourages us to watch the yellow line below." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/lin_alg/eigenvectors_and_values/" />
+
+
+
+<meta property="article:published_time" content="2019-10-08T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-10-08T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Eigenvectors and Eigenvalues"/>
+<meta name="twitter:description" content="Motivation Following along with 3blue1brown&rsquo;s series on The Essence of Linear Algebra, the topic of Eigenvectors and Eigenvalues shows up nearly last.
+When I learned this in undergrad, it was a series of equations and operations that I memorized. However, revisiting to write this notebook, I&rsquo;ve now got a good intuition for conceptualizing eigenvectors represent, as well as understand their use/role in Linear Algebra.
+For starters, he presents a matrix A that represents a simple linear transformation and encourages us to watch the yellow line below."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Eigenvectors and Eigenvalues",
+  "url": "https://napsterinblue.github.io/notes/stats/lin_alg/eigenvectors_and_values/",
+  "wordCount": "1097",
+  "datePublished": "2019-10-08T00:00:00&#43;00:00",
+  "dateModified": "2019-10-08T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Eigenvectors and Eigenvalues</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Eigenvectors and Eigenvalues</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-10-08T00:00:00Z "> 08 Oct 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="motivation">Motivation</h2>
+
+<p>Following along with <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">3blue1brown&rsquo;s series on The Essence of Linear Algebra</a>, the topic of Eigenvectors and Eigenvalues shows up nearly last.</p>
+
+<p>When I learned this in undergrad, it was a series of equations and operations that I memorized. However, revisiting to write this notebook, I&rsquo;ve now got a good intuition for conceptualizing eigenvectors represent, as well as understand their use/role in Linear Algebra.</p>
+
+<p>For starters, he presents a matrix <code>A</code> that represents a simple linear transformation and encourages us to watch the yellow line below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/knocked_off_span_before.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_2_0.png" alt="png" /></p>
+
+<p>After the transformation, our basis vectors <code>i</code> and <code>j</code> move, per usual, per the definition of the <code>A</code>. However, holding the pink line constant (uneffected by the transformation) the yellow line gets &ldquo;knocked off.&rdquo;</p>
+
+<p>Interestingly, the green line representing <code>i</code> still perfectly overlaps with the white line that went through the transformation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/knocked_off_span_after.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_4_0.png" alt="png" /></p>
+
+<p>Moreover, there was actually a span that was originally on the line <code>y=-x</code> where the yellow arrow remains on the line.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/remain_on_span.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_6_0.png" alt="png" /></p>
+
+<p>In fact, for all hypothetical lines in our original basis space, the only vectors that remain on their original lines after the transformation <code>A</code> are those on the green and yellow lines.</p>
+
+<p>These are called our <em>eigenvectors</em> and the points that fall on the lines before the transformations are moved along them (think of them as sorts of axes), by a factor shown below&ndash; our <em>eigenvalues</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/remain_on_span_both.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_8_0.png" alt="png" /></p>
+
+<p>More broadly, can state that the <em>eigenvectors</em> of a Linear Transformation <code>A</code> are the vectors that &ldquo;stay put&rdquo; when undergoing the transformation, though, possibly scaling toward or away from the origin by some factor, their <em>eigenvalues</em>.</p>
+
+<h2 id="interpretation">Interpretation</h2>
+
+<p>Looking at this from a 3D perspective, he shows what happens when you&rsquo;ve got a flat cube, then impose some Linear Transformation that <em>rotates the cube</em> in space.</p>
+
+<p>The axis of rotation clearly isn&rsquo;t some clear-cut yellow line representing an axis below, but instead some 3-dimensional vector, represented by the pink line.</p>
+
+<p>If you were to calculate the eigenvector of that <code>3x3</code> matrix, <code>A</code>, you&rsquo;d find the pink line below, as it doesn&rsquo;t move. You&rsquo;d also find that it had a corresponding <em>eigenvalue</em> of <code>1</code>, as the line doesn&rsquo;t undergo any stretching or shrinking whatsoever.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_rotation.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_12_0.png" alt="png" /></p>
+
+<h3 id="considering-transformations">Considering Transformations</h3>
+
+<p>Up to this point in his series, we&rsquo;ve always considered the matrix of a linear transformation, <code>A</code>, in terms its columns, and thereby where it sends our basis unit vectors <code>i</code> and <code>j</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/2d_before.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_15_0.png" alt="png" /></p>
+
+<p>However another way to consider this transformation is <strong>via its eigenvectors</strong>.</p>
+
+<p>For example, if we found and plotted our eigenvectors (as below), we give ourselves an <em>excellent</em> orientation to understand the transformation. Instead of trying to grok the essence of transformation relative to our starting vectors, we can think of establishing a skeleton that stays structurally sound, and compressing/stretching the skeleton appropriately&ndash; all other points transform as a byproduct.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/2d_after.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_17_0.png" alt="png" /></p>
+
+<p><a href="https://youtu.be/8F0gdO643Tc?t=245">This video</a> does an excellent job painting that &ldquo;plot the eigenvectors and then do the transformation&rdquo; intuition, but in 3D.</p>
+
+<h2 id="symbolically">Symbolically</h2>
+
+<p>Though I didn&rsquo;t recall why it was important, the following equation for calculating eigenvalues/eienvectors was drilled in my head, even years later.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_symbol.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_19_0.png" alt="png" /></p>
+
+<p>With a bit of algebra, we can follow this equivalence to a neater equation that we can then solve.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_symbol_equiv.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_21_0.png" alt="png" /></p>
+
+<p>And by the formula of the determinant, we can put a strong <em>algebra</em> emphasis on our Linear Algebra, when finding <code>lambda</code> values with which this holds true.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_det.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_23_0.png" alt="png" /></p>
+
+<p>Substituting, we arrive at a series of <code>(x, y)</code> values that form our <em>eigenvector</em>.</p>
+
+<p>Recall from our notebook on Null Spaces, that having a determinant equal to <code>0</code> means that it drops in dimensions.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_det_line_before.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_25_0.png" alt="png" /></p>
+
+<p>Indeed, if we plot this <em>eigenvector</em> in yellow and apply the transformation, while every point in 2D shrinks to the line, all points in yellow sink to the origin.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_det_line_after.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_27_0.png" alt="png" /></p>
+
+<h2 id="eigen-basis">Eigen Basis</h2>
+
+<p>Now, what if the basis that defined our orientation <em>was</em> our eigen vectors?</p>
+
+<p>Trivially, this is absolutely the case for a diagonal matrix.</p>
+
+<pre><code>1 0 0 0
+0 4 0 0
+0 0 6 0
+0 0 0 2
+</code></pre>
+
+<p>It&rsquo;s not hard to see that adding in the <code>- lambda</code> term to each element on the diag and setting equal to zero would reveal the eigenvalues to be just values on the diag. Similarly that the columns of this matrix <em>are</em> the corresponding eigenvectors.</p>
+
+<p>This has the convenient property that taking arbitrarily-many powers of this matrix involves only 4 calculations&ndash; exponentiating on the diag (the zeros drop out everywhere else)</p>
+
+<h3 id="diagonalization">Diagonalization</h3>
+
+<p>An awesome result of &ldquo;eigenvectors of a transformation only expand and contract along the same lines&rdquo; is that doing a change of basis to our transformation, <code>A</code>, to a space defined by eigenvectors will, by definition, give us a diagonal matrix.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_change_of_basis_before.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_29_0.png" alt="png" /></p>
+
+<p>As seen below, then we can use this diagonal matrix to cleanly move along our new basis vectors in the transformation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_change_of_basis_after.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_31_0.png" alt="png" /></p>
+
+<p>Moreover, if we want to do <em>multiple</em> runs of this same linear transformation, changing our basis to accomodate this diagonal matrix lets us do this trivially.</p>
+
+<p>To see why, consider the following bit of algebra:</p>
+
+<p>If <code>A</code> is our original matrix , <code>D</code> is our diagonal, and <code>P</code> is the matrix that takes us from <code>A</code> to <code>D</code>, then the image above reads</p>
+
+<pre><code>P^-1  A  P  = D
+</code></pre>
+
+<p>Left multiplying by <code>P</code> negates the inverse and right multiplying by the inverse negates <code>P</code>, so this is equivalently</p>
+
+<pre><code>A = P  A  P^-1
+</code></pre>
+
+<p>And so if we want to take <code>A</code> to the <code>n</code>th power, that&rsquo;s the same as writing</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eig_vec_to_n.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_33_0.png" alt="png" /></p>
+
+<p>Where all of the inside <code>P</code> and inverse terms cancel out, giving us <code>D</code> multiplied by itself <code>n</code> times.</p>
+
+<p>This neat little trick, courtesy of <a href="https://www.youtube.com/watch?v=EfZsEFhHcNM">this video</a>.</p>
+
+<h3 id="an-example">An Example</h3>
+
+<p>Putting actual numbers to this idea, 3b1b adds this slide to the end of his video on eigenvectors as an exercise.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/eigen_exercise.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="eigenvectors_and_values_36_0.png" alt="png" /></p>
+
+<p>First, let&rsquo;s load up the <code>numpy</code> that we&rsquo;ll need</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="kn">as</span> <span class="nn">LA</span></code></pre></div>
+<p>Then, following the form we outlined in our Change of Basis notebook, we&rsquo;ll call the main matrix <code>M</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span></code></pre></div>
+<p>Going to calculate these using <code>numpy</code> as opposed to by hand, but with nonzero terms in each cell, you can easily imagine how tedious this would be to do again and again.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[1, 1],
+       [1, 2]])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[1, 2],
+       [2, 3]])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[2, 3],
+       [3, 5]])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[3, 5],
+       [5, 8]])
+</code></pre>
+
+<p>You might notice that this clever little matrix actually represents the Fibonacci Sequence, going from the upper-left to bottom-right.</p>
+
+<p>Fast-forwarding a few terms, this gets pretty big.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">LA</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span></code></pre></div>
+<pre><code>array([[377, 610],
+       [610, 987]])
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

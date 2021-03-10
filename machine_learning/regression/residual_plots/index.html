@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Evaluation using Residual Plots" />
+<meta property="og:description" content="Goal One of the key assumptions of any linear model is homoscedasticity, which&ndash; apart from being a $2 word that I need to spellcheck every time&ndash; means that the variance of your error terms stays generally-consistent across all fitted values.
+Thus, it becomes essential to collect your error residuals and examine them against your predicted values. And if you&rsquo;re being really diligent, your independent X variables, as well.
+Visually, this basically means that we want to see the former, not the latter, of the two pictures below." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/residual_plots/" />
+
+
+
+<meta property="article:published_time" content="2019-09-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Evaluation using Residual Plots"/>
+<meta name="twitter:description" content="Goal One of the key assumptions of any linear model is homoscedasticity, which&ndash; apart from being a $2 word that I need to spellcheck every time&ndash; means that the variance of your error terms stays generally-consistent across all fitted values.
+Thus, it becomes essential to collect your error residuals and examine them against your predicted values. And if you&rsquo;re being really diligent, your independent X variables, as well.
+Visually, this basically means that we want to see the former, not the latter, of the two pictures below."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Evaluation using Residual Plots",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/residual_plots/",
+  "wordCount": "459",
+  "datePublished": "2019-09-10T00:00:00&#43;00:00",
+  "dateModified": "2019-09-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Evaluation using Residual Plots</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Evaluation using Residual Plots</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-10T00:00:00Z "> 10 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="goal">Goal</h2>
+
+<p>One of the key assumptions of any linear model is <strong>homoscedasticity</strong>, which&ndash; apart from being a $2 word that I need to spellcheck every time&ndash; means that <em>the variance of your error terms stays generally-consistent across all fitted values.</em></p>
+
+<p>Thus, it becomes essential to collect your error residuals and examine them against your predicted values. And if you&rsquo;re being <em>really</em> diligent, your independent <code>X</code> variables, as well.</p>
+
+<p>Visually, this basically means that we want to see the former, not the latter, of the two pictures below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/scedasticity.jpg&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p><img src="residual_plots_3_1.jpeg" alt="jpeg" /></p>
+
+<p><strong>Note</strong>: The &ldquo;funnel shape&rdquo; of the dataset showing Heteroscedasticity</p>
+
+<h2 id="a-practical-example">A Practical Example</h2>
+
+<p>In researching the easiest way to put these plots together in Python, I stumbled upon the <a href="https://www.scikit-yb.org/en/latest/">Yellowbrick</a> library. It provides, among other things, a nice visualization wrapper around <code>sklearn</code> objects for doing visual, statistical inference.</p>
+
+<p>Borrowing from their docs, we&rsquo;ll load one of their sample datasets, fit a simple model, then show its residual plot.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">Ridge</span>
+<span class="kn">from</span> <span class="nn">yellowbrick.datasets</span> <span class="kn">import</span> <span class="n">load_bikeshare</span>
+<span class="kn">from</span> <span class="nn">yellowbrick.regressor</span> <span class="kn">import</span> <span class="n">ResidualsPlot</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_bikeshare</span><span class="p">()</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">()</span>
+<span class="n">visualizer</span> <span class="o">=</span> <span class="n">ResidualsPlot</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+
+<span class="n">visualizer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>  
+<span class="n">visualizer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>  
+<span class="n">visualizer</span><span class="o">.</span><span class="n">poof</span><span class="p">();</span></code></pre></div>
+<p><img src="residual_plots_7_0.png" alt="png" /></p>
+
+<p>As you can see, there&rsquo;s a very clear &ldquo;funnel shape&rdquo; that demonstrates *hetero*scedasticity in our data. Furthermore, we can tell by looking at the histogram to the right that the residual values aren&rsquo;t even centered around <code>0</code>.</p>
+
+<p>To address this, the authors of of <a href="https://smile.amazon.com/Introduction-Statistical-Learning-Applications-Statistics/dp/1461471370?sa-no-redirect=1">ISL</a> advocate for applying some concave (downward-curved) function to our target variable, <code>y</code>, to shrink the error in the larger responses.</p>
+
+<h3 id="scaling">Scaling</h3>
+
+<p>The <code>log</code> function is a typical candidate for a transformation function, as it has the concave shape we&rsquo;re looking for</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">);</span></code></pre></div>
+<p><img src="residual_plots_11_0.png" alt="png" /></p>
+
+<p>Same code block as above, except we run all of the <code>y</code> values through <code>np.log()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_bikeshare</span><span class="p">()</span>
+<span class="n">scaled_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">scaled_y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">()</span>
+<span class="n">visualizer</span> <span class="o">=</span> <span class="n">ResidualsPlot</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+
+<span class="n">visualizer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">poof</span><span class="p">();</span></code></pre></div>
+<p><img src="residual_plots_13_0.png" alt="png" /></p>
+
+<p>However, it appears that not only did we overshoot wrenching the mean residual value down, we also created what looks to be a &ldquo;reverse-funnel&rdquo; after <code>~4</code> on the X-axis.</p>
+
+<p>What about the square root function?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">);</span></code></pre></div>
+<p><img src="residual_plots_15_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_bikeshare</span><span class="p">()</span>
+<span class="n">scaled_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">scaled_y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Ridge</span><span class="p">()</span>
+<span class="n">visualizer</span> <span class="o">=</span> <span class="n">ResidualsPlot</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+
+<span class="n">visualizer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">poof</span><span class="p">();</span></code></pre></div>
+<p><img src="residual_plots_16_0.png" alt="png" /></p>
+
+<p>Better, but we still have a distrinct pickup before <code>10</code> or so. We could also examine the residuals against each of our features, but it&rsquo;s probably worth trying a non-linear model at this point, as it might be better-suited for this problem</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Itertools Building Blocks" />
+<meta property="og:description" content="There are a lot of goodies included in the itertools library to enable clever functional programming
+import itertools print(dir(itertools)) [&#39;__doc__&#39;, &#39;__loader__&#39;, &#39;__name__&#39;, &#39;__package__&#39;, &#39;__spec__&#39;, &#39;_grouper&#39;, &#39;_tee&#39;, &#39;_tee_dataobject&#39;, &#39;accumulate&#39;, &#39;chain&#39;, &#39;combinations&#39;, &#39;combinations_with_replacement&#39;, &#39;compress&#39;, &#39;count&#39;, &#39;cycle&#39;, &#39;dropwhile&#39;, &#39;filterfalse&#39;, &#39;groupby&#39;, &#39;islice&#39;, &#39;permutations&#39;, &#39;product&#39;, &#39;repeat&#39;, &#39;starmap&#39;, &#39;takewhile&#39;, &#39;tee&#39;, &#39;zip_longest&#39;]  Let&rsquo;s look at a few
+Infinites count Basically works like a cheap enumerate()
+for _, count_val in zip(range(100), itertools.count()): pass print(count_val) 99  repeat Is used to serve up the same value until an end condition is reached" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/internals/itertools_building_blocks/" />
+
+
+
+<meta property="article:published_time" content="2019-05-24T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-05-24T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Itertools Building Blocks"/>
+<meta name="twitter:description" content="There are a lot of goodies included in the itertools library to enable clever functional programming
+import itertools print(dir(itertools)) [&#39;__doc__&#39;, &#39;__loader__&#39;, &#39;__name__&#39;, &#39;__package__&#39;, &#39;__spec__&#39;, &#39;_grouper&#39;, &#39;_tee&#39;, &#39;_tee_dataobject&#39;, &#39;accumulate&#39;, &#39;chain&#39;, &#39;combinations&#39;, &#39;combinations_with_replacement&#39;, &#39;compress&#39;, &#39;count&#39;, &#39;cycle&#39;, &#39;dropwhile&#39;, &#39;filterfalse&#39;, &#39;groupby&#39;, &#39;islice&#39;, &#39;permutations&#39;, &#39;product&#39;, &#39;repeat&#39;, &#39;starmap&#39;, &#39;takewhile&#39;, &#39;tee&#39;, &#39;zip_longest&#39;]  Let&rsquo;s look at a few
+Infinites count Basically works like a cheap enumerate()
+for _, count_val in zip(range(100), itertools.count()): pass print(count_val) 99  repeat Is used to serve up the same value until an end condition is reached"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Itertools Building Blocks",
+  "url": "https://napsterinblue.github.io/notes/python/internals/itertools_building_blocks/",
+  "wordCount": "1250",
+  "datePublished": "2019-05-24T00:00:00&#43;00:00",
+  "dateModified": "2019-05-24T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Itertools Building Blocks</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Itertools Building Blocks</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-05-24T00:00:00Z "> 24 May 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>There are a lot of goodies included in the <code>itertools</code> library to enable clever functional programming</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="k">print</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">itertools</span><span class="p">))</span></code></pre></div>
+<pre><code>['__doc__', '__loader__', '__name__', '__package__', '__spec__', '_grouper', '_tee', '_tee_dataobject', 'accumulate', 'chain', 'combinations', 'combinations_with_replacement', 'compress', 'count', 'cycle', 'dropwhile', 'filterfalse', 'groupby', 'islice', 'permutations', 'product', 'repeat', 'starmap', 'takewhile', 'tee', 'zip_longest']
+</code></pre>
+
+<p>Let&rsquo;s look at a few</p>
+
+<h2 id="infinites">Infinites</h2>
+
+<h4 id="count"><code>count</code></h4>
+
+<p>Basically works like a cheap <code>enumerate()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">count_val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
+    <span class="k">pass</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">count_val</span><span class="p">)</span></code></pre></div>
+<pre><code>99
+</code></pre>
+
+<h4 id="repeat"><code>repeat</code></h4>
+
+<p>Is used to serve up the same value until an end condition is reached</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="n">itertools</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="s1">&#39;na&#39;</span><span class="p">)):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Batman&#39;</span><span class="p">)</span>    </code></pre></div>
+<pre><code>na na na na na na na na na na na na na na na na Batman
+</code></pre>
+
+<h4 id="cycle"><code>cycle</code></h4>
+
+<p>Used to iterate endlessly through some series of values until an end condition is reached</p>
+
+<p>Works for letters in a string</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">roflcopter</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">(</span><span class="s1">&#39;soi&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">roflcopter</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>soisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisoisois
+</code></pre>
+
+<p>Or values in a list</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">looney_tunes</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="s1">&#39;Rabbit Season&#39;</span><span class="p">,</span> <span class="s1">&#39;Duck Season&#39;</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">looney_tunes</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Rabbit Season</span><span class="se">\n</span><span class="s1">Duck Season, FIRE!&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Rabbit Season
+Duck Season
+Rabbit Season
+Duck Season
+Rabbit Season
+Duck Season
+Rabbit Season
+Rabbit Season
+Duck Season, FIRE!
+</code></pre>
+
+<h2 id="boolean-tools">Boolean Tools</h2>
+
+<h4 id="filter-and-compress"><code>filter</code> and <code>compress</code></h4>
+
+<p>Work very similarly. To illustrate, let&rsquo;s make a simple function that scans if a letter is a vowel or not</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">is_vowel</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">}</span></code></pre></div>
+<p>And make a list of all letters</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">letters</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">65</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">26</span><span class="p">)]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">letters</span><span class="p">)</span></code></pre></div>
+<pre><code>['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+</code></pre>
+
+<p>The <code>compress()</code> function takes an iterable, and then <em>an iterable of type</em> <code>bool</code>. It retuns an iterable.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">compress_result</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">letters</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">is_vowel</span><span class="p">,</span> <span class="n">letters</span><span class="p">))</span>
+<span class="n">compress_result</span></code></pre></div>
+<pre><code>&lt;itertools.compress at 0x274f3a3c8d0&gt;
+</code></pre>
+
+<p>Same goes for the stdlib <code>filter</code> function. But the syntax is (evaluation_function, iterable)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">filter_result</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">is_vowel</span><span class="p">,</span> <span class="n">letters</span><span class="p">)</span>
+<span class="n">filter_result</span></code></pre></div>
+<pre><code>&lt;filter at 0x274f3a3cc50&gt;
+</code></pre>
+
+<p>Unpacking both of them into a list, we get the same result</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">filter_result</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">compress_result</span><span class="p">))</span></code></pre></div>
+<pre><code>['A', 'E', 'I', 'O', 'U']
+['A', 'E', 'I', 'O', 'U']
+</code></pre>
+
+<p>Alternatively, we get the complement letter set using <code>itertools.filterfalse()</code> and the same syntax as <code>filter</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">filterfalse</span><span class="p">(</span><span class="n">is_vowel</span><span class="p">,</span> <span class="n">letters</span><span class="p">)))</span></code></pre></div>
+<pre><code>['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z']
+</code></pre>
+
+<p>It&rsquo;s still unclear to me why somoene would want to use <code>compress()</code> over <code>filter()</code>. Would love an opened issue if anyone has any thoughts&hellip;</p>
+
+<h2 id="short-circuit-evaluation">Short-Circuit Evaluation</h2>
+
+<h4 id="takewhile"><code>takewhile</code></h4>
+
+<p>Goes through an iterable, returning values until some condition is met</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">circle</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Duck&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Goose&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Duck&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span>
+
+<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">takewhile</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;Goose&#39;</span><span class="p">,</span> <span class="n">circle</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Goose!&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Duck
+Duck
+Duck
+Duck
+Duck
+Duck
+Duck
+Duck
+Duck
+Duck
+Goose!
+</code></pre>
+
+<h4 id="dropwhile"><code>dropwhile</code></h4>
+
+<p>On the other hand, <code>dropwhile()</code> will <em>skip over values</em> until some condition is met, then will return the rest of the iterable.</p>
+
+<p>In this overly-cute example, we forgot that the alphabet starts at 65, but we&rsquo;re <em>pretty sure</em> it&rsquo;s within the first 100 characters.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">dropwhile</span><span class="p">,</span> <span class="n">islice</span>
+
+<span class="n">buncha_ascii</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">buncha_ascii</span><span class="p">)</span></code></pre></div>
+<pre><code>['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\t', '\n', '\x0b', '\x0c', '\r', '\x0e', '\x0f', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '&quot;', '#', '$', '%', '&amp;', &quot;'&quot;, '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '&lt;', '=', '&gt;', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c']
+</code></pre>
+
+<p>And so we condition on the value being a letter</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">is_a_letter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span></code></pre></div>
+<p>And drop everything until we find the letter &lsquo;A&rsquo;, then use <code>islice()</code> to grab 26 letters</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">dropwhile</span><span class="p">(</span><span class="n">is_a_letter</span><span class="p">,</span> <span class="n">buncha_ascii</span><span class="p">),</span> <span class="mi">26</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+</code></pre>
+
+<h2 id="combinatorics">Combinatorics</h2>
+
+<p>Several handy functions are implemented to support exhaustive combinatorics</p>
+
+<p>Consider two dummy lists.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">letters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span></code></pre></div>
+<h4 id="product"><code>product</code></h4>
+
+<p>If we want to know how many possible pairings we can get with both lists, we want the cartesian product.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">letters</span><span class="p">,</span> <span class="n">numbers</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span></code></pre></div>
+<pre><code>('A', 1)
+('A', 2)
+('A', 3)
+('B', 1)
+('B', 2)
+('B', 3)
+('C', 1)
+('C', 2)
+('C', 3)
+</code></pre>
+
+<h4 id="combinations"><code>combinations</code></h4>
+
+<p>Or just considering potential &ldquo;handshake pairs&rdquo; from the first list</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">letters</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span></code></pre></div>
+<pre><code>('A', 'B')
+('A', 'C')
+('B', 'C')
+</code></pre>
+
+<h4 id="combinations-with-replacement"><code>combinations_with_replacement</code></h4>
+
+<p>Or allowing for self-shakes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">letters</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span></code></pre></div>
+<pre><code>('A', 'A')
+('A', 'B')
+('A', 'C')
+('B', 'B')
+('B', 'C')
+('C', 'C')
+</code></pre>
+
+<h4 id="permutations"><code>permutations</code></h4>
+
+<p>Finally, we can see all possible orderings of an iterable</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">ordering</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">letters</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">ordering</span><span class="p">)</span></code></pre></div>
+<pre><code>('A', 'B', 'C')
+('A', 'C', 'B')
+('B', 'A', 'C')
+('B', 'C', 'A')
+('C', 'A', 'B')
+('C', 'B', 'A')
+</code></pre>
+
+<h3 id="zip-longest"><code>zip_longest</code></h3>
+
+<p>This one&rsquo;s pretty straight-forward. Whereas the usual <code>zip()</code> function kicks out as soon as one of the iterators hits its <code>StopIteratorException</code>, this will continue <em>until the last one does</em>, subbing in whatever you pass to the <code>fillvalue</code> argument, where appropriate</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">years</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2015</span><span class="p">,</span> <span class="mi">2020</span><span class="p">)</span>
+<span class="n">teams</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Warriors&#39;</span><span class="p">,</span> <span class="s1">&#39;Cavs&#39;</span><span class="p">,</span> <span class="s1">&#39;Warriors&#39;</span><span class="p">,</span> <span class="s1">&#39;Warriors&#39;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">years</span><span class="p">,</span> <span class="n">teams</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="s1">&#39;TBD&#39;</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span></code></pre></div>
+<pre><code>(2015, 'Warriors')
+(2016, 'Cavs')
+(2017, 'Warriors')
+(2018, 'Warriors')
+(2019, 'TBD')
+</code></pre>
+
+<h2 id="reusing-iterables-with-tee">Reusing Iterables with <code>tee</code></h2>
+
+<p>This one took me a minute to get the hang of.</p>
+
+<p>Suppose we knew we would want to go through the list <code>zero_to_sixty</code> twice</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">zero_to_sixty</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">61</span><span class="p">))</span></code></pre></div>
+<p>And so we make an appropriately-named iterator that starts at the same point</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">zero_to_sixty_again</span> <span class="o">=</span> <span class="n">zero_to_sixty</span></code></pre></div>
+<p>And march through the original iterator a few times</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span></code></pre></div>
+<pre><code>0
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span></code></pre></div>
+<pre><code>1
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span></code></pre></div>
+<pre><code>2
+</code></pre>
+
+<p>Then we want to fire off the second iterator</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty_again</span><span class="p">)</span></code></pre></div>
+<pre><code>3
+</code></pre>
+
+<p>But it picks up where the last one left off</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span></code></pre></div>
+<pre><code>4
+</code></pre>
+
+<p>Indeed, they&rsquo;re both the exact same object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">zero_to_sixty</span> <span class="ow">is</span> <span class="n">zero_to_sixty_again</span></code></pre></div>
+<pre><code>True
+</code></pre>
+
+<h4 id="tee"><code>tee</code></h4>
+
+<p>Instead, we could have accomplished this using the <code>tee()</code> function, which &ldquo;tees up&rdquo; an iterator to serve up the same values as its argument would have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">zero_to_sixty</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">61</span><span class="p">))</span>
+<span class="n">zero_to_sixty</span><span class="p">,</span> <span class="n">zero_to_sixty_again</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span></code></pre></div>
+<p><strong>Note</strong>: <code>tee</code> returns a tuple that looks like (the original iterable, the teed iterable)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty</span><span class="p">))</span></code></pre></div>
+<pre><code>10
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">zero_to_sixty_again</span><span class="p">))</span></code></pre></div>
+<pre><code>0
+</code></pre>
+
+<h2 id="smart-iteration-with-groupby">Smart iteration with <code>groupby</code></h2>
+
+<p>As soon as I stopped thinking about this one in terms of <code>pandas.groupby()</code> and instead lazy iterator construction, it finally clicked.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">messy_str</span> <span class="o">=</span> <span class="s1">&#39;aaabbbaaabbbaaabbbcccaaabbbcccdddaaa&#39;</span></code></pre></div>
+<p>This string is constructed to illustrate the general idea of how this function works. In pseudocode:</p>
+
+<pre><code>1. Take the first value as a key
+2. Make this key the first value of an iterator
+
+3. while the next value is the exact same:
+     a. add this value to the iterator
+
+4. When you encounter a new value, repeat steps 1-3
+5. Rinse, repeat until you get the StopIteration exception
+</code></pre>
+
+<p>Running it on our example string</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">g</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">messy_str</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></code></pre></div>
+<pre><code>[('a', &lt;itertools._grouper at 0x274f3a75f60&gt;),
+ ('b', &lt;itertools._grouper at 0x274f3a7a048&gt;),
+ ('a', &lt;itertools._grouper at 0x274f3a7a080&gt;),
+ ('b', &lt;itertools._grouper at 0x274f3a7a0b8&gt;),
+ ('a', &lt;itertools._grouper at 0x274f3a7a0f0&gt;),
+ ('b', &lt;itertools._grouper at 0x274f3a7a128&gt;),
+ ('c', &lt;itertools._grouper at 0x274f3a7a160&gt;),
+ ('a', &lt;itertools._grouper at 0x274f3a7a198&gt;),
+ ('b', &lt;itertools._grouper at 0x274f3a7a1d0&gt;),
+ ('c', &lt;itertools._grouper at 0x274f3a7a208&gt;),
+ ('d', &lt;itertools._grouper at 0x274f3a7a240&gt;),
+ ('a', &lt;itertools._grouper at 0x274f3a7a278&gt;)]
+</code></pre>
+
+<p>The second value in each tuple is, itself, an iterator that yields all of the same values, in order.</p>
+
+<p>This becomes abundantly clear when we then iterate <em>through that second iterator</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">g</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">messy_str</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">()</span></code></pre></div>
+<pre><code>aaa
+bbb
+aaa
+bbb
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
+ddd
+aaa
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

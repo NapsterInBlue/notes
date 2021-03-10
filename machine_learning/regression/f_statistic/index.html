@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="F Statistic" />
+<meta property="og:description" content="Overview The F-Statistic of a Linear Regression seeks to answer &ldquo;Does the introduction of these variables give us greater information gain when trying to explain variation in our target?&rdquo;
+I like the way that Ben Lambert explains and will paraphrase.
+First you make two models&ndash; a restricted model that&rsquo;s just the intercept and an unrestricted model that includes new x_i values
+$R: y = \alpha $
+$U: y = \alpha &#43; \beta_1 x_1 &#43; \beta_2 x_2$" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/f_statistic/" />
+
+
+
+<meta property="article:published_time" content="2019-09-09T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-09T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="F Statistic"/>
+<meta name="twitter:description" content="Overview The F-Statistic of a Linear Regression seeks to answer &ldquo;Does the introduction of these variables give us greater information gain when trying to explain variation in our target?&rdquo;
+I like the way that Ben Lambert explains and will paraphrase.
+First you make two models&ndash; a restricted model that&rsquo;s just the intercept and an unrestricted model that includes new x_i values
+$R: y = \alpha $
+$U: y = \alpha &#43; \beta_1 x_1 &#43; \beta_2 x_2$"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "F Statistic",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/f_statistic/",
+  "wordCount": "937",
+  "datePublished": "2019-09-09T00:00:00&#43;00:00",
+  "dateModified": "2019-09-09T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>F Statistic</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">F Statistic</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-09T00:00:00Z "> 09 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>The F-Statistic of a Linear Regression seeks to answer &ldquo;Does the introduction of these variables give us greater information gain when trying to explain variation in our target?&rdquo;</p>
+
+<p>I like the way that <a href="https://www.youtube.com/watch?v=ie-MYQp1Nic">Ben Lambert</a> explains and will paraphrase.</p>
+
+<p>First you make two models&ndash; a <em>restricted model</em> that&rsquo;s just the intercept and an <em>unrestricted model</em> that includes new <code>x_i</code> values</p>
+
+<p>$R: y = \alpha $</p>
+
+<p>$U: y = \alpha + \beta_1 x_1 + \beta_2 x_2$</p>
+
+<p>Then our Null Hypothesis states that none of the coefficients in <code>U</code> matter and <code>B_1 = B_2 = 0</code> (but can extend to arbitrarily-many Beta values). Equivalently, the alternative hypothesis states that <code>B_i != 0</code> for either Beta.</p>
+
+<p>And so we start by calculating the Sum of Squared Residuals (<a href="https://napsterinblue.github.io/notes/machine_learning/regression/r_squared/">see notes on R-Squared for refresher</a>) for both the Restricted and Unrestricted models.</p>
+
+<p>By definition, then SSR for the Restricted will be higher&ndash; addition of any X variables will account for <em>some</em> increase in predictive power even if miniscule.</p>
+
+<p>Armed with these two, <strong>the F-Statistic is simply the ratio of explained variance and unexplained variance</strong>, and is calculated as</p>
+
+<p>$F = \frac{SSR_R - SSR_U}{SSR_U}$</p>
+
+<p>Well, almost.</p>
+
+<p>We also, critically, normalize the numerator and denominator based on <code>p</code>, the number of <code>x</code> features we&rsquo;re looking at, and <code>n</code>, the number of observations we have. This helps us account for degrees of freedom and looks like the following:</p>
+
+<p>$F = \frac{(SSR_R - SSR_U)/p}{SSR_U/(n-p-1)}$</p>
+
+<h2 id="interpretation">Interpretation</h2>
+
+<p>Plugging this into your favorite statistical computing software will yield a value that can take on wildly-different values. Conceptually, let&rsquo;s imagine two extremes:</p>
+
+<ul>
+<li>The X values don&rsquo;t give us anything useful. This means that the numerator (the information gain of adding them to the model) is small, therefore the whole fraction is small (often around <code>1</code> or so)</li>
+<li>On the other hand, if there&rsquo;s a huge improvement, you might see F values in the hundreds, if not thousands.</li>
+</ul>
+
+<p>Generally, the F-statistic follows a distribution that depends on the degrees of freedom for both the numerator and denominator, and has a shape that looks like the following.</p>
+
+<p><a href="https://www.youtube.com/watch?v=G_RDxAZJ-ug">Source of the image</a></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/f_dists.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="f_statistic_9_0.png" alt="png" /></p>
+
+<h2 id="relationship-to-t-statistic">Relationship to t-statistic</h2>
+
+<p>The F and t statistics feel conceptually adjacent. But whereas F examines the effect of <em>multiple</em> attributes on your model, the t simply looks at one.</p>
+
+<p>From a notation standpoint, if you had a model with an intercept and one <code>x</code> and wanted to observe the F statistic when introducing another <code>x</code>, you&rsquo;d have a difference in 1 degree of freedom (numerator), and 2 degrees of freedom (minus the standard <code>1</code> in the denominator), thus</p>
+
+<p>$F_{1, N-3}$</p>
+
+<p>As far as the output goes, this is functionally equivalent to finding the t-statistic for the same degrees of freedom (N-3), and squaring it. <a href="https://www.youtube.com/watch?v=OzGuXV_qZHg">Source</a></p>
+
+<h3 id="an-example">An Example</h3>
+
+<p>If we whip up a quick Linear Regression using the <code>statsmodels.api</code> and the <code>boston</code> dataset within <code>sklearn</code>, we get access to a very clean object that we can use to interrogate the F-statistic for the model as a whole</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="kn">as</span> <span class="nn">sm</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_boston</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">()</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">est</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">],</span> <span class="n">X</span><span class="p">)</span>
+<span class="n">est</span> <span class="o">=</span> <span class="n">est</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="n">est</span><span class="o">.</span><span class="n">fvalue</span></code></pre></div>
+<pre><code>108.07666617432622
+</code></pre>
+
+<p>But we also can see, using <code>.summary()</code>, the t-statistic for each of the attributes of our model. This is the same as omitting the variable, calculating the F-statistic, then taking the square root (and changing the sign, where appropriate).</p>
+
+<p>In other words, this is the same as the partial effect of adding this variable to the mix.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">est</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<p><table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>            <td>y</td>        <th>  R-squared:         </th> <td>   0.741</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.734</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   108.1</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Mon, 09 Sep 2019</td> <th>  Prob (F-statistic):</th> <td>6.72e-135</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>16:44:05</td>     <th>  Log-Likelihood:    </th> <td> -1498.8</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   3026.</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td>   492</td>      <th>  BIC:               </th> <td>   3085.</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>    13</td>      <th>                     </th>     <td> </td><br />
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td><br />
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+    <td></td>       <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P&gt;|t|</th>  <th>[0.025</th>    <th>0.975]</th><br />
+</tr>
+<tr>
+  <th>const</th> <td>   36.4595</td> <td>    5.103</td> <td>    7.144</td> <td> 0.000</td> <td>   26.432</td> <td>   46.487</td>
+</tr>
+<tr>
+  <th>x1</th>    <td>   -0.1080</td> <td>    0.033</td> <td>   -3.287</td> <td> 0.001</td> <td>   -0.173</td> <td>   -0.043</td>
+</tr>
+<tr>
+  <th>x2</th>    <td>    0.0464</td> <td>    0.014</td> <td>    3.382</td> <td> 0.001</td> <td>    0.019</td> <td>    0.073</td>
+</tr>
+<tr>
+  <th>x3</th>    <td>    0.0206</td> <td>    0.061</td> <td>    0.334</td> <td> 0.738</td> <td>   -0.100</td> <td>    0.141</td>
+</tr>
+<tr>
+  <th>x4</th>    <td>    2.6867</td> <td>    0.862</td> <td>    3.118</td> <td> 0.002</td> <td>    0.994</td> <td>    4.380</td>
+</tr>
+<tr>
+  <th>x5</th>    <td>  -17.7666</td> <td>    3.820</td> <td>   -4.651</td> <td> 0.000</td> <td>  -25.272</td> <td>  -10.262</td>
+</tr>
+<tr>
+  <th>x6</th>    <td>    3.8099</td> <td>    0.418</td> <td>    9.116</td> <td> 0.000</td> <td>    2.989</td> <td>    4.631</td>
+</tr>
+<tr>
+  <th>x7</th>    <td>    0.0007</td> <td>    0.013</td> <td>    0.052</td> <td> 0.958</td> <td>   -0.025</td> <td>    0.027</td>
+</tr>
+<tr>
+  <th>x8</th>    <td>   -1.4756</td> <td>    0.199</td> <td>   -7.398</td> <td> 0.000</td> <td>   -1.867</td> <td>   -1.084</td>
+</tr>
+<tr>
+  <th>x9</th>    <td>    0.3060</td> <td>    0.066</td> <td>    4.613</td> <td> 0.000</td> <td>    0.176</td> <td>    0.436</td>
+</tr>
+<tr>
+  <th>x10</th>   <td>   -0.0123</td> <td>    0.004</td> <td>   -3.280</td> <td> 0.001</td> <td>   -0.020</td> <td>   -0.005</td>
+</tr>
+<tr>
+  <th>x11</th>   <td>   -0.9527</td> <td>    0.131</td> <td>   -7.283</td> <td> 0.000</td> <td>   -1.210</td> <td>   -0.696</td>
+</tr>
+<tr>
+  <th>x12</th>   <td>    0.0093</td> <td>    0.003</td> <td>    3.467</td> <td> 0.001</td> <td>    0.004</td> <td>    0.015</td>
+</tr>
+<tr>
+  <th>x13</th>   <td>   -0.5248</td> <td>    0.051</td> <td>  -10.347</td> <td> 0.000</td> <td>   -0.624</td> <td>   -0.425</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>178.041</td> <th>  Durbin-Watson:     </th> <td>   1.078</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td> 783.126</td>
+</tr>
+<tr>
+  <th>Skew:</th>          <td> 1.521</td>  <th>  Prob(JB):          </th> <td>8.84e-171</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>      <td> 8.281</td>  <th>  Cond. No.          </th> <td>1.51e+04</td>
+</tr>
+</table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 1.51e+04. This might indicate that there are<br/>strong multicollinearity or other numerical problems.</p>
+
+<h3 id="a-warning-about-summary-method-and-t-statistics">A warning about <code>.summary()</code> method and t-statistics</h3>
+
+<p>It&rsquo;s not enough to consider all of the t-statistics for each coefficient.</p>
+
+<p>Consider the case when we build a Linear Regression off of 100 different attributes and that our null hypothesis is true&ndash; each of them are unrelated to the target.</p>
+
+<p>Recall that the p-value is shorthood for &ldquo;probability that we observed this statistic under the null hypothesis.&rdquo; We often reject values less than <code>0.05</code>, but considering the joint probability of 100 attributes, it&rsquo;s <em>likely</em> that we incidentally see one of them coming in under this cutoff&ndash; despite not being valid.</p>
+
+<p>If our criteria for &ldquo;is this model valid?&rdquo; is throwing a big ol&rsquo; OR statement on all of the p-values and hoping for a bite, we&rsquo;re likely to come to a false conclusion.</p>
+
+<p>On the other hand, looking at the F statistic, because of the normalization by <code>n</code> and <code>p</code>, accounts for the observation and dimension size.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

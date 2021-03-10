@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Support Vector Machines Overview" />
+<meta property="og:description" content="The Big Idea The key notion of of this notebook is that we want to formulate some line/hyperplane that we can use to draw a line through our data, maximizing separation between two classes.
+After we&rsquo;ve done this, prediction is as simple as:
+ Draw the hyperplane Look at your point If it&rsquo;s above the hyperplane, predict class A, otherwise B  Like most concepts we got out of ISL, we&rsquo;ll start with a simple, straight-forward case and introduce complexity/relax assumptions until we get to the fancy-pants out-of-the-box implementations you might find in your favorite Data Science library." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/classification/svm/" />
+
+
+
+<meta property="article:published_time" content="2019-09-30T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-30T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Support Vector Machines Overview"/>
+<meta name="twitter:description" content="The Big Idea The key notion of of this notebook is that we want to formulate some line/hyperplane that we can use to draw a line through our data, maximizing separation between two classes.
+After we&rsquo;ve done this, prediction is as simple as:
+ Draw the hyperplane Look at your point If it&rsquo;s above the hyperplane, predict class A, otherwise B  Like most concepts we got out of ISL, we&rsquo;ll start with a simple, straight-forward case and introduce complexity/relax assumptions until we get to the fancy-pants out-of-the-box implementations you might find in your favorite Data Science library."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Support Vector Machines Overview",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/classification/svm/",
+  "wordCount": "1597",
+  "datePublished": "2019-09-30T00:00:00&#43;00:00",
+  "dateModified": "2019-09-30T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Support Vector Machines Overview</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Support Vector Machines Overview</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-30T00:00:00Z "> 30 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h3 id="the-big-idea">The Big Idea</h3>
+
+<p>The key notion of of this notebook is that we want to formulate some line/hyperplane that we can use to draw a line through our data, maximizing separation between two classes.</p>
+
+<p>After we&rsquo;ve done this, prediction is as simple as:</p>
+
+<ul>
+<li>Draw the hyperplane</li>
+<li>Look at your point</li>
+<li>If it&rsquo;s above the hyperplane, predict class A, otherwise B</li>
+</ul>
+
+<p>Like most concepts we got out of ISL, we&rsquo;ll start with a simple, straight-forward case and introduce complexity/relax assumptions until we get to the fancy-pants out-of-the-box implementations you might find in your favorite Data Science library.</p>
+
+<p>For a solid go at the intuition, I really liked <a href="https://www.youtube.com/watch?v=Y6RRHw9uN9o">this YouTube video</a>.</p>
+
+<h2 id="for-perfectly-divided-data">For Perfectly-Divided Data</h2>
+
+<p>As mentioned above, our aim is to find a hyperplane (a line/flat plane with dimensions (1 - dimension of our feature space)) that we can use to separate our data.</p>
+
+<p>In the 2D case, like below, that takes the form of a line, and many different lines correctly split our data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_9_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_3_0.png" alt="png" /></p>
+
+<p>Generally, this line takes the form</p>
+
+<p>$f(x) = \beta_0 + \beta_1 X_1 + \dots + \beta_P X_P = 0$</p>
+
+<p>Where <code>=0</code> is how we establish our boundary between classes. Extending from this, when we consider each training point <code>X</code>, this equation should hold such that</p>
+
+<p>$\beta_0 + \beta_1 X_1 + \dots + \beta_P X_P &gt; 0$</p>
+
+<p>if <code>y=1</code>, the first class, and</p>
+
+<p>$\beta_0 + \beta_1 X_1 + \dots + \beta_P X_P &lt; 0$</p>
+
+<p>if <code>y=-1</code>, the other class.</p>
+
+<p>Equivalently, we can say that</p>
+
+<p>$y (\beta_0 + \beta_1 X_1 + \dots + \beta_P X_P) &gt; 0$</p>
+
+<p>for every <code>y_i, X_i</code>. <strong>This equation will be the jumping-off point for the math in our next few sections</strong>.</p>
+
+<p>This should click, intuitively, as:</p>
+
+<ul>
+<li>Class A points, <code>y=1</code>, will have a positive value in the parentheses</li>
+<li>Class B points will have a negative value in the parentheses, but this will be negated by multiplying by the <code>y=-1</code></li>
+</ul>
+
+<p>Furthermore, <em>magnitude of the parentheses term matters</em>. That&rsquo;s to say that when the absolute value of the left-hand side of the equation is very large, then we&rsquo;re very confident in our prediction.</p>
+
+<h3 id="fitting-the-best-line">Fitting the <em>Best</em> Line</h3>
+
+<p>As you can see in the left-hand figure above, there are potentially infinite solutions to &ldquo;what lines separate our data?&rdquo;</p>
+
+<p>If we define the <em>margins</em> as the distances from the points to our hyperplane, we can define the <em>Maximal Margin Classifier</em> as the hyperplane that maximizes the size of all of these margins.</p>
+
+<p>Put another way, we want to find the <em>widest slab&rdquo; that we can insert between our two classes</em>, which looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_9_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_5_0.png" alt="png" /></p>
+
+<p>More terminology, we call the data points on the margins our <em>support vectors</em>. And they serve as the most important points of data in our whole set, by a mile.</p>
+
+<p>In fact, our correct hyperplane placement <strong>only</strong> depends on the location of these points. All others can be strewn about arbitrarily, so long as they don&rsquo;t pass over the margins.</p>
+
+<p><strong>Note</strong>: This makes SVMs <em>much</em> more reliant to outlier data</p>
+
+<p>Mathematically, this means that the actual solve/optimization that we&rsquo;re doing is choosing our <code>Beta_0, ..., Beta_P</code> terms so that they yield the largest value of <code>M</code> for which the following holds</p>
+
+<p>$y (\beta_0 + \beta_1 X_1 + \dots + \beta_P X_P) \geq M$</p>
+
+<p>Thus <code>M</code> becomes the amount of wiggle room that we have when we place our hyperplane&ndash; the arrows in the figure above.</p>
+
+<p>Additionally, we optimize with the constraint that the sum of squared values of each <code>Beta</code> equals <code>1</code> so that all <code>y * (stuff)</code> values are perpendicular to the hyperplane, according to Math™</p>
+
+<p>In a world with perfectly-separable classes, there are no hyperparameters to tune. This <em>is</em> the most-correct solution.</p>
+
+<h3 id="support-vector-classifier">Support Vector Classifier</h3>
+
+<p>Now, relaxing the niceities of the examples above, we&rsquo;ll build out a <em>Support Vector Classifier</em>.</p>
+
+<p>First off, our data won&rsquo;t always be perfectly separable. You can imagine the scatter above with the errant blue dot comingled with the purple and vice-versa.</p>
+
+<p>Secondly, our <em>best</em> solution in the perfectly-separable case is wildly-sensitive to the introduction of new data points. See what happens when we literally add <em>one</em> blue point.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_9_5.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_7_0.png" alt="png" /></p>
+
+<p>And so we want a classifier that considers both, with a degree of tolerance, so that it isn&rsquo;t so sensitive to new data points.</p>
+
+<p>We do this by changing our last <code>M</code> term in our basic equation to</p>
+
+<p>$\geq M(1 - \epsilon_i)$</p>
+
+<p>These <code>epsilon</code> terms are called &ldquo;slack variables&rdquo; and are tuned to every <em>data point</em>, not feature. They are constrained by</p>
+
+<p>$\epsilon<em>i \geq 0 \quad \forall i \quad, \quad \sum</em>{i=1}^{n} \epsilon_i \leq C$</p>
+
+<p>As bound by some Constraining parameter, <code>C</code>. And so now there is no cut-and-dry <em>best</em> hyperplane. We pick our <code>C</code> value and let the optimizer do its thing.</p>
+
+<p>This leads to an optimization over <code>p</code> different <code>Beta</code> terms and <code>n</code> different <code>epsilon</code> terms. Messy stuff. Instead of getting into the minutiae of the calculation, a few insights into our new running equation:</p>
+
+<p>$y (\beta_0 + \beta_1 X_1 + \dots + \beta_P X_P) \geq M(1 - \epsilon_i)$</p>
+
+<p>Looking at the slack variables with respect to the <code>i</code>th observation:</p>
+
+<ul>
+<li><code>epsilon_i=0</code> means that the righthand term is just <code>&gt;= M</code>, so our <code>i</code>th observation is on the correct side of the margin</li>
+<li><code>0 &lt; epsilon_i &lt; 1</code> means that the righthand term is a <em>fraction</em> of <code>M</code>, so the point is on the right side of the hyperplane and on the wrong side of the margin&ndash; points 1 and 8 below</li>
+<li><code>epsilon_i &gt; 1</code> means that we&rsquo;ve got a <em>negative</em> <code>M</code> value and the point is on the wrong side of the hyperplane&ndash; points 12 and 11 below</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_9_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_9_0.png" alt="png" /></p>
+
+<p>In a sense, we can think of <code>C</code> as a sort of &ldquo;budget&rdquo; for our <code>epsilon</code> values. Effectively this gives us a lever for the Bias/Variance tradeoff, and is best-chosen via Cross Validation.</p>
+
+<p>Revisiting the name &ldquo;Support Vector Classifier&rdquo;, this algorithm will, as above, leverage the <em>Support Vectors</em> that we identified on the margins earlier.</p>
+
+<p><strong>This is the crucial throughline of this notebook</strong>: The fit of our decision boundary is informed almost entirely by the points defined by our margins.</p>
+
+<p>Also as above, we&rsquo;re less concerned with outlier data for this very same reason. This proves to be more robust than LDA or Logistic Regression in that regard.</p>
+
+<h2 id="support-vector-machines">Support Vector Machines</h2>
+
+<p>When we have intermixed data, the main goal then becomes finding some way to map each point into a higher-dimensional space, then formulate some sort of hyperplane that handles the separation as outlined above.</p>
+
+<p>A simple example of this is seen below, as we map our linear data at the top to a quadratic form and cut accordingly.</p>
+
+<p>When we have intermixed data, the main goal then becomes finding some way to map each point into a higher-dimensional space, then formulate some sort of hyperplane that handles the separation as outlined above.</p>
+
+<p>A simple example of this is seen below, as we map our linear data at the top to a quadratic form and cut accordingly.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/svm_linear_to_quad.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_11_0.png" alt="png" /></p>
+
+<p>Generally, this is achieved via a technique called <em>kernelization</em>. I&rsquo;ll omit the gritty details (he writes at 10:46pm after a day of reading them, haha), and instead summarize with this:</p>
+
+<ul>
+<li>Though they can ultimately give us transformations into many-dimensional space, the Kernel functions are quite computationally efficient due to something called the &ldquo;kernel trick&rdquo;</li>
+<li>It can be shown (and indeed has in the MIT video below) that despite how complicated the math winds up getting, both the optimization and the decision only depend on <em>the dot product between our pairwise <code>x</code> vectors</em></li>
+<li><strong>Crucially</strong>, this means that instead of actually calculating all of the covariance values and higher-dimensional projection, we can simply project the inner product between two vectors, and the relationships will still hold.</li>
+<li>Finally, the Kernel Matrix has a useful property in that it&rsquo;s symmetric&ndash; allowing us to nearly half on the cost, when considering all pairwise calculations.</li>
+<li>Furthermore, in the way of computation, as we&rsquo;ve stressed a number of times in this notebook, only a small subset of original <code>X</code> values actually determine the behavior of our SVMs&ndash; our <em>support vectors</em>. Thus, we can limit all of the <code>X</code> values we calculate with to those found within <code>S</code>, the set of all points found between the margins of our hyperplane.</li>
+</ul>
+
+<p>We rewrite our final prediction function as</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/svm_slack.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_13_0.png" alt="png" /></p>
+
+<h2 id="different-kernels">Different Kernels</h2>
+
+<p>The most popular kernels for use in SVMs are all ultimately some proxy for &ldquo;similarity of one point to another&rdquo;.</p>
+
+<p>The hyperparameters, <code>d</code> and <code>gamma</code>, respectively, are tuned using our typical method of Cross Validation</p>
+
+<h3 id="polynomial">Polynomial</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/polynomial_kernel.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_15_0.png" alt="png" /></p>
+
+<p>Which takes the form of the left image</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_9_9.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_17_0.png" alt="png" /></p>
+
+<h3 id="radial">Radial</h3>
+
+<p>Takes the form of the right</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/radial_kernel.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="svm_19_0.png" alt="png" /></p>
+
+<p>Intuitively, when our new point <code>x'</code> is far from <code>x</code>, we expect the exponent to be large and the whole term goes to zero.</p>
+
+<p>This biases toward local behavior and acts as a sort of &ldquo;weighted nearest neighbors&rdquo;-adjacent algorithm.</p>
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+<li><p><a href="https://www.youtube.com/watch?v=Y6RRHw9uN9o">Augmented Startups video</a>: Short, and does a great job visualizing hyperplane slices using kernels</p></li>
+
+<li><p><a href="https://www.youtube.com/watch?v=efR1C6CvhmE">Statsquest on SVMs</a>: From Max Margin Classifiers through SVMs. Emphasis on simple explanations!</p></li>
+
+<li><p><a href="https://www.youtube.com/watch?v=_PwhiWxHK8o">MIT SVM lecture</a>: Excellent lecture. Goes into the math of why we&rsquo;re only concerned with dot product of <code>x</code> values</p></li>
+
+<li><p><a href="https://jakevdp.github.io/PythonDataScienceHandbook/05.07-support-vector-machines.html">JakeVDP blogpost</a>: Doing this stuff in Python</p></li>
+
+<li><p><a href="https://blog.statsbot.co/support-vector-machines-tutorial-c1618e635e93">Stats and Bots on Medium</a>: More kernel intuition. Talks a bit about the difference in computational complexity using kernals vs not</p></li>
+
+<li><p><a href="https://www.youtube.com/watch?v=N_r9oJxSuRs">Udacity Kernel Trick</a>: Very short. Finally helped the notion of the Kernel as a &ldquo;similarity function&rdquo; click</p></li>
+
+<li><p><a href="https://www.youtube.com/watch?v=mTyT-oHoivA">Andrew Ng SVM/Kernels</a>: Further reinforces &ldquo;Kernels and Similarity&rdquo; notion</p></li>
+
+<li><p><a href="https://www.youtube.com/watch?v=N1vOgolbjSc">Alice Zhao on YouTube</a>: Excellent tutorial on doing end to end SVM, with real data</p></li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

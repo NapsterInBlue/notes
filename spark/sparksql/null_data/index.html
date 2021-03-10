@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Working with NULL Data" />
+<meta property="og:description" content="Missing data is a routine part of any Data Scientist&rsquo;s day-to-day. It&rsquo;s so fundamental, in fact, that moving over to PySpark can feel a bit jarring because it&rsquo;s not quite as immediately intuitive as other tools.
+However, if you can keep in mind that because of the way everything&rsquo;s stored/partitioned, PySpark only handles NULL values at the Row-level, things click a bit easier.
+Some Spotty Data I went through the iris dataset and randomly injected a bunch of NULL values." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/sparksql/null_data/" />
+
+
+
+<meta property="article:published_time" content="2018-06-07T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-07T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Working with NULL Data"/>
+<meta name="twitter:description" content="Missing data is a routine part of any Data Scientist&rsquo;s day-to-day. It&rsquo;s so fundamental, in fact, that moving over to PySpark can feel a bit jarring because it&rsquo;s not quite as immediately intuitive as other tools.
+However, if you can keep in mind that because of the way everything&rsquo;s stored/partitioned, PySpark only handles NULL values at the Row-level, things click a bit easier.
+Some Spotty Data I went through the iris dataset and randomly injected a bunch of NULL values."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Working with NULL Data",
+  "url": "https://napsterinblue.github.io/notes/spark/sparksql/null_data/",
+  "wordCount": "873",
+  "datePublished": "2018-06-07T00:00:00&#43;00:00",
+  "dateModified": "2018-06-07T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Working with NULL Data</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Working with NULL Data</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-07T00:00:00Z "> 07 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Missing data is a routine part of any Data Scientist&rsquo;s day-to-day. It&rsquo;s so fundamental, in fact, that moving over to <code>PySpark</code> can feel a bit jarring because it&rsquo;s not quite as immediately intuitive as other tools.</p>
+
+<p>However, if you can keep in mind that because of the way everything&rsquo;s stored/partitioned, <strong>PySpark only handles NULL values at the Row-level</strong>, things click a bit easier.</p>
+
+<h2 id="some-spotty-data">Some Spotty Data</h2>
+
+<p>I went through the iris dataset and randomly injected a bunch of <code>NULL</code> values. Let&rsquo;s load it up (deliberately forcing each column to be read in as a <code>float</code> except the last column&ndash; more on this later)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">filepath</span> <span class="o">=</span> <span class="s1">&#39;../data/somenulls.csv&#39;</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">([</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">FloatType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">FloatType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">FloatType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">FloatType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+<span class="p">])</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                    <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+----+----+----+----+----+
+|   a|   b|   c|   d|   e|
++----+----+----+----+----+
+| 5.1| 3.5| 1.4| 0.2|null|
+| 4.9| 3.0| 1.4| 0.2|null|
+| 4.7|null| 1.3| 0.2|null|
+| 4.6| 3.1| 1.5| 0.2|   0|
+|null| 3.6| 1.4| 0.2|   0|
+| 5.4| 3.9| 1.7| 0.4|   0|
+| 4.6| 3.4| 1.4|null|null|
+| 5.0| 3.4| 1.5| 0.2|null|
+| 4.4|null|null| 0.2|   0|
+| 4.9|null| 1.5| 0.1|   0|
+| 5.4|null| 1.5| 0.2|   0|
+| 4.8|null| 1.6| 0.2|   0|
+| 4.8| 3.0| 1.4|null|   0|
+| 4.3|null| 1.1|null|   0|
+| 5.8| 4.0| 1.2| 0.2|   0|
+|null| 4.4| 1.5| 0.4|   0|
+| 5.4| 3.9| 1.3| 0.4|   0|
+| 5.1| 3.5|null|null|   0|
+| 5.7| 3.8| 1.7| 0.3|   0|
+| 5.1| 3.8| 1.5| 0.3|   0|
++----+----+----+----+----+
+only showing top 20 rows
+</code></pre>
+
+<p>We&rsquo;ve got 150 records.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>150
+</code></pre>
+
+<h3 id="tossing-out-rows">Tossing Out Rows</h3>
+
+<p>The <code>drop</code> function looks, <em>row-wise</em>, for any NULL values and removes the appropriate rows from our <code>DataFrame</code>, based on whatever strategy we want to employ. We can either:</p>
+
+<p>Drop rows that have <strong>any</strong> NULL values with <code>how='any'</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>68
+</code></pre>
+
+<p>Drop rows that are <strong>all</strong> NULL with <code>how='all'</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># only one row had all NULLs</span>
+<span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>149
+</code></pre>
+
+<p>Or set a threshold for the <strong>minimum number of non-NULL values</strong> allowed in a row</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">thresh</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>126
+</code></pre>
+
+<p>We can also narrow our filtering criteria to particular rows, as some columns may have more significant NULL values than others.</p>
+
+<p>Here, we&rsquo;ll only drop rows if they have NULL values in the last 2 columns.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>109
+</code></pre>
+
+<h3 id="filling-missing-values">Filling Missing Values</h3>
+
+<p><code>PySpark</code> doesn&rsquo;t come with a bunch of fancy data imputation methods, batteries-included&ndash; that&rsquo;s more in the realm of the MLLib stack. But for the quick and dirty, let&rsquo;s start simple and look at the first 4 columns of the same <code>float</code> datatype</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">floats</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
+
+<span class="n">floats</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+----+---+---+
+|   a|   b|  c|  d|
++----+----+---+---+
+| 5.1| 3.5|1.4|0.2|
+| 4.9| 3.0|1.4|0.2|
+| 4.7|null|1.3|0.2|
+| 4.6| 3.1|1.5|0.2|
+|null| 3.6|1.4|0.2|
++----+----+---+---+
+only showing top 5 rows
+</code></pre>
+
+<p>If we want to replace our missing values, we simply use the <code>fillna</code> function, passing in a number</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">floats</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">999</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+------+------+---+---+
+|     a|     b|  c|  d|
++------+------+---+---+
+|   5.1|   3.5|1.4|0.2|
+|   4.9|   3.0|1.4|0.2|
+|   4.7|-999.0|1.3|0.2|
+|   4.6|   3.1|1.5|0.2|
+|-999.0|   3.6|1.4|0.2|
++------+------+---+---+
+only showing top 5 rows
+</code></pre>
+
+<p>and like the <code>dropna</code> method, we can specify which column(s) to pay attention to</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">floats</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">999</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+------+---+---+
+|   a|     b|  c|  d|
++----+------+---+---+
+| 5.1|   3.5|1.4|0.2|
+| 4.9|   3.0|1.4|0.2|
+| 4.7|-999.0|1.3|0.2|
+| 4.6|   3.1|1.5|0.2|
+|null|   3.6|1.4|0.2|
++----+------+---+---+
+only showing top 5 rows
+</code></pre>
+
+<p>Similarly, we can do the same thing by passing strings into categorical/string columns</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">strings</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
+<span class="n">strings</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+
+|   e|
++----+
+|null|
+|null|
+|null|
+|   0|
+|   0|
++----+
+only showing top 5 rows
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">strings</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-------+
+|      e|
++-------+
+|unknown|
+|unknown|
+|unknown|
+|      0|
+|      0|
++-------+
+only showing top 5 rows
+</code></pre>
+
+<p>Where this gets tricky is when we try to do both at the same time.</p>
+
+<p>PySpark will intuit that a number in <code>fillna</code> corresponds to the numeric columns</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">99</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-----+-----+---+---+----+
+|    a|    b|  c|  d|   e|
++-----+-----+---+---+----+
+|  5.1|  3.5|1.4|0.2|null|
+|  4.9|  3.0|1.4|0.2|null|
+|  4.7|-99.0|1.3|0.2|null|
+|  4.6|  3.1|1.5|0.2|   0|
+|-99.0|  3.6|1.4|0.2|   0|
++-----+-----+---+---+----+
+only showing top 5 rows
+</code></pre>
+
+<p>and that a string means the string columns</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;who knows?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+----+---+---+----------+
+|   a|   b|  c|  d|         e|
++----+----+---+---+----------+
+| 5.1| 3.5|1.4|0.2|who knows?|
+| 4.9| 3.0|1.4|0.2|who knows?|
+| 4.7|null|1.3|0.2|who knows?|
+| 4.6| 3.1|1.5|0.2|         0|
+|null| 3.6|1.4|0.2|         0|
++----+----+---+---+----------+
+only showing top 5 rows
+</code></pre>
+
+<p>but takes great offense when you try to do both</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">([</span><span class="o">-</span><span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;who knows&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>---------------------------------------------------------------------------
+
+ValueError                                Traceback (most recent call last)
+
+&lt;ipython-input-17-68c95a523395&gt; in &lt;module&gt;()
+----&gt; 1 df.fillna([-99, 'who knows']).show(5)
+
+
+C:\opt\spark\spark-2.3.0-bin-hadoop2.7\python\pyspark\sql\dataframe.py in fillna(self, value, subset)
+   1512         &quot;&quot;&quot;
+   1513         if not isinstance(value, (float, int, long, basestring, bool, dict)):
+-&gt; 1514             raise ValueError(&quot;value should be a float, int, long, string, bool or dict&quot;)
+   1515 
+   1516         # Note that bool validates isinstance(int), but we don't want to
+
+
+ValueError: value should be a float, int, long, string, bool or dict
+</code></pre>
+
+<p>or ignores you completely</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;who knows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+----+---+---+----+
+|   a|   b|  c|  d|   e|
++----+----+---+---+----+
+| 5.1| 3.5|1.4|0.2|null|
+| 4.9| 3.0|1.4|0.2|null|
+| 4.7|null|1.3|0.2|null|
+| 4.6| 3.1|1.5|0.2|   0|
+|null| 3.6|1.4|0.2|   0|
++----+----+---+---+----+
+only showing top 5 rows
+</code></pre>
+
+<p>You can, however, chain them together!</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">99</span><span class="p">)</span>
+   <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span></code></pre></div>
+<pre><code>+-----+-----+---+---+-------+
+|    a|    b|  c|  d|      e|
++-----+-----+---+---+-------+
+|  5.1|  3.5|1.4|0.2|unknown|
+|  4.9|  3.0|1.4|0.2|unknown|
+|  4.7|-99.0|1.3|0.2|unknown|
+|  4.6|  3.1|1.5|0.2|      0|
+|-99.0|  3.6|1.4|0.2|      0|
++-----+-----+---+---+-------+
+only showing top 5 rows
+</code></pre>
+
+<h2 id="removing-columns-with-missing-data">Removing <em>Columns</em> with Missing Data</h2>
+
+<p>This gets trickier when you&rsquo;re looking at the column-level.</p>
+
+<p><a href="https://napsterinblue.github.io/notes/spark/intermediate/dropping_columns/">We&rsquo;ve got a whole other page explaining that.</a></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

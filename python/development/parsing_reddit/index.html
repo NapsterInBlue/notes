@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Parsing Reddit Comments with PRAW" />
+<meta property="og:description" content="PRAW praw, or the Python Reddit API Wrapper, is our best tool for interfacing with Reddit content.
+Getting Set up Installing praw is as easy as pip install praw.
+However, it doesn&rsquo;t work out of the box. Before we can get rolling, we need to set up the proper credentials to use the underlying API.
+Assuming you&rsquo;ve got an existing Reddit account, you can go to https://www.reddit.com/prefs/apps/ and create a new &ldquo;application." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/parsing_reddit/" />
+
+
+
+<meta property="article:published_time" content="2019-07-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-07-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Parsing Reddit Comments with PRAW"/>
+<meta name="twitter:description" content="PRAW praw, or the Python Reddit API Wrapper, is our best tool for interfacing with Reddit content.
+Getting Set up Installing praw is as easy as pip install praw.
+However, it doesn&rsquo;t work out of the box. Before we can get rolling, we need to set up the proper credentials to use the underlying API.
+Assuming you&rsquo;ve got an existing Reddit account, you can go to https://www.reddit.com/prefs/apps/ and create a new &ldquo;application."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Parsing Reddit Comments with PRAW",
+  "url": "https://napsterinblue.github.io/notes/python/development/parsing_reddit/",
+  "wordCount": "974",
+  "datePublished": "2019-07-10T00:00:00&#43;00:00",
+  "dateModified": "2019-07-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Parsing Reddit Comments with PRAW</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Parsing Reddit Comments with PRAW</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-07-10T00:00:00Z "> 10 Jul 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="praw">PRAW</h2>
+
+<p><code>praw</code>, or the <a href="https://praw.readthedocs.io/en/latest/index.html">Python Reddit API Wrapper</a>, is our best tool for interfacing with Reddit content.</p>
+
+<h3 id="getting-set-up">Getting Set up</h3>
+
+<p>Installing <code>praw</code> is as easy as <code>pip install praw</code>.</p>
+
+<p>However, it doesn&rsquo;t work out of the box. Before we can get rolling, we need to set up the proper credentials to use the underlying API.</p>
+
+<p>Assuming you&rsquo;ve got an existing Reddit account, you can go to <a href="https://www.reddit.com/prefs/apps/">https://www.reddit.com/prefs/apps/</a> and create a new &ldquo;application.&rdquo;</p>
+
+<p>Once you&rsquo;re through the boilerplate of filling everything out, click Edit on your app to get at the appropriate tokens you&rsquo;ll need to use PRAW (in red below)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/praw_info.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="parsing_reddit_5_0.png" alt="png" /></p>
+
+<p>Then, using the values for <code>client_id</code> and <code>client_secret</code>, respectively, you can kick off your own Reddit instance via</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">praw</span>
+
+<span class="n">reddit</span> <span class="o">=</span> <span class="n">praw</span><span class="o">.</span><span class="n">Reddit</span><span class="p">(</span><span class="n">client_id</span><span class="o">=</span><span class="s1">&#39;my_client_id&#39;</span><span class="p">,</span>
+                     <span class="n">client_secret</span><span class="o">=</span><span class="s1">&#39;my_client_secret&#39;</span><span class="p">,</span>
+                     <span class="n">user_agent</span><span class="o">=</span><span class="s1">&#39;my_user_agent&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">reddit</span><span class="o">.</span><span class="n">read_only</span><span class="p">)</span> <span class="c1">#prints: True</span></code></pre></div>
+<p><strong>Here I&rsquo;m omitting a cell where I actually ran my info. Needed a real session to do the rest of the tutorial.</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">reddit</span><span class="o">.</span><span class="n">read_only</span></code></pre></div>
+<pre><code>True
+</code></pre>
+
+<h3 id="getting-a-bunch-of-posts">Getting a bunch of posts</h3>
+
+<p>Say you you wanted to stay abreast of your favorite <a href="https://www.reddit.com/r/imsorryjon/">Lovecraft-Jim Davis hybrid fansite</a> via some scripting/botting.</p>
+
+<p>First you&rsquo;d simply use the <code>subreddit()</code> method of your Reddit Session instance</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sorry_jon</span> <span class="o">=</span> <span class="n">reddit</span><span class="o">.</span><span class="n">subreddit</span><span class="p">(</span><span class="s1">&#39;imsorryjon&#39;</span><span class="p">)</span>
+<span class="n">sorry_jon</span></code></pre></div>
+<pre><code>Subreddit(display_name='imsorryjon')
+</code></pre>
+
+<p>Then, like landing on the subreddit page, you can organize the posts by some ordering scheme</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">hot_listings</span> <span class="o">=</span> <span class="n">sorry_jon</span><span class="o">.</span><span class="n">hot</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_listings</span> <span class="o">=</span> <span class="n">sorry_jon</span><span class="o">.</span><span class="n">top</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">time_filter</span><span class="o">=</span><span class="s1">&#39;week&#39;</span><span class="p">)</span></code></pre></div>
+<p>This is going to return a <code>Generator</code> subclass that spits out each post you&rsquo;d see if you looked at the page.</p>
+
+<p>We can&rsquo;t access them with regular <code>top_listings[0]</code>, <code>list</code>-like indexes, but instead via the <code>next()</code> method, or some sort of loop.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_listings</span><span class="o">.</span><span class="nb">next</span><span class="p">()</span></code></pre></div>
+<pre><code>Submission(id='ca8jl5')
+</code></pre>
+
+<p><a href="https://napsterinblue.github.io/blog/2018/05/01/why-i-switched-to-python-3/#Iterators">See my notes on iterators and Python 3 if this is unclear</a>, otherwise, we&rsquo;ll move on to&hellip;</p>
+
+<h3 id="submission-objects">Submission Objects</h3>
+
+<p><a href="https://www.reddit.com/r/funny/comments/g3d5r/whats_green_and_pecks_on_a_tree/">I saved this post</a> on Reddit 8 years ago and it still gets a good laugh out of me.</p>
+
+<p>The URL reads <code>https://www.reddit.com/r/funny/comments/g3d5r/whats_green_and_pecks_on_a_tree/</code>.</p>
+
+<p>If we want to access this thread via <code>praw</code>, we&rsquo;ll leverage the string right after <code>/comments/</code> via <code>reddit.submission()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">submission</span> <span class="o">=</span> <span class="n">reddit</span><span class="o">.</span><span class="n">submission</span><span class="p">(</span><span class="s1">&#39;g3d5r&#39;</span><span class="p">)</span></code></pre></div>
+<p>This returns a <code>Submission</code> object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">submission</span><span class="p">)</span></code></pre></div>
+<pre><code>praw.models.reddit.submission.Submission
+</code></pre>
+
+<p>That, among other things lets us see:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">title</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">title</span>
+<span class="k">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span></code></pre></div>
+<pre><code>What's green and pecks on a tree?
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">body</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">selftext</span>
+<span class="k">print</span><span class="p">(</span><span class="n">body</span><span class="p">)</span></code></pre></div>
+<pre><code>Woody Wood-Pickle. I just read that on a Laffy Taffy wrapper. That is the worst goddamned joke I have ever heard. I'm so angry right now.  
+
+
+EDIT: I had no idea this would get frontpaged. I posted this in a combination of disbelief and anger. Thank you all for posting your awful Laffy Taffy jokes. I had no idea they were so universally considered awful! 
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">author</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">author</span>
+<span class="k">print</span><span class="p">(</span><span class="n">author</span><span class="p">)</span></code></pre></div>
+<pre><code>Javier_Disco
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">subreddit</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">subreddit</span>
+<span class="k">print</span><span class="p">(</span><span class="n">subreddit</span><span class="p">)</span></code></pre></div>
+<pre><code>funny
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">upvotes</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">score</span>
+<span class="k">print</span><span class="p">(</span><span class="n">upvotes</span><span class="p">)</span></code></pre></div>
+<pre><code>1537
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">comments</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">comments</span>
+<span class="k">print</span><span class="p">(</span><span class="n">comments</span><span class="p">)</span></code></pre></div>
+<pre><code>&lt;praw.models.comment_forest.CommentForest object at 0x0000020F806F8A90&gt;
+</code></pre>
+
+<p>At first glance, a bit uninviting.</p>
+
+<h3 id="navigating-comments">Navigating Comments</h3>
+
+<p>Before we dive into the comments of this submission, we&rsquo;re going to ensure that our comments are sorted in order of score</p>
+
+<p><strong>Note</strong>: I had to re-instantiate <code>submission</code> for the sort to work. Huh.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">submission</span> <span class="o">=</span> <span class="n">reddit</span><span class="o">.</span><span class="n">submission</span><span class="p">(</span><span class="s1">&#39;g3d5r&#39;</span><span class="p">)</span>
+<span class="n">submission</span><span class="o">.</span><span class="n">comment_sort</span> <span class="o">=</span> <span class="s1">&#39;top&#39;</span>
+<span class="n">comments</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">comments</span></code></pre></div>
+<p>We might intuitively reach for <a href="https://www.reddit.com/r/funny/comments/g3d5r/whats_green_and_pecks_on_a_tree/c1kmgfc/">the first comment</a> like we would with a <code>list</code>, but this yields a <code>Comment</code> object.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_comment</span> <span class="o">=</span> <span class="n">comments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></code></pre></div>
+<p>However, this is actually more powerful, because it gives us access to additional metadata, just like the <code>Submission</code> object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_comment</span><span class="o">.</span><span class="n">body</span></code></pre></div>
+<pre><code>'Mathew W from Tenton NJ is a piece of shit. '
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_comment</span><span class="o">.</span><span class="n">author</span></code></pre></div>
+<pre><code>Redditor(name='Javier_Disco')
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_comment</span><span class="o">.</span><span class="n">gilded</span></code></pre></div>
+<pre><code>0
+</code></pre>
+
+<p>An important thing to note is that <code>praw</code>&rsquo;s <code>CommentForest</code> object is actually a hierarchical data structure. Thus, taking the first five values of <code>comments</code>, as below, doesn&rsquo;t give us the first 5 comments that you read when you visit the post, but instead, <em>the first 5 root-level comments</em>, ordered by upvote count, descending</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">comment</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">comments</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>Mathew W from Tenton NJ is a piece of shit.  
+ -----
+I still remember one I read off my wrapper from a few years back: 
+Q: Why did the farmer have sheep?
+A: Because he was a sheep farmer.  
+ -----
+pickles come in pecks 
+ -----
+The worst one I ever saw was &quot;Frankenstein used to play baseball and he was really mean too.  Do you know how mean he once was?&quot;
+&quot;He stole all the bases.&quot;
+
+WHY FRANKENSTEIN? 
+ -----
+One of the few things I want to do in life is to get really drunk, buy a bag of Laffy Taffys, and go to an open mic night and just eat the bag of Laffy Taffys and read the jokes.
+
+At the end of my set, I vomit rainbow colored taffy all over the stage. 
+ -----
+</code></pre>
+
+<p>If we wanted to read more about the author&rsquo;s opinion of a one &ldquo;Matthew W from Tenton NJ&rdquo;, we&rsquo;d have to interrogate the first root-level comment for the replies.</p>
+
+<p>This, in turn, gives us a flat look at all of <em>those</em> next highest-level comments</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">comment</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">top_comment</span><span class="o">.</span><span class="n">replies</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>*Trenton
+
+ -----
+[Just for you OP](http://www.commonplacebook.com/jokes/funny_lists/laffy_taffyhtml.shtm). The worst laffy taffy jokes ever. After reading this list you just may go out and kill someone. 
+
+
+
+ -----
+</code></pre>
+
+<p>To keep pulling on that thread, we need to be clever about our traversal scheme. Here, we&rsquo;ll keep taking the next-highest-voted comment at each level for 5 steps.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">curr_comment</span> <span class="o">=</span> <span class="n">comments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">curr_comment</span><span class="o">.</span><span class="n">author</span><span class="p">,</span> <span class="s1">&#39;: &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;  &#39;</span><span class="p">,</span> <span class="n">curr_comment</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="n">curr_comment</span> <span class="o">=</span> <span class="n">curr_comment</span><span class="o">.</span><span class="n">replies</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></code></pre></div>
+<pre><code>Javier_Disco : 
+   Mathew W from Tenton NJ is a piece of shit.  
+
+ENTP : 
+   *Trenton
+
+
+Javier_Disco : 
+   Yeah, that.  
+
+ENTP : 
+   *Matthew W. 
+
+Javier_Disco : 
+   I'll spell his name right when he stops making bullshit jokes.  
+</code></pre>
+
+<h3 id="getting-images">Getting Images</h3>
+
+<p>Finally, if we want to see the images that make up the subreddits, we just need to inspect the <code>url</code> that the post itself points to.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">most_garfield</span> <span class="o">=</span> <span class="n">sorry_jon</span><span class="o">.</span><span class="n">top</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="nb">next</span><span class="p">()</span>
+<span class="n">most_garfield</span></code></pre></div>
+<pre><code>Submission(id='bvkbuv')
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">url</span> <span class="o">=</span> <span class="n">most_garfield</span><span class="o">.</span><span class="n">url</span>
+<span class="n">url</span></code></pre></div>
+<pre><code>'https://i.redd.it/6htqm78noq131.jpg'
+</code></pre>
+
+<p>Then we can just follow <a href="https://napsterinblue.github.io/notes/python/images/img_from_url/">this tutorial</a> on getting images via <code>requests</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="nb">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+<span class="n">img</span></code></pre></div>
+<p><img src="parsing_reddit_51_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

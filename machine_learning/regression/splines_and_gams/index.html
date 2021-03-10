@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Splines and Generalized Additive Models" />
+<meta property="og:description" content="from IPython.display import Image General Form Chapter 7 of ISL describes increasing our model complexity beyond simple, linear regression. We can add some complexity to our fit if we design our fit scheme to consider polynomial fits or step functions.
+Generically though, we can express our linear form as
+$y_i = \beta_0 &#43; \beta_1 b_1(x_i) &#43; \beta_2 b_2(x_i) &#43; \beta_3 b_3(x_i) &#43; &hellip; &#43; \beta_K b_K(x_i) &#43; \epsilon_i$
+Where all of these beta terms are some fixed, arbitrary functions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/splines_and_gams/" />
+
+
+
+<meta property="article:published_time" content="2019-09-22T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-22T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Splines and Generalized Additive Models"/>
+<meta name="twitter:description" content="from IPython.display import Image General Form Chapter 7 of ISL describes increasing our model complexity beyond simple, linear regression. We can add some complexity to our fit if we design our fit scheme to consider polynomial fits or step functions.
+Generically though, we can express our linear form as
+$y_i = \beta_0 &#43; \beta_1 b_1(x_i) &#43; \beta_2 b_2(x_i) &#43; \beta_3 b_3(x_i) &#43; &hellip; &#43; \beta_K b_K(x_i) &#43; \epsilon_i$
+Where all of these beta terms are some fixed, arbitrary functions."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Splines and Generalized Additive Models",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/splines_and_gams/",
+  "wordCount": "1271",
+  "datePublished": "2019-09-22T00:00:00&#43;00:00",
+  "dateModified": "2019-09-22T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Splines and Generalized Additive Models</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Splines and Generalized Additive Models</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-22T00:00:00Z "> 22 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span></code></pre></div>
+<h2 id="general-form">General Form</h2>
+
+<p>Chapter 7 of ISL describes increasing our model complexity beyond simple, linear regression. We can add some complexity to our fit if we design our fit scheme to consider polynomial fits or step functions.</p>
+
+<p>Generically though, we can express our linear form as</p>
+
+<p>$y_i = \beta_0 + \beta_1 b_1(x_i) + \beta_2 b_2(x_i) + \beta_3 b_3(x_i) + &hellip; + \beta_K b_K(x_i) + \epsilon_i$</p>
+
+<p>Where all of these <code>beta</code> terms are some fixed, arbitrary functions. Each term can be anything&ndash; polynomial, step, whatever.</p>
+
+<h2 id="expanding">Expanding</h2>
+
+<h3 id="piecewise-polynomial">Piecewise Polynomial</h3>
+
+<p>Taking it a step further, they discuss a blend of the two called <em>piecewise polynomials</em>, which are defined by &ldquo;knots&rdquo;&ndash; the points where we split our polynomial regression. For example, if we wanted to construct two degree-3 polynomials with a knot at the point <code>c</code>, we&rsquo;d have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/piecewise_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_4_0.png" alt="png" /></p>
+
+<p>when <code>x</code> is less than <code>c</code>, and</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/piecewise_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_6_0.png" alt="png" /></p>
+
+<p>otherwise. By design, all of the <code>beta</code> coefficients differ between the two equations, and which equation we use depends on where our <code>x</code> value falls relative to <code>c</code>.</p>
+
+<p>This leads us to a model that might look like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_3_topleft.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_8_0.png" alt="png" /></p>
+
+<p>From a Degrees of Freedom perspective, we end up having to <em>sum</em> the degrees of freedom for the two equations to find our Degrees of Freedom for our predictor. Here, we have a total of 8.</p>
+
+<p>Obviously, this leads to an erratic-looking prediction curve. We correct this by introducing constraints on continuity. Refitting might yield something like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_3_topright.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_10_0.png" alt="png" /></p>
+
+<p>If we further constrained that our prediction curve must <em>look smooth</em>, we&rsquo;d have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_3_bottomleft.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_12_0.png" alt="png" /></p>
+
+<p>But how do we actually <em>do</em> that?</p>
+
+<h3 id="spline-functions">Spline Functions</h3>
+
+<p>Turns out we basically just rewrite the basis model</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/basis.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_14_0.png" alt="png" /></p>
+
+<p>But then &ldquo;add one <em>truncated power basis</em> function, <code>h(x, xi)</code>, per knot&rdquo;, which is defined as</p>
+
+<p>$h(x, \xi) = (x - \xi)^3_+$</p>
+
+<p>which takes on its value where <code>x &gt; xi</code>, or <code>0</code> otherwise (<a href="https://napsterinblue.github.io/notes/machine_learning/neural_nets/activation_fns/">similar to our ReLU activation function, employed in Deep Learning contexts</a>)</p>
+
+<p>Introducing one of these <code>h(x, xi)</code> terms for every knot gives us the convenient property of continuous first and second derivatives everywhere except the point <code>x = xi</code>, which is why we only consider values greater than <code>xi</code>, the knots</p>
+
+<p>To tie it all together, if we wanted to write a cubic polynomial with 3 knots, we&rsquo;d have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/basis_w_splines.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_16_0.png" alt="png" /></p>
+
+<p>which has 7 degrees of freedom. Compare this to the stepwise/polynomial approach which would have had 16!</p>
+
+<h4 id="boundary-constraints">Boundary Constraints</h4>
+
+<p>It&rsquo;s worth also mentioning that in practice, we also often add &ldquo;boundary constraints&rdquo; to enforce smoothness at the extremes.</p>
+
+<p>If you look at the chart below, you can see that the error bands of Cubic Spline as-is have wonky behavior on the far left and right of the function.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_18_0.png" alt="png" /></p>
+
+<p>So in addition to our <code>h(x, xi)</code> continuity constraints, we also require that <code>X</code> has a linear first derivative for values greater than the greatest knot and smaller than the smallest. This winds up meaning <em>fewer</em> effective degrees of freedom and thus smoother end-behavior.</p>
+
+<p>For less hand-waving over the mechanics of actually making that happen, we basically follow <a href="https://www.youtube.com/watch?v=gT7F3TWihvk">this problem-solving form</a> with the added derivative constrants on the ends.</p>
+
+<h4 id="knot-selection">Knot Selection</h4>
+
+<p>Of course, this leads us to two hyperparameters to consider, both of which having straight-foward solutions.</p>
+
+<p>Where should the knots go?</p>
+
+<ul>
+<li>ISL advocates for just selecting the desired Degrees of Freedom (and by extension, the number of knots) and letting Computers™ figure it out. This typically yields knots spread evenly over percentiles.</li>
+</ul>
+
+<p>How many knots should we use?</p>
+
+<ul>
+<li>Like many similar questions of this nature, ISL punts to investigation via Cross Validation</li>
+</ul>
+
+<h4 id="vs-high-degree-polynomial">Vs High-Degree Polynomial</h4>
+
+<p>We could have effectively fit the data above using a complicated polynomial (the book uses Degree 15) like so</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_7.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_24_0.png" alt="png" /></p>
+
+<p>But the real value of using Splines is clear as day when you consider the points on the extremes.</p>
+
+<p>Think about it&ndash; if your fringe data yields bigger error than points closer to the means (where Splines evidently predict pretty well), would you rather have your data cubed, or to the power of 15?</p>
+
+<p>By fixing our degree to cubic and utilizing knots to localize fits in trouble areas, we enjoy the flexibility of high-degree polynomials, but control for some of the prediction error messiness that they introduce.</p>
+
+<h3 id="smoothing-splines">Smoothing Splines</h3>
+
+<p>If you squint, the last section was basically &ldquo;use knots to increase the expressiveness of polynomial functions, but make sure they&rsquo;re smooth.&rdquo; Expanding on this last part, suppose we had a magic, perfectly-accurate function <code>g(x)</code>, whose loss function would be the familiar</p>
+
+<p>$RSS = \sum_{i=1}^n (y_i - g(x_i))^2$</p>
+
+<p>If we fit this perfect <code>g(x)</code>, our RSS would be zero, but plotting the predictions would be this erratic, spikey mess of hitting every point perfectly&ndash; obviously doomed to overfit.</p>
+
+<p>Thus (like Lasso and Ridge regression) we can layer in a penalizing term that leverages a tuning parameter <code>lambda</code> like so</p>
+
+<p>$\sum_{i=1}^n (y_i - g(x_i))^2 + \lambda \int g&rdquo;(t)^2 dt$</p>
+
+<p>where the last term, the second derivative, is basically a &ldquo;measure of roughness&rdquo; and is large when <code>g(t)</code> is wiggly near a point <code>t</code>.</p>
+
+<p>Considering the values <code>lambda</code> can take on, we have two extremes:</p>
+
+<ul>
+<li><code>lambda = 0</code>: This gives us our original jumpy line</li>
+<li><code>lambda</code> is huge: This pushes <code>g'(x)</code> to zero and basically gives us a straight line.</li>
+</ul>
+
+<p>Surprisingly, due to Math™, this magical <code>g(x)</code> function that minimizes our new loss function is actually a natural cubic spline with knots at each value of <code>X</code>, <code>x1, x2, ..., xn</code>.</p>
+
+<h4 id="effective-degrees-of-freedom">Effective Degrees of Freedom</h4>
+
+<p>Looking at this, two things jumped out at me. <code>n</code> knot terms means <code>n</code> additional <code>h(x, xi)</code> terms in our <code>y</code> which is:</p>
+
+<ul>
+<li>Probably computationally expensive to fit</li>
+<li>An inordinately high Degree of Freedom</li>
+</ul>
+
+<p>Apparently, this <code>lambda</code> term is so poweful that it crimps the roughness of these splines, and thereby the <em>Effective Degrees of Freedom</em>. Additionally, due to some very elegant/convenient Math™, because we&rsquo;re using all terms <code>x1, x2, ..., xn</code> in our calculation, we can basically forego calculating each term of Leave-One-Out Cross Validation and instead use the following (<a href="https://web.stanford.edu/class/stats202/content/lec17-cond.pdf">snipped from these slides</a>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rss_cv.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_26_0.png" alt="png" /></p>
+
+<p>Few notes:</p>
+
+<ul>
+<li>We used <code>g</code>, they used <code>f</code></li>
+<li>The <code>^(-i)</code> &ldquo;exponent&rdquo; the top means the fitted value of <code>xi</code> on a spline fit on every value <em>except</em> <code>xi</code></li>
+<li>ISL states (for which there is a formula) for their construction of <code>S</code> and so will we.</li>
+</ul>
+
+<h3 id="local-regression">Local Regression</h3>
+
+<p>Moving along, Local Regression basically adapts the idea of KNN to the regression setting.</p>
+
+<p>Essentially, we fit a separate model for each new <code>x0</code> by:</p>
+
+<ul>
+<li>Choosing a <em>span</em> parameter, <code>s</code>, representing the proportion of training points nearest <code>x0</code></li>
+<li>Weight each of our points selected by <code>s</code> relative to their distance from <code>x0</code> (the bell curves below)</li>
+<li>Pick your regression scheme (they did linear) and fit your <code>B0</code> and <code>B1</code> unique to this <code>x0</code></li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_30_0.png" alt="png" /></p>
+
+<p>Like KNN, the real trick is in selecting the sizing parameter, <code>s</code>&ndash; if it&rsquo;s too large, the model will be flatter and more biased, too small and we&rsquo;ll see too much variance.</p>
+
+<p>Additionally, this approach falls apart for high-dimensional data as the &ldquo;closest neighbor points&rdquo; becomes less and less practical to leverage.</p>
+
+<h2 id="gams">GAMs</h2>
+
+<p>Finally, we can further-genericize our formulation of the Basis Model</p>
+
+<p>$y_i = \beta_0 + \beta_1 b_1(x_i) + \beta_2 b_2(x_i) + \beta_3 b_3(x_i) + &hellip; + \beta_K b_K(x_i) + \epsilon_i$</p>
+
+<p>to</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/gam_formula.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_32_0.png" alt="png" /></p>
+
+<p>or</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/gam_formula_reduced.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_34_0.png" alt="png" /></p>
+
+<p>thus implicitly stripping out the <code>beta</code> terms with a series of <em>smooth</em> functions <code>f_j</code>, unique to each feature.</p>
+
+<p>As far as training goes, GAMs often employ a method called <em>backfitting</em> that looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/backfitting.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_36_0.png" alt="png" /></p>
+
+<p>Finally, the <em>additive</em> part of GAM allows us to examine the effects of our particular <code>X_j</code> term on <code>Y</code> for inference purposes, like so</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_7_12.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="splines_and_gams_38_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

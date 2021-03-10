@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Linear/Quadratic Discriminant Analysis" />
+<meta property="og:description" content="Motivation We&rsquo;re trying to define lines that maximize the separation (or discriminates) between multiple classes. Full stop.
+Borrowing from ISL, the following images show:
+ The true data distributions on the left The theoretical best line of separation (Bayes&rsquo; decision boundary), as dashed lines Some example data, sampled on the true dists, on the right images Our calculation of these &ldquo;lines that maximize separation&rdquo;, as solid lines  For the case where we have 2 classes and 1 feature in X" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/classification/discriminant_analysis/" />
+
+
+
+<meta property="article:published_time" content="2019-09-13T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-13T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Linear/Quadratic Discriminant Analysis"/>
+<meta name="twitter:description" content="Motivation We&rsquo;re trying to define lines that maximize the separation (or discriminates) between multiple classes. Full stop.
+Borrowing from ISL, the following images show:
+ The true data distributions on the left The theoretical best line of separation (Bayes&rsquo; decision boundary), as dashed lines Some example data, sampled on the true dists, on the right images Our calculation of these &ldquo;lines that maximize separation&rdquo;, as solid lines  For the case where we have 2 classes and 1 feature in X"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Linear/Quadratic Discriminant Analysis",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/classification/discriminant_analysis/",
+  "wordCount": "940",
+  "datePublished": "2019-09-13T00:00:00&#43;00:00",
+  "dateModified": "2019-09-13T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Linear/Quadratic Discriminant Analysis</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Linear/Quadratic Discriminant Analysis</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-13T00:00:00Z "> 13 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="motivation">Motivation</h2>
+
+<p>We&rsquo;re trying to define <strong>lines</strong> that maximize the separation (or <strong>discriminates</strong>) between multiple classes. Full stop.</p>
+
+<p>Borrowing from ISL, the following images show:</p>
+
+<ul>
+<li>The true data distributions on the left</li>
+<li>The theoretical best line of separation (Bayes&rsquo; decision boundary), as dashed lines</li>
+<li>Some example data, sampled on the true dists, on the right images</li>
+<li>Our calculation of these &ldquo;lines that maximize separation&rdquo;, as solid lines</li>
+</ul>
+
+<p>For the case where we have 2 classes and 1 feature in <code>X</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_4_4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_3_0.png" alt="png" /></p>
+
+<p>And 3 classes with two features in <code>X</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_4_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_5_0.png" alt="png" /></p>
+
+<h3 id="derivation">Derivation</h3>
+
+<p>As a jumping-off point, consider how we&rsquo;d describe the Multiclass Logistic Regression problem to someone emphatically Bayesian.</p>
+
+<p>We might say that given <code>k</code> classes, we&rsquo;re modeling</p>
+
+<p>$P(Y=k|X=x)$</p>
+
+<p>Expanding on this, they&rsquo;d likely advocate for training a distinct model for each response class <code>k</code> in our population <code>Y</code>.</p>
+
+<p>And so we define a <em>density function</em> <code>f_k(X)</code> as:</p>
+
+<p>$f_k(X) = \hat{P}(X=x|Y=k) $</p>
+
+<p>Then do some Bayes&rsquo; Theorem Magic™ to work backwards into our first equation.</p>
+
+<p><strong>Note:</strong> From here, the notation gets pretty hairy. So in lieu of doing LaTeX gymnastics, I&rsquo;ll leverage screen grabs from <a href="https://web.stanford.edu/class/stats202/content/lec9.pdf">these Stanford slides</a></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bayes_lda.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_9_0.png" alt="png" /></p>
+
+<ul>
+<li>The <code>P_hat(X|Y)</code> terms are the same as above, but unique to each class <code>j</code>.</li>
+<li>The <code>P_hat(Y)</code> terms, or the posteriors, are a simple sampling of your data to get an idea of the distribution of your <code>k</code> classes</li>
+</ul>
+
+<h2 id="composing-intuition">Composing Intuition</h2>
+
+<p>First, we need to keep in mind (and will later relax) two critical assumptions:</p>
+
+<ol>
+<li><code>f_k(X)</code> is normally distributed</li>
+<li>The variances for each of the <code>k</code> classes are the same, thus</li>
+</ol>
+
+<p>$\sigma_1^2 = \dots = \sigma_k^2 \rightarrow \sigma^2$</p>
+
+<p>We&rsquo;ll start small.</p>
+
+<h3 id="one-feature">One Feature</h3>
+
+<p>Here, we&rsquo;ll assume that our <code>X</code> contains multiple records with dimension <code>p=1</code>, trying to predict <code>K</code> classes.</p>
+
+<p>Substituting the normal distribution into the formula above, we get <code>p_k(x)</code>, or &ldquo;the probability that the observation is in class <code>k</code>, given <code>x</code>&ldquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/p_k_equation.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_16_0.png" alt="png" /></p>
+
+<p>Mouthful. And a pain in the ass to type in LaTeX.</p>
+
+<p>But if we wanted to, we could use this to plug-and-chug our predictions of <code>k</code>, given any <code>x</code>. We&rsquo;d just need to calculate and plug in three naive values:</p>
+
+<ul>
+<li>The average weighted mean of <code>x</code> for observations of class <code>k</code></li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/weighted_mean.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_18_0.png" alt="png" /></p>
+
+<ul>
+<li>The average of the sample variances, weighted for each class</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/weighted_var.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_20_0.png" alt="png" /></p>
+
+<ul>
+<li>A simple posterior distribution of how many samples will be of class <code>k</code></li>
+</ul>
+
+<p>$\hat{\pi}_k = \frac{n_k}{n}$</p>
+
+<p>We&rsquo;d pipe our values into this equation for each class <code>k</code> and take the value with the highest probability.</p>
+
+<p>Or equivalently, if we take the log of this fraction. As</p>
+
+<ul>
+<li>The max still gives us the class w/ the highest prob (log is concave)</li>
+<li>The whole bottom part &ldquo;drops out&rdquo; (as none of the terms change with <code>k</code>)</li>
+</ul>
+
+<p>This gives us our <em>discriminant function</em> which determines the decision boundary between picking one class over the other.</p>
+
+<p>$\delta_k(x) = x * \frac{\mu_k}{\sigma^2} - \frac{\mu_k^2}{2\sigma^2} + log(\pi_k)$</p>
+
+<p>Given that the title of this notebook contains the words &ldquo;<strong>Linear</strong> Discriminant&rdquo;, it should be no surprise that this decision boundary is expressed as a <strong>linear</strong> combination of <code>x</code> and some constants.</p>
+
+<h3 id="many-features">Many Features</h3>
+
+<p>This problem really doesn&rsquo;t change <em>that</em> much when you expand the dimensionality of our feature space. The only difference is that our <code>f_k(x)</code> is represented as a Multivariate Normal and that each class shares a Covariance matrix, <code>EPSILON</code>, instead of a standard deviation. Thus</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/f_k_multi.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_24_0.png" alt="png" /></p>
+
+<p>And if we perform the same &ldquo;take the log, and toss everything that doesn&rsquo;t change with <code>k</code>&rdquo; schtick that we did above, we get a descriminant function that looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/multi_log.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_26_0.png" alt="png" /></p>
+
+<p>And if we want to know the decision boundary between the prediction of two classes, we just set the two equations equal to one another and get a boundary that&rsquo;s, you guessed it, <strong>linear</strong> in <code>x</code>.</p>
+
+<p>Borrowing wholesale from the Stanford slides:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/multi_decision_boundary.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_28_0.png" alt="png" /></p>
+
+<h2 id="extending-to-the-quadratic">Extending to the Quadratic</h2>
+
+<p>Finally, we can relax one more assumption.</p>
+
+<p>When we no longer assume that each class shares the same Covariance matrix, our &ldquo;log and reduce&rdquo; trick now bears some unwieldy terms at the end with covariances specific to each class. Critically, these involve each involve multiplying the <code>x</code> terms by themselves thus giving us a decision boundary that&rsquo;s expressed <strong>quadratically</strong>.</p>
+
+<p>Below, the green line is QDA, our estimate, and the purple dashed line is the optimal Bayes boundary.</p>
+
+<p>In the first image, both classes have the same covariance and QDA underperforms relative to LDA (black dots). But in the second, the covariances differ and QDA shines, very-nearly fitting the form of the Bayes classifier.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/fig_4_9.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_31_0.png" alt="png" /></p>
+
+<p><strong>Note</strong>: While QDA is clearly favorable from an accuracy standpoint (in distributions that call for it&ndash; more on this below), it can be considerably more expensive computationally.</p>
+
+<p>The covariance matrix involves finding <code>p (1-p) / 2</code> values for each pairwise features. Because we now assume that each class has its own covariance matrix, we just multiplied this expensive calculation by a factor of <code>k</code>.</p>
+
+<h2 id="comparison">Comparison</h2>
+
+<p>The whole reason for putting these notebooks together is to provide an intuitive understanding of these approaches and how they work. There&rsquo;s no silver-bullet algorithm that&rsquo;s most appropriate for every scenario, and the following scenarios demonstrate just that.</p>
+
+<p>(Scenarios from ISL images from <a href="https://web.stanford.edu/class/stats202/content/lec11.pdf">these slides</a>)</p>
+
+<p>When the data meets all of our LDA assumptions, it&rsquo;s extremely powerful</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_36_0.png" alt="png" /></p>
+
+<p>Moreover, QDA just needlessly over-complicates things</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_38_0.png" alt="png" /></p>
+
+<p>Especially on violations of the &ldquo;Normal/Multivariate Normal&rdquo; distributions</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_40_0.png" alt="png" /></p>
+
+<p>On the other hand, it takes over as the dominant algorithm on violations of class-constant covariance</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_42_0.png" alt="png" /></p>
+
+<p>And LDA falls apart when trying to model actual quadratic data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc5.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_44_0.png" alt="png" /></p>
+
+<p>But past distributions that can be modeled with a neat quadratic, QDA also takes back seat to less-parametric algorithms (here, cross-validated KNN)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sc6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="discriminant_analysis_46_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

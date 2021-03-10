@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Anatomy of SparkSQL" />
+<meta property="og:description" content="In addition to the ability to write, transform, and aggregate our data all over the place, manually, Spark also has a useful SQL-like API that we can leverage to interface with our data.
+Not only does this provide a familiar logical-clarity to those with SQL, but like the language it&rsquo;s based on, we get a lot of bang for our buck by describing what we want our final dataset to look like and let the optimizer figure out the rest." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/sparksql/overview/" />
+
+
+
+<meta property="article:published_time" content="2018-06-08T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-08T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Anatomy of SparkSQL"/>
+<meta name="twitter:description" content="In addition to the ability to write, transform, and aggregate our data all over the place, manually, Spark also has a useful SQL-like API that we can leverage to interface with our data.
+Not only does this provide a familiar logical-clarity to those with SQL, but like the language it&rsquo;s based on, we get a lot of bang for our buck by describing what we want our final dataset to look like and let the optimizer figure out the rest."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Anatomy of SparkSQL",
+  "url": "https://napsterinblue.github.io/notes/spark/sparksql/overview/",
+  "wordCount": "747",
+  "datePublished": "2018-06-08T00:00:00&#43;00:00",
+  "dateModified": "2018-06-08T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Anatomy of SparkSQL</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Anatomy of SparkSQL</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-08T00:00:00Z "> 08 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>In addition to the ability to write, transform, and aggregate our data all over the place, manually, Spark also has a useful SQL-like API that we can leverage to interface with our data.</p>
+
+<p>Not only does this provide a familiar logical-clarity to those with SQL, but like the language it&rsquo;s based on, we get a lot of bang for our buck by describing what we want our final dataset to look like and let the optimizer figure out the rest.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span></code></pre></div>
+<p>In the same way that the <code>SparkContext</code> handles all of the <code>RDDs</code>, task scheduling, and resource negotiation behind the scenes, the <code>SparkSession</code> extends this abstraction to handle the <code>SparkSQL</code> API. This includes keeping track of the metadata, schemas, user-defined functions, and various other components powering the API.</p>
+
+<p>We&rsquo;ll instantiate a <code>SparkSession</code> by tying it to the <code>SparkContext</code> object that we&rsquo;re working with.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span></code></pre></div>
+<h3 id="datatypes">DataTypes</h3>
+
+<p>Native python datatypes such as <code>float</code>, <code>str</code>, or <code>int</code> don&rsquo;t exist in Spark. Instead, Spark figures out how to translate the Python that we know to the underlying Java objects that all of the data is mapped in.</p>
+
+<p>We can inspect everything that&rsquo;s available, as well as access for type-casting operations, by using the <code>pyspark.sql.types</code> module.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">types</span>
+
+<span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">types</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()]</span></code></pre></div>
+<pre><code>['ArrayType',
+ 'AtomicType',
+ 'BinaryType',
+ 'BooleanType',
+ 'ByteType',
+ 'CloudPickleSerializer',
+ 'DataType',
+ 'DataTypeSingleton',
+ 'DateConverter',
+ 'DateType',
+ 'DatetimeConverter',
+ 'DecimalType',
+ 'DoubleType',
+ 'FloatType',
+ 'FractionalType',
+ 'IntegerType',
+ 'IntegralType',
+ 'JavaClass',
+ 'LongType',
+ 'MapType',
+ 'NullType',
+ 'NumericType',
+ 'Row',
+ 'ShortType',
+ 'SparkContext',
+ 'StringType',
+ 'StructField',
+ 'StructType',
+ 'TimestampType',
+ 'UserDefinedType']
+</code></pre>
+
+<p>One weird feature of referencing these types is that you usually have to <em>call</em> them. For instance, look at <code>FloatType</code>. The <code>__repr__</code> just points to its module path.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span></code></pre></div>
+<pre><code>pyspark.sql.types.FloatType
+</code></pre>
+
+<p>But what <code>type</code> is it?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span><span class="p">)</span></code></pre></div>
+<pre><code>type
+</code></pre>
+
+<p>Now look what happens when we <em>call</em> <code>FloatType</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span><span class="p">())</span></code></pre></div>
+<pre><code>pyspark.sql.types.FloatType
+</code></pre>
+
+<p>That looks more acurate. Indeed, these two objects&ndash; called and not-called&ndash; are <strong>different objects</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span><span class="p">()</span> <span class="ow">is</span> <span class="n">types</span><span class="o">.</span><span class="n">FloatType</span></code></pre></div>
+<pre><code>False
+</code></pre>
+
+<p>One of them inherits from the Base Java <code>DataType</code> class</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># called</span>
+<span class="nb">isinstance</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span><span class="p">(),</span> <span class="n">types</span><span class="o">.</span><span class="n">DataType</span><span class="p">)</span></code></pre></div>
+<pre><code>True
+</code></pre>
+
+<p>And one of them doesn&rsquo;t.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># not-called</span>
+<span class="nb">isinstance</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">FloatType</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">DataType</span><span class="p">)</span></code></pre></div>
+<pre><code>False
+</code></pre>
+
+<p>Again, every time you want to work with data types in Spark, you should be using something that&rsquo;s tied to the underlying Java implementation via the <code>DataType</code> superclass.</p>
+
+<h2 id="making-simple-datasets">Making Simple Datasets</h2>
+
+<p>Most of the time, when we work with Spark SQL, it&rsquo;ll be a result of reading data from some source, but we can also manually build smaller datasets to toy around with, such as</p>
+
+<h3 id="a-range-of-numbers">A range of numbers</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nums</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+---+
+| id|
++---+
+|  5|
+|  6|
+|  7|
+|  8|
+|  9|
+| 10|
+| 11|
+| 12|
+| 13|
+| 14|
++---+
+</code></pre>
+
+<h3 id="or-a-vanilla-tabular-dataframe">Or a vanilla tabular DataFrame</h3>
+
+<p>Where the <code>data</code> is a list of tupes and the <code>schema</code> is a list of column names</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span>
+                           <span class="n">schema</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;letter&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">]</span>
+                          <span class="p">)</span></code></pre></div>
+<p>And <code>Spark</code> intuits the datatype from the records we gave it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>[('letter', 'string'), ('number', 'bigint')]
+</code></pre>
+
+<p>Additionally, we can be more explicit with our schema by using the <code>StructType</code> dataset and feeding it tuples of <code>(colName, dtype, nullable)</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">schema</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StructType</span><span class="p">([</span>
+             <span class="n">types</span><span class="o">.</span><span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;letter&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">StringType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">),</span>
+             <span class="n">types</span><span class="o">.</span><span class="n">StructField</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">StringType</span><span class="p">(),</span> <span class="bp">True</span><span class="p">)</span>
+<span class="p">])</span></code></pre></div>
+<p>And passing that into the <code>schema</code> argument instead of a list</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span>
+                           <span class="n">schema</span><span class="o">=</span><span class="n">schema</span>
+                          <span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>[('letter', 'string'), ('number', 'string')]
+</code></pre>
+
+<h2 id="rows">Rows</h2>
+
+<p>Each row of data is stored as a <code>Spark</code>-unique datatype called a <code>Row</code>.</p>
+
+<p>Selecting the top <code>2</code> rows of data yields not the values, but a <code>list</code> of <code>Row</code>s containing them.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">twoRows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">twoRows</span></code></pre></div>
+<pre><code>[Row(letter='a', number='1'), Row(letter='b', number='2')]
+</code></pre>
+
+<p>From there, we can use <code>dict</code>-like operations to access the fields that we want.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">oneRow</span> <span class="o">=</span> <span class="n">twoRows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">oneRow</span><span class="p">[</span><span class="s1">&#39;letter&#39;</span><span class="p">],</span> <span class="n">oneRow</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>('a', '1')
+</code></pre>
+
+<p>Or just get the fields/values themselves as a <code>dict</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">oneRow</span><span class="o">.</span><span class="n">asDict</span><span class="p">()</span></code></pre></div>
+<pre><code>{'letter': 'a', 'number': '1'}
+</code></pre>
+
+<h2 id="cols">Cols</h2>
+
+<p>These are a bit more complicated and <a href="https://napsterinblue.github.io/notes/spark/sparksql/columns/">merit their own workbook</a>, I think. For now, let&rsquo;s figure out how to select them.</p>
+
+<p>We can access columns of our data like we might have done using <code>pandas</code>. But it gives this cryptic, unhelpful <code>__repr__</code> when you do.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>Column&lt;b'number'&gt;
+</code></pre>
+
+<p>And doesn&rsquo;t have a <code>collect()</code> or <code>show()</code> implementation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>---------------------------------------------------------------------------
+
+TypeError                                 Traceback (most recent call last)
+
+&lt;ipython-input-20-b0024827437e&gt; in &lt;module&gt;()
+----&gt; 1 df['number'].collect()
+
+
+TypeError: 'Column' object is not callable
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>---------------------------------------------------------------------------
+
+TypeError                                 Traceback (most recent call last)
+
+&lt;ipython-input-21-1aaab6c11f19&gt; in &lt;module&gt;()
+----&gt; 1 df['number'].show()
+
+
+TypeError: 'Column' object is not callable
+</code></pre>
+
+<p>Instead, you need to use the <code>df.select()</code> and <code>collect</code> methods to actually select and collect the column.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>[Row(number='1'), Row(number='2'), Row(number='3')]
+</code></pre>
+
+<p>Which, again, returns a list of <code>Row</code> variables containing the data.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

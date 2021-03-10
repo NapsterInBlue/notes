@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Cross Products" />
+<meta property="og:description" content="Overview In his video on cross products, 3blue1brown kicks off by sharing that the cross product between two vectors v and w is the area of a parallelogram created by affixing each vector to the end of the other. Mathematically, this is equivalent to the determinant.
+from IPython.display import Image Image(&#39;images/cross_product_almost.PNG&#39;) However, halfway through the video, he admits that this definition was simply to prep your understanding for the actual concept." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/lin_alg/cross_products/" />
+
+
+
+<meta property="article:published_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-10-07T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cross Products"/>
+<meta name="twitter:description" content="Overview In his video on cross products, 3blue1brown kicks off by sharing that the cross product between two vectors v and w is the area of a parallelogram created by affixing each vector to the end of the other. Mathematically, this is equivalent to the determinant.
+from IPython.display import Image Image(&#39;images/cross_product_almost.PNG&#39;) However, halfway through the video, he admits that this definition was simply to prep your understanding for the actual concept."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cross Products",
+  "url": "https://napsterinblue.github.io/notes/stats/lin_alg/cross_products/",
+  "wordCount": "684",
+  "datePublished": "2019-10-07T00:00:00&#43;00:00",
+  "dateModified": "2019-10-07T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Cross Products</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Cross Products</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-10-07T00:00:00Z "> 07 Oct 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p><a href="https://www.youtube.com/watch?v=eu6i7WJeinw&amp;list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&amp;index=10">In his video on cross products</a>, 3blue1brown kicks off by sharing that the cross product between two vectors <code>v</code> and <code>w</code> is the area of a parallelogram created by affixing each vector to the end of the other. Mathematically, this is equivalent to the determinant.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cross_product_almost.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_2_0.png" alt="png" /></p>
+
+<p>However, halfway through the video, he admits that this definition was simply to prep your understanding for the actual concept.</p>
+
+<p>In reality, the cross product is a <em>vector</em>, not a number, that has the following properties:</p>
+
+<ul>
+<li>Its magnitude is still the value of the parallelogram&rsquo;s area</li>
+<li>The resulting vector <code>p</code> winds up being perpendicular to both <code>v</code> and <code>u</code></li>
+<li>The direction that <code>p</code> points coincides with the right-hand rule&ndash; correctly for positive values, opposite that for negative</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/right_hand_rule.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_4_0.png" alt="png" /></p>
+
+<p>This was a pretty simple example to ground our intuition. Because <code>v</code> and <code>w</code> laid flat on the XY plane, the resulting normal vector, <code>p</code>, will simply point up the <code>z</code> axis.</p>
+
+<p>Calculating <code>p</code> gets a bit more complicated to work out when <code>v</code> and <code>w</code> aren&rsquo;t laid out so neatly. However, we&rsquo;ll eschew the &ldquo;just memorize it&rdquo; formula we learned in undergrad and depend on <code>numpy</code> to do the math.</p>
+
+<p>Instead, let&rsquo;s unpack 3b1b&rsquo;s intuitive understanding between cross products and linear transformations.</p>
+
+<h2 id="math-wizardry">Math Wizardry</h2>
+
+<p>The following tangent leans hard into the first bullet of our cross product definition, &ldquo;the magnitude of <code>p</code> is equal to the value of the area of the parallelogram spanned by <code>v</code> and <code>w</code>&ldquo;</p>
+
+<p>He then defines a problem and just asks us to go with it. You should, too, because it works.</p>
+
+<blockquote>
+<p>Given that the volume of a parallelepiped is the determinant of the matrix of the 3 vectors, can we devise a function <code>f</code>, that finds the volume of the solid, for a constant <code>v</code> and <code>w</code> and a given vector <code>[x y z]T</code>?</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/magic_function.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_6_0.png" alt="png" /></p>
+
+<p>Couple things to note right away:</p>
+
+<ul>
+<li>This function is linear&ndash; because <code>v</code> and <code>w</code> are held constant, we only ever consider one variable at a time</li>
+<li>This function maps a vector in 3 dimensions to <em>the number line</em> in 1D</li>
+</ul>
+
+<p>Recognizing the linearity is critical, as it allows us to reframe the left-hand side as finding some 3-dimensional vector, <code>p</code>, to multiply on the left of <code>[x y z]T</code> to get the value on the right.</p>
+
+<p>Moreover, due to our conversation of &ldquo;duality&rdquo; in our notebook on the Dot Product, we can express this same left-hand side as</p>
+
+<pre><code>np.dot([p1 p2 p3].T, [x y z].T)
+</code></pre>
+
+<p>And so <em>by construction</em> this equation has the special property that the vectors <code>v</code>, <code>w</code>, and <code>p</code> (orange, pink, red) stay completely the same, regardless of how our variable vector in white changes.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/any_vec_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_8_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/any_vec_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_9_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/any_vec_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_10_0.png" alt="png" /></p>
+
+<h3 id="geometry-wizardry">Geometry Wizardry</h3>
+
+<p>As constructed, the right-hand side of the equation is formula for the volume of a parallelepiped.</p>
+
+<p>Geometrically, we know that the area of a parallelogram is equal to the height times the width. Expanding, the volume of a similarly-skewed prism is going to be the area of the base times the height.</p>
+
+<p>We can easily calculate the area of the base by taking the determinant of <code>[v w]</code>, but how do we determine the height of the overall shape?</p>
+
+<p>The answer jumps out soon as we represent this visually.</p>
+
+<p>Finding the height of the parallelepiped has the nice property of <em>also</em> finding the vector that&rsquo;s normal to both <code>v</code> and <code>w</code> (in our definition of the cross product).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/parallelepiped.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_13_0.png" alt="png" /></p>
+
+<p>If we define a unit vector <code>u</code> that&rsquo;s perpendicular to the base, then we can summarize the right-hand side as</p>
+
+<p><code>volume = np.dot(u, [x y z]T) * area_of_base</code></p>
+
+<p>Reintroducing the left-hand side, we have</p>
+
+<p><code>np.dot(p, [x y z]T) = np.dot(u, [x y z]T) * area_of_base</code></p>
+
+<p>Reducing, we have</p>
+
+<p><code>p = u * area_of_base</code></p>
+
+<p>Which, to recap, perfectly describes our cross-product in that it:</p>
+
+<ul>
+<li>Has magnitude equal to the area spanned by <code>v</code> and <code>w</code></li>
+<li>Is perpendicular to the plane spanned by them (by construction of <code>u</code>)</li>
+</ul>
+
+<h2 id="equations">Equations</h2>
+
+<p>At a term-by-term level, this looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cross_product_formula.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_15_0.png" alt="png" /></p>
+
+<p>which is very similar to the &ldquo;just learn it, nerd&rdquo; form that I learned years ago</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/cross_product_formula_easy.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_products_17_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

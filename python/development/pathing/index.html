@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Pathing" />
+<meta property="og:description" content="Default search path At startup, the Python module search path checks, in this order, for files in:
+1) The home directory of the program
+2) PYTHONPATH directories
+3) Standard library directories
+import sys sys.path [&#39;&#39;, &#39;C:\\Users\\nhounshell\\Documents\\Projects&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\python36.zip&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\DLLs&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Roaming\\Python\\Python36\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Babel-2.5.0-py3.6.egg&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Pythonwin&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\IPython\\extensions&#39;, &#39;C:\\Users\\nhounshell\\Documents\\.ipython&#39;]  Home directory If you&rsquo;re running a top-level file as a program, Home is that file&rsquo;s directory location.
+If you&rsquo;re working interactively, it&rsquo;s whatever directory you&rsquo;re working in." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/pathing/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Pathing"/>
+<meta name="twitter:description" content="Default search path At startup, the Python module search path checks, in this order, for files in:
+1) The home directory of the program
+2) PYTHONPATH directories
+3) Standard library directories
+import sys sys.path [&#39;&#39;, &#39;C:\\Users\\nhounshell\\Documents\\Projects&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\python36.zip&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\DLLs&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Roaming\\Python\\Python36\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Babel-2.5.0-py3.6.egg&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Pythonwin&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\IPython\\extensions&#39;, &#39;C:\\Users\\nhounshell\\Documents\\.ipython&#39;]  Home directory If you&rsquo;re running a top-level file as a program, Home is that file&rsquo;s directory location.
+If you&rsquo;re working interactively, it&rsquo;s whatever directory you&rsquo;re working in."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Pathing",
+  "url": "https://napsterinblue.github.io/notes/python/development/pathing/",
+  "wordCount": "238",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Pathing</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Pathing</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="default-search-path">Default search path</h2>
+
+<p><strong>At startup</strong>, the Python module search path checks, in this order, for files in:</p>
+
+<p>1) The home directory of the program</p>
+
+<p>2) <code>PYTHONPATH</code> directories</p>
+
+<p>3) Standard library directories</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span></code></pre></div>
+<pre><code>['',
+ 'C:\\Users\\nhounshell\\Documents\\Projects',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\python36.zip',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\DLLs',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3',
+ 'C:\\Users\\nhounshell\\AppData\\Roaming\\Python\\Python36\\site-packages',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Babel-2.5.0-py3.6.egg',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32\\lib',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Pythonwin',
+ 'C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\IPython\\extensions',
+ 'C:\\Users\\nhounshell\\Documents\\.ipython']
+</code></pre>
+
+<h3 id="home-directory">Home directory</h3>
+
+<p>If you&rsquo;re running a top-level file as a program, <code>Home</code> is that file&rsquo;s directory location.</p>
+
+<p>If you&rsquo;re working interactively, it&rsquo;s whatever directory you&rsquo;re working in.</p>
+
+<h2 id="modifying-the-search-path">Modifying the search path</h2>
+
+<p><code>sys.path</code> is just a list. As such, you can append things to it.</p>
+
+<p>For instance, an unrelated, nested directory somewhere else in this repository.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;../File IO/data/secret_unrelated_folder&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">surprise</span></code></pre></div>
+<pre><code>You're a hacker now.
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s1">&#39;surprise&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>&lt;module 'surprise' from '../File IO/data/secret_unrelated_folder\\surprise.py'&gt;
+</code></pre>
+
+<h2 id="relative-pathing-tools">Relative Pathing Tools</h2>
+
+<p>Because Python only knows how to look at Home and a couple other things, as a package&rsquo;s codebase grows, it can get difficult to keep all of your imports straight.</p>
+
+<p>And you can&rsquo;t always rely on using the handy, Unix <code>'..'</code> notation to represent relative filepaths.</p>
+
+<h2 id="file-and-os-getcwd"><code>__file__</code> and <code>os.getcwd()</code></h2>
+
+<p>These two features can be used to get creative with your pathing.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="nb">type</span> <span class="s2">&#34;samplepackage\subdirectory\doublenested.py&#34;</span></code></pre></div>
+<pre><code>def test_fn():
+    print(&quot;I'm like two levels down.&quot;)
+
+import os
+
+getcwdResult = os.getcwd()
+fileResult = os.path.dirname(__file__)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">samplepackage.subdirectory.doublenested</span> <span class="kn">import</span> <span class="n">getcwdResult</span><span class="p">,</span> <span class="n">fileResult</span></code></pre></div>
+<p><code>os.getcwd()</code> gives you the absolute filepath of <em>where you&rsquo;re calling Python</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">getcwdResult</span></code></pre></div>
+<pre><code>'C:\\Users\\nhounshell\\Documents\\github\\BlackBook\\Python\\Modules and Packages'
+</code></pre>
+
+<p>Whereas <code>__file__</code> strictly returns the filepath of that file&rsquo;s location, regardless of why Python&rsquo;s looking at it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fileResult</span></code></pre></div>
+<pre><code>'C:\\Users\\nhounshell\\Documents\\github\\BlackBook\\Python\\Modules and Packages\\samplepackage\\subdirectory'
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

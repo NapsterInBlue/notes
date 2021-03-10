@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Leverage, Influence, and Cook&#39;s Distance" />
+<meta property="og:description" content="More than Outliers The Stats 101 approach to data inspection is to take a look at your variables via some box-and-whisker plot, finding your outliers by examining whether they fall in or out of 1.5 times your IQR. Like so
+from IPython.display import Image Image(&#39;./images/box_whisker.jpg&#39;) This would alert us to points we&rsquo;d consider dropping if our results look funny, but how do we describe the impact of these points on our models?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/leverage_influence_cook/" />
+
+
+
+<meta property="article:published_time" content="2019-09-11T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-11T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Leverage, Influence, and Cook&#39;s Distance"/>
+<meta name="twitter:description" content="More than Outliers The Stats 101 approach to data inspection is to take a look at your variables via some box-and-whisker plot, finding your outliers by examining whether they fall in or out of 1.5 times your IQR. Like so
+from IPython.display import Image Image(&#39;./images/box_whisker.jpg&#39;) This would alert us to points we&rsquo;d consider dropping if our results look funny, but how do we describe the impact of these points on our models?"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Leverage, Influence, and Cook&#39;s Distance",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/leverage_influence_cook/",
+  "wordCount": "322",
+  "datePublished": "2019-09-11T00:00:00&#43;00:00",
+  "dateModified": "2019-09-11T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Leverage, Influence, and Cook&rsquo;s Distance</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Leverage, Influence, and Cook&#39;s Distance</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-11T00:00:00Z "> 11 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="more-than-outliers">More than Outliers</h2>
+
+<p>The Stats 101 approach to data inspection is to take a look at your variables via some box-and-whisker plot, finding your outliers by examining whether they fall in or out of 1.5 times your IQR. Like so</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;./images/box_whisker.jpg&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="leverage_influence_cook_3_0.jpeg" alt="jpeg" /></p>
+
+<p>This would alert us to points we&rsquo;d consider dropping if our results look funny, but how do we describe the impact of these points on our models?</p>
+
+<p>For this, we&rsquo;ll extend our data point consideration into two dimensions and I&rsquo;ll borrow some graphics from <a href="https://www.youtube.com/watch?v=xc_X9GFVuVU">YouTube user jbstatistics</a>.</p>
+
+<p>Looking at the point labeled <code>Outlier 1</code>, it&rsquo;s clear that there&rsquo;s a good distance between it and all other points. However, looking at the line of best fit when trained with and without the point, there&rsquo;s negligible difference.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;./images/leverage_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="leverage_influence_cook_5_0.png" alt="png" /></p>
+
+<p>By contrast, consider the point <code>Outlier 2</code>, which pivots the line by like 20° in and out of the model.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;./images/leverage_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="leverage_influence_cook_7_0.png" alt="png" /></p>
+
+<p>In this case, we can say that <code>Outlier 2</code> has greater <em>Influence</em> than <code>Outlier 1</code>.</p>
+
+<p>Furthermore, <code>Outlier 2</code> boasts greater <em>Leverage</em> over <code>Outlier 1</code>, as it&rsquo;s futher from the mean value for <code>X</code> (the leverage in physics is immediately applicable here).</p>
+
+<h3 id="too-many-cook-s">Too Many Cook&rsquo;s</h3>
+
+<p>These concepts come with concrete mathematical definitions which can be calculated and subsequently visualized.</p>
+
+<p>Using these measures we can calculate the <a href="https://en.wikipedia.org/wiki/Cook%27s_distance">Cook&rsquo;s Distance</a> for each point <code>i</code>, or &ldquo;as the sum of all the changes in the regression model when observation <code>i</code> is removed from it&rdquo;</p>
+
+<p>Go figure, our new, whizbang library, <code>yellowbrick</code> comes with a plotting function that handles all of that under the hood.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">filterwarnings</span>
+<span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">yellowbrick.regressor</span> <span class="kn">import</span> <span class="n">CooksDistance</span>
+<span class="kn">from</span> <span class="nn">yellowbrick.datasets</span> <span class="kn">import</span> <span class="n">load_concrete</span>
+
+<span class="c1"># Load the regression dataset</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_concrete</span><span class="p">()</span>
+
+<span class="c1"># Instantiate and fit the visualizer</span>
+<span class="n">visualizer</span> <span class="o">=</span> <span class="n">CooksDistance</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+<span class="n">visualizer</span><span class="o">.</span><span class="n">poof</span><span class="p">();</span></code></pre></div>
+<p><img src="leverage_influence_cook_12_0.png" alt="png" /></p>
+
+<p>Looking at the plot, it&rsquo;s immediately obvious that this isn&rsquo;t a slow-pitch Linear Regression dataset.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

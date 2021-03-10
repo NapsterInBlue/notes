@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Multiple Correspondence Analysis" />
+<meta property="og:description" content="Overview Like Correspondence Analysis, but with Multiple An extension of our notebook on Correspondence Analysis, Multiple Correspondence Analysis allows us to extend this methodology beyond a cross-tab of two different variables into arbitrarily-many.
+For instance, a pretty canonical dataset used to describe this method (see this paper) is a taste profiling of various wines from different experts.
+Like before, we start out with a dataset with I individuals as rows and J columns as features." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/techniques/mca/" />
+
+
+
+<meta property="article:published_time" content="2020-04-13T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-13T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Multiple Correspondence Analysis"/>
+<meta name="twitter:description" content="Overview Like Correspondence Analysis, but with Multiple An extension of our notebook on Correspondence Analysis, Multiple Correspondence Analysis allows us to extend this methodology beyond a cross-tab of two different variables into arbitrarily-many.
+For instance, a pretty canonical dataset used to describe this method (see this paper) is a taste profiling of various wines from different experts.
+Like before, we start out with a dataset with I individuals as rows and J columns as features."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Multiple Correspondence Analysis",
+  "url": "https://napsterinblue.github.io/notes/stats/techniques/mca/",
+  "wordCount": "960",
+  "datePublished": "2020-04-13T00:00:00&#43;00:00",
+  "dateModified": "2020-04-13T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Multiple Correspondence Analysis</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Multiple Correspondence Analysis</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-13T00:00:00Z "> 13 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<h3 id="like-correspondence-analysis-but-with-multiple">Like Correspondence Analysis, but with Multiple</h3>
+
+<p>An extension of our notebook on <a href="https://napsterinblue.github.io/notes/stats/techniques/correspondence/">Correspondence Analysis</a>, <em>Multiple</em> Correspondence Analysis allows us to extend this methodology beyond a cross-tab of <em>two</em> different variables into arbitrarily-many.</p>
+
+<p>For instance, a pretty canonical dataset used to describe this method (<a href="https://personal.utdallas.edu/~herve/Abdi-MCA2007-pretty.pdf">see this paper</a>) is a taste profiling of various wines from different experts.</p>
+
+<p>Like before, we start out with a dataset with <code>I</code> individuals as rows and <code>J</code> columns as features. However in this case, there are multiple responses per feature. A few things to point out in particular:</p>
+
+<ul>
+<li>Two different experts have the same feature. Expert 2 and 3 both have a <code>woody</code> column. MCA treats these columns separately, but if there&rsquo;s an underlying relationship between the two (as you might expect), the baricenters of the columns will wind up near one another</li>
+<li>There are also a couple features (<code>woody</code>, <code>vanillin</code>) that have more than a binary label</li>
+<li>We do a <code>.get_dummies()</code> call on each feature, however we don&rsquo;t want to use <code>drop_first=True</code>, like we would when fitting a model using dummy variables</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_data.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_2_0.png" alt="png" /></p>
+
+<p>Also worth noting that the table above is an <em>intermediate</em> table between &ldquo;tall table with a column for each variable (not separated)&rdquo; and &ldquo;cross-tab used to do SVD&rdquo;.</p>
+
+<p>Ultimately, we can do the similar &ldquo;plot rows&rdquo; or &ldquo;plot columns&rdquo; representation that we could do with CA, only this time with more levels.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_wines.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_4_0.png" alt="png" /></p>
+
+<h3 id="a-bigger-example">A Bigger Example</h3>
+
+<p><a href="https://www.youtube.com/watch?v=gZ_7WWEVlTg">Of course Francois Husson has another helpful series on this topic</a>.</p>
+
+<p>In it, he explores a much, much larger dataset (<code>n=8403 &gt;&gt; 6</code>) encoding various lifestyle characteristics for a given population.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_life_data.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_6_0.png" alt="png" /></p>
+
+<p>He explores similar concepts as CA, including Inertia, weighting each record by the individual values, etc, etc.</p>
+
+<p>But it gets particularly interesting when he fits to two axes and scatters each person&rsquo;s representation in this 2D space, *colored by their value for <strong>one</strong> feature*.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_gardening_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_8_0.png" alt="png" /></p>
+
+<p>This was still completely possible in CA, we just didn&rsquo;t have enough data for this pattern to show so starkly. Instead, what we got was a look at the barycenters for the given columns, which he then plots overtop of the scatter in two colored triangles.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_gardening_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_10_0.png" alt="png" /></p>
+
+<p>Indeed doing this for all of the barycenters, he finds that a pattern emerges.</p>
+
+<p>Recall that all of his data was organized not as a single <code>0/1</code> column, but as <em>two</em> <code>0/1</code> columns, eg:</p>
+
+<pre><code>cinema
+   0
+   1
+   1
+</code></pre>
+
+<p>becomes</p>
+
+<pre><code>cinema_yes    cinema_no
+    0             1
+    1             0
+    1             0
+</code></pre>
+
+<p>examining, he found that barycenters in black corresponded to the <code>_no</code>s and similarly, the reds to <code>_yes</code>.</p>
+
+<p>You might be thinking &ldquo;Well what does that have to do with the axis?&rdquo; and that&rsquo;s where I&rsquo;ll remind you that the C in MCA stands for &ldquo;correspondence.&rdquo; Or to put it another way, looking at this representation, we learn that people not doing one thing highly corresponds with them not doing another thing. Thus, <strong>we can think of the first axis as an apathy continuum</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_barycenters.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_12_0.png" alt="png" /></p>
+
+<p>This is made even more obvious when he picks out four individuals at the fringe of this point cloud.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_apathy.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_14_0.png" alt="png" /></p>
+
+<p>Similarly, he looks at points on the opposite corners to see that the second axis is loosely associated with how youthful the hobbies are</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/mca_youth.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mca_16_0.png" alt="png" /></p>
+
+<h2 id="in-python">In Python</h2>
+
+<p>To show how <code>prince</code> makes short work of <code>MCA</code>, we&rsquo;ll borrow the famous Titanic dataset from <code>seaborn</code>, as it&rsquo;s got a good amount of categorical variables.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">prince</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>We load it up and drop any null values for <code>age</code>&ndash; we want to use this in a second.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">data</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;titanic&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">])</span>
+<span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>survived</th>
+      <th>pclass</th>
+      <th>sex</th>
+      <th>age</th>
+      <th>sibsp</th>
+      <th>parch</th>
+      <th>fare</th>
+      <th>embarked</th>
+      <th>class</th>
+      <th>who</th>
+      <th>adult_male</th>
+      <th>deck</th>
+      <th>embark_town</th>
+      <th>alive</th>
+      <th>alone</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>3</td>
+      <td>male</td>
+      <td>22.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7.2500</td>
+      <td>S</td>
+      <td>Third</td>
+      <td>man</td>
+      <td>True</td>
+      <td>NaN</td>
+      <td>Southampton</td>
+      <td>no</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>1</td>
+      <td>female</td>
+      <td>38.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>71.2833</td>
+      <td>C</td>
+      <td>First</td>
+      <td>woman</td>
+      <td>False</td>
+      <td>C</td>
+      <td>Cherbourg</td>
+      <td>yes</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>3</td>
+      <td>female</td>
+      <td>26.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7.9250</td>
+      <td>S</td>
+      <td>Third</td>
+      <td>woman</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>Southampton</td>
+      <td>yes</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>1</td>
+      <td>female</td>
+      <td>35.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>53.1000</td>
+      <td>S</td>
+      <td>First</td>
+      <td>woman</td>
+      <td>False</td>
+      <td>C</td>
+      <td>Southampton</td>
+      <td>yes</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>3</td>
+      <td>male</td>
+      <td>35.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.0500</td>
+      <td>S</td>
+      <td>Third</td>
+      <td>man</td>
+      <td>True</td>
+      <td>NaN</td>
+      <td>Southampton</td>
+      <td>no</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Playing around with various bins, we find a few cuts that gives us a good separation in our data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">data</span><span class="p">[</span><span class="s1">&#39;age_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">999</span><span class="p">])</span>
+
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;age_bin&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></code></pre></div>
+<pre><code>(0, 18]      139
+(18, 30]     270
+(30, 45]     202
+(45, 999]    103
+Name: age_bin, dtype: int64
+</code></pre>
+
+<p>And so we&rsquo;ll use this created feature, as well as a few other categorical features, to see if there&rsquo;s any underlying structure to our data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span> <span class="s1">&#39;embarked&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;age_bin&#39;</span><span class="p">]]</span>
+
+<span class="n">mca</span> <span class="o">=</span> <span class="n">prince</span><span class="o">.</span><span class="n">MCA</span><span class="p">()</span>
+<span class="n">mca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code></pre></div>
+<pre><code>MCA(benzecri=False, check_input=True, copy=True, engine='auto', n_components=2,
+    n_iter=10, random_state=None)
+</code></pre>
+
+<p>Like with CA, there&rsquo;s a nice <code>.plot_coordinates()</code> method that we can use to examine the structure of our loadings.</p>
+
+<p>The first thing that stands out to me is the combination of green and blue dots for <code>Component 0</code>&ndash; The continuum from low to high class passenger seems to correlate with whether or not that person was male.</p>
+
+<p>Looking at <code>Component 1</code>, I was intrigued to see that the city that a person embarked in had such a spread (<code>Q</code>, <code>C</code>, <code>S</code>, in descending order). That is, until I saw that <code>age_bin</code> did as well.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mca</span><span class="o">.</span><span class="n">plot_coordinates</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                     <span class="n">row_points_alpha</span><span class="o">=.</span><span class="mi">2</span><span class="p">,</span>
+                     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                     <span class="n">show_column_labels</span><span class="o">=</span><span class="bp">True</span>
+                    <span class="p">);</span></code></pre></div>
+<p><img src="mca_26_0.png" alt="png" /></p>
+
+<p>Indeed, looking at the distribution of ages by embark location from our original dataset, we can see that <code>Q</code> has the lowest median age, then <code>C</code>, then <code>S</code>, which is consistent with our ordering in the <code>Component 1</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;embarked&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;age&#39;</span><span class="p">);</span></code></pre></div>
+<p><img src="mca_28_0.png" alt="png" /></p>
+
+<p>Neat!</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

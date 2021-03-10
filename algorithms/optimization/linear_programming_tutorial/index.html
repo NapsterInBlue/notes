@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Best Linear Programming Resource I&#39;ve Seen" />
+<meta property="og:description" content="Not a lot that I could say on the matter that wasn&rsquo;t fantastically-handled by this blog series.
+Instead, I&rsquo;ll follow along the posts, distilling key principles and elaborating where needed.
+Part 1 In a valid system of linear constraints, there&rsquo;s some region of feasible solutions, as the author represents in gray.
+from IPython.display import Image Image(&#39;images/simple_linear_case.PNG&#39;) Then, as they show by inspection, the maxima of linear programming problems lies at the corners of these areas." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/algorithms/optimization/linear_programming_tutorial/" />
+
+
+
+<meta property="article:published_time" content="2020-04-20T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-20T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Best Linear Programming Resource I&#39;ve Seen"/>
+<meta name="twitter:description" content="Not a lot that I could say on the matter that wasn&rsquo;t fantastically-handled by this blog series.
+Instead, I&rsquo;ll follow along the posts, distilling key principles and elaborating where needed.
+Part 1 In a valid system of linear constraints, there&rsquo;s some region of feasible solutions, as the author represents in gray.
+from IPython.display import Image Image(&#39;images/simple_linear_case.PNG&#39;) Then, as they show by inspection, the maxima of linear programming problems lies at the corners of these areas."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Best Linear Programming Resource I&#39;ve Seen",
+  "url": "https://napsterinblue.github.io/notes/algorithms/optimization/linear_programming_tutorial/",
+  "wordCount": "1540",
+  "datePublished": "2020-04-20T00:00:00&#43;00:00",
+  "dateModified": "2020-04-20T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Best Linear Programming Resource I&rsquo;ve Seen</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Best Linear Programming Resource I&#39;ve Seen</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-20T00:00:00Z "> 20 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Not a lot that I could say on the matter that wasn&rsquo;t fantastically-handled by <a href="https://benalexkeen.com/linear-programming-with-python-and-pulp/">this blog series</a>.</p>
+
+<p>Instead, I&rsquo;ll follow along the posts, distilling key principles and elaborating where needed.</p>
+
+<h3 id="part-1-https-benalexkeen-com-linear-programming-with-python-and-pulp-part-1"><a href="https://benalexkeen.com/linear-programming-with-python-and-pulp-part-1/">Part 1</a></h3>
+
+<p>In a valid system of linear constraints, there&rsquo;s some region of feasible solutions, as the author represents in gray.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/simple_linear_case.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_programming_tutorial_2_0.png" alt="png" /></p>
+
+<p>Then, as they show by inspection, the maxima of linear programming problems lies at the corners of these areas.</p>
+
+<p>Of course, the reason that this whole problem space exists is because the notion of &ldquo;corners&rdquo; is trivial in 2D, but quickly gets unwieldy in higher dimensions</p>
+
+<h3 id="part-2-https-benalexkeen-com-linear-programming-with-python-and-pulp-part-2"><a href="https://benalexkeen.com/linear-programming-with-python-and-pulp-part-2/">Part 2</a></h3>
+
+<p>The basic anatomy of using <code>pulp</code> is</p>
+
+<ol>
+<li>Instantiate your problem with the objective being either <code>LpMinimize</code> or <code>LpMaximize</code></li>
+<li>Build out your variables using <code>LpVariable</code>. In the simple case, you can optionally constrain upper and lower bounds, as well as determine whether your variable is <code>Continuous</code>, <code>Integer</code>, or <code>Binary</code></li>
+<li>Use the <code>+=</code> operator on your <code>LpProblem</code> object to define the equation you aim your optimization objective at</li>
+<li>Use the <code>+=</code> operator on your <code>LpProblem</code> object to add any constraints</li>
+<li>Use the <code>.solve()</code> method on your <code>LpProblem</code> to solve, which <strong>modifies all of your variables in place</strong></li>
+<li>Print your solutions using a blend of <code>.varVal</code> and <code>pulp.value</code></li>
+</ol>
+
+<p>One thing that confused the hell out of me is how overloaded the <code>+=</code> operator is. Let&rsquo;s pull back the curtain a bit.</p>
+
+<p>Using the same example as the author:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pulp</span> <span class="kn">import</span> <span class="n">LpProblem</span><span class="p">,</span> <span class="n">LpVariable</span>
+
+<span class="n">prob</span> <span class="o">=</span> <span class="n">LpProblem</span><span class="p">(</span><span class="s1">&#39;prob&#39;</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">LpVariable</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">LpVariable</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code></pre></div>
+<p>Let&rsquo;s look at some of the right sides of equations in <code>ln [4]</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">4</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">y</span></code></pre></div>
+<pre><code>4*x + 3*y + 0
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">2</span> <span class="o">*</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="mi">25</span></code></pre></div>
+<pre><code>2*y + -25 &lt;= 0
+</code></pre>
+
+<p>These <em>look</em> the same, as far as their <code>__repr__</code> go, but looking at the type, we see</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpAffineExpression
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="mi">25</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpConstraint
+</code></pre>
+
+<p>Peeking under the hood, there&rsquo;s some really clever API design at play here. <code>x</code> is of class <code>LpVariable</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpVariable
+</code></pre>
+
+<p>Which inherits from type <code>LpElement</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__bases__</span></code></pre></div>
+<pre><code>(pulp.pulp.LpElement,)
+</code></pre>
+
+<p>Which is loaded to the brim with dunder methods that use any arithmetic to return <code>LpAffineExpression</code> objects</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/affine_expr.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_programming_tutorial_16_0.png" alt="png" /></p>
+
+<p>So in that second example,</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="mi">2</span> <span class="o">*</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="mi">25</span></code></pre></div>
+<pre><code>2*y + -25 &lt;= 0
+</code></pre>
+
+<p>The left side uses the <code>__mul__</code> and becomes an <code>LpAffineExpression</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpAffineExpression
+</code></pre>
+
+<p>Then <em>that</em> object uses the <code>__le__</code> method which returns an <code>LpConstraint</code> object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="mi">25</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpConstraint
+</code></pre>
+
+<p>It&rsquo;s worth noting that because of <a href="https://data-flair.training/blogs/python-operator-precedence/">the Python operator precedence</a>, the <code>&lt;=, &gt;=, ==</code> operators happen pretty close to last, and thus we can also write that same expression backwards</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="mi">25</span> <span class="o">&gt;=</span> <span class="n">y</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span></code></pre></div>
+<pre><code>pulp.pulp.LpConstraint
+</code></pre>
+
+<p>Putting it all together, we&rsquo;ll inspect the <code>+=</code> dunder method for our <code>LpProblem</code> variable, <code>prob</code>.</p>
+
+<p>As you can see (and as the author illustrates), calling <code>+=</code> has different behavior depending on whether you&rsquo;re using <code>LpConstraint</code> or <code>LpAffineExpression</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/iadd.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="linear_programming_tutorial_26_0.png" alt="png" /></p>
+
+<p>Not terribly transparent, but it&rsquo;s good design, once you know how it all fits together!</p>
+
+<h3 id="part-3-https-benalexkeen-com-linear-programming-with-python-and-pulp-part-3"><a href="https://benalexkeen.com/linear-programming-with-python-and-pulp-part-3/">Part 3</a></h3>
+
+<p>This post is pretty straight-forward. Does a good job highlighting how calling the <code>.solve()</code> method updates everying in place, and retrieval via <code>pulp.value</code> and <code>.varValue</code>.</p>
+
+<h3 id="part-4-https-benalexkeen-com-linear-programming-with-python-and-pulp-part-4"><a href="https://benalexkeen.com/linear-programming-with-python-and-pulp-part-4/">Part 4</a></h3>
+
+<p>This post highlights the finesse of structuring your Linear Programming problem, as well as introducing two other topics of note: <code>LpVariable.dicts</code> and <code>lpSum</code></p>
+
+<h4 id="dicts"><code>.dicts()</code></h4>
+
+<p>As you might expect, the literal construction of your problem can get unwieldy as you get more and more constraints. This is essentially a clever utility that lets you programmatically create <code>LpVariable</code> objects.</p>
+
+<p>First, let&rsquo;s look at the instantiation call. This is almost identical to our typical <code>LpVariable</code> call, including <code>name</code>, the <code>bound</code>s, and data type in <code>cat</code>. However, the key difference here is in the <code>indexs</code> argument. This works in concert with <code>name</code> to loop through your <code>indexs</code> iterable and generate unique variable names of the form <code>name_index</code>, as you can see below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">indexes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">indexs</span><span class="o">=</span><span class="n">indexes</span><span class="p">,</span>
+                        <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Continuous&#39;</span><span class="p">)</span>
+
+<span class="n">test</span></code></pre></div>
+<pre><code>{'a': test_a, 'b': test_b, 'c': test_c}
+</code></pre>
+
+<p>It&rsquo;s worth noting that this operation returns a simple, vanilla dictionary</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">test</span><span class="p">)</span></code></pre></div>
+<pre><code>dict
+</code></pre>
+
+<p>Whose contents are all of type <code>LpVariable</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span></code></pre></div>
+<pre><code>pulp.pulp.LpVariable
+</code></pre>
+
+<p>and have been instantiated with the arguments found in the top-level call</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lowBound</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span></code></pre></div>
+<pre><code>(0, 'Continuous')
+</code></pre>
+
+<p>And so in the example post, the author essentially does some list comprehension magic to make all <code>n x m</code> variables that are unique combinations of the <code>sausage_types</code> and <code>ingredients</code>.</p>
+
+<p>Because this is a tuple of strings, it&rsquo;s hashable, and becomes the key to the dictionary</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pulp</span>
+
+<span class="c1"># Construct our decision variable lists</span>
+<span class="n">sausage_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;economy&#39;</span><span class="p">,</span> <span class="s1">&#39;premium&#39;</span><span class="p">]</span>
+<span class="n">ingredients</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pork&#39;</span><span class="p">,</span> <span class="s1">&#39;wheat&#39;</span><span class="p">,</span> <span class="s1">&#39;starch&#39;</span><span class="p">]</span>
+
+<span class="n">ing_weight</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpVariable</span><span class="o">.</span><span class="n">dicts</span><span class="p">(</span><span class="s2">&#34;weight kg&#34;</span><span class="p">,</span>
+                                     <span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sausage_types</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ingredients</span><span class="p">),</span>
+                                     <span class="n">lowBound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                     <span class="n">cat</span><span class="o">=</span><span class="s1">&#39;Continuous&#39;</span><span class="p">)</span>
+
+<span class="n">ing_weight</span></code></pre></div>
+<pre><code>{('economy', 'pork'): weight_kg_('economy',_'pork'),
+ ('economy', 'wheat'): weight_kg_('economy',_'wheat'),
+ ('economy', 'starch'): weight_kg_('economy',_'starch'),
+ ('premium', 'pork'): weight_kg_('premium',_'pork'),
+ ('premium', 'wheat'): weight_kg_('premium',_'wheat'),
+ ('premium', 'starch'): weight_kg_('premium',_'starch')}
+</code></pre>
+
+<p>Behind the scenes, <code>pulp</code> string-ifies the combination of <code>name</code> and, as above, creates the variables with the correct arguments.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ing_weight</span><span class="p">[</span><span class="s1">&#39;economy&#39;</span><span class="p">,</span> <span class="s1">&#39;pork&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>weight_kg_('economy',_'pork')
+</code></pre>
+
+<h4 id="lpsum">.lpSum()</h4>
+
+<p>This one wasn&rsquo;t immediately obvious to me. Essentially, <code>.lpSum()</code> provides a similar means for programmatic criteria generation. To see why this is necessary, in our overall problem we&rsquo;re trying to minimize cost, across 6 variables. But because there are 3 unique costs, there&rsquo;s obviously a more elegant way to express the final cost than just writing all 6 of them out.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pulp</span> <span class="kn">import</span> <span class="n">lpSum</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">filterwarnings</span>
+<span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&#34;Cost minimising blending problem&#34;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span></code></pre></div>
+<p>So we do a simple list comprehension to express that, which gives us a tuple of 2 <code>LpAffineExpressions</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.32</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;pork&#39;</span><span class="p">)]</span>
+         <span class="o">+</span> <span class="mf">2.46</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;wheat&#39;</span><span class="p">)]</span>
+         <span class="o">+</span> <span class="mf">1.86</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;starch&#39;</span><span class="p">)]</span>
+         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sausage_types</span><span class="p">]</span>
+<span class="n">costs</span></code></pre></div>
+<pre><code>[4.32*weight_kg_('economy',_'pork') + 1.86*weight_kg_('economy',_'starch') + 2.46*weight_kg_('economy',_'wheat') + 0.0,
+ 4.32*weight_kg_('premium',_'pork') + 1.86*weight_kg_('premium',_'starch') + 2.46*weight_kg_('premium',_'wheat') + 0.0]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">costs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></code></pre></div>
+<pre><code>pulp.pulp.LpAffineExpression
+</code></pre>
+
+<p>Should be able to pipe that in, yeah?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">+=</span> <span class="p">(</span><span class="n">costs</span><span class="p">)</span></code></pre></div>
+<pre><code>---------------------------------------------------------------------------
+
+TypeError                                 Traceback (most recent call last)
+
+&lt;ipython-input-26-ff6b5f8a8a6d&gt; in &lt;module&gt;
+----&gt; 1 model += (costs)
+
+
+C:\Users\Nick\Anaconda3\lib\site-packages\pulp\pulp.py in __iadd__(self, other)
+   1360             self.objective.name = name
+   1361         else:
+-&gt; 1362             raise TypeError(&quot;Can only add LpConstraintVar, LpConstraint, LpAffineExpression or True objects&quot;)
+   1363         return self
+   1364 
+
+
+TypeError: Can only add LpConstraintVar, LpConstraint, LpAffineExpression or True objects
+</code></pre>
+
+<p>Nope. Instead, we&rsquo;ll use <code>lpSum()</code>. I think what threw me for a loop was that this isn&rsquo;t necessarily a <em>sum</em>&ndash; after all, aren&rsquo;t there a number of multiplication terms?</p>
+
+<p>Perhaps a more accurate name for this function would be <code>LpAffineExpression.from_iter()</code>, because it&rsquo;s essentially there to allow you to assemble an <code>LpAffineExpression</code> object from an iterable of them, but alas, knowing what the <code>lpSum</code> function does, we can just think of as &ldquo;a sum of affine expressions.&rdquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">+=</span> <span class="p">(</span>
+    <span class="n">pulp</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span>
+        <span class="mf">4.32</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;pork&#39;</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="mf">2.46</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;wheat&#39;</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="mf">1.86</span> <span class="o">*</span> <span class="n">ing_weight</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;starch&#39;</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sausage_types</span><span class="p">])</span>
+<span class="p">)</span>
+
+<span class="n">model</span></code></pre></div>
+<pre><code>Cost_minimising_blending_problem:
+MINIMIZE
+4.32*weight_kg_('economy',_'pork') + 1.86*weight_kg_('economy',_'starch') + 2.46*weight_kg_('economy',_'wheat') + 4.32*weight_kg_('premium',_'pork') + 1.86*weight_kg_('premium',_'starch') + 2.46*weight_kg_('premium',_'wheat') + 0.0
+VARIABLES
+weight_kg_('economy',_'pork') Continuous
+weight_kg_('economy',_'starch') Continuous
+weight_kg_('economy',_'wheat') Continuous
+weight_kg_('premium',_'pork') Continuous
+weight_kg_('premium',_'starch') Continuous
+weight_kg_('premium',_'wheat') Continuous
+</code></pre>
+
+<p>Finally, we can see that the author uses this same function to generate multiple <em>constraints</em> as well</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">+=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">ing_weight</span><span class="p">[</span><span class="s1">&#39;economy&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ingredients</span><span class="p">])</span> <span class="o">==</span> <span class="mi">350</span> <span class="o">*</span> <span class="mf">0.05</span>
+<span class="n">model</span> <span class="o">+=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">lpSum</span><span class="p">([</span><span class="n">ing_weight</span><span class="p">[</span><span class="s1">&#39;premium&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">ingredients</span><span class="p">])</span> <span class="o">==</span> <span class="mi">500</span> <span class="o">*</span> <span class="mf">0.05</span>
+
+<span class="n">model</span></code></pre></div>
+<pre><code>Cost_minimising_blending_problem:
+MINIMIZE
+4.32*weight_kg_('economy',_'pork') + 1.86*weight_kg_('economy',_'starch') + 2.46*weight_kg_('economy',_'wheat') + 4.32*weight_kg_('premium',_'pork') + 1.86*weight_kg_('premium',_'starch') + 2.46*weight_kg_('premium',_'wheat') + 0.0
+SUBJECT TO
+_C1: weight_kg_('economy',_'pork') + weight_kg_('economy',_'starch')
+ + weight_kg_('economy',_'wheat') = 17.5
+
+_C2: weight_kg_('premium',_'pork') + weight_kg_('premium',_'starch')
+ + weight_kg_('premium',_'wheat') = 25
+
+VARIABLES
+weight_kg_('economy',_'pork') Continuous
+weight_kg_('economy',_'starch') Continuous
+weight_kg_('economy',_'wheat') Continuous
+weight_kg_('premium',_'pork') Continuous
+weight_kg_('premium',_'starch') Continuous
+weight_kg_('premium',_'wheat') Continuous
+</code></pre>
+
+<h3 id="part-5-https-benalexkeen-com-linear-programming-with-python-and-pulp-part-5"><a href="https://benalexkeen.com/linear-programming-with-python-and-pulp-part-5/">Part 5</a></h3>
+
+<p>Finally, this post&ndash; and the one after it&ndash; bring it all together, showing how to interface between <code>pulp</code> and a more-traditional <code>pandas</code> workflow.</p>
+
+<p>I want to put particular emphasis on how well-designed keys for <code>LpVariable.dicts</code> allows the author to simultaneously interface with the <code>pandas.DataFrame</code> that houses our optimization criteria, as well as the <code>pulp</code> objects that he&rsquo;s constructing. For instance, the overall problem statement is &ldquo;minimize all costs&rdquo;, which is achieved through their simple model instantiation (<code>model = LpProblem('Cost minimize', pulp.LpMinimize)</code>) and this monster of a <code>pulp.lpSum</code></p>
+
+<pre><code>model += pulp.lpSum(
+    [production[month, factory] * factories.loc[(month, factory), 'Variable_Costs']
+       for month, factory in factories.index]
+       
+    + [factory_status[month, factory] * factories.loc[(month, factory), 'Fixed_Costs']
+       for month, factory in factories.index]
+)
+</code></pre>
+
+<p>This is actually pretty straight-forward to read when you deconstruct.</p>
+
+<p><code>production[month, factory]</code> and <code>factory_status[month, factory]</code> are two dicts of <code>LpVariables</code> and <code>factories.loc[(month, factory), ...]</code> just reference the relevant cells within the <code>DataFrame</code> to complete the equation.</p>
+
+<p>Finally, the author goes through and tailors the constraints for each month/factory combination by going through and <em>updating the records of the dictionary</em>.</p>
+
+<pre><code>for month, factory in factories.index:
+    min_production = factories.loc[(month, factory), 'Min_Capacity']
+    max_production = factories.loc[(month, factory), 'Max_Capacity']
+    model += production[(month, factory)] &gt;= min_production * factory_status[month, factory]
+    model += production[(month, factory)] &lt;= max_production * factory_status[month, factory]
+</code></pre>
+
+<p>Building these dictionaries form <code>LpVariable.dicts</code> was handy for their organization and default behavior, but this step allows us to update, instead of building a whole mess of <code>lpVariables</code> from scratch, instantiating with the appropriate values of <code>lowBound</code> and <code>upBound</code>.</p>
+
+<p>Aaaaand for good measure, creating the super-specific constraints in the problem statement are two simple dictionary calls</p>
+
+<pre><code># Factory B is off in May
+model += factory_status[5, 'B'] == 0
+model += production[5, 'B'] == 0
+</code></pre>
+
+<p><a href="http://www.benalexkeen.com/linear-programming-with-python-and-pulp-part-6">The last post in his series is super interesting</a>, but in my estimation, not so fundamental that I&rsquo;ll elaborate in this notebook.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

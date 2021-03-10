@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Graph Data from Wikipedia" />
+<meta property="og:description" content="Building a Network from Unclean Data I&rsquo;m working through Complex Network Analysis in Python and one of the earlier examples is just too good to pass up, wherein the author generates useful Network data by combing through links from a starting Wikipedia page.
+This technique is called &ldquo;Snowball Sampling&rdquo; and entails starting from some seed, or starting point, and running the algorithm which &ldquo;uses retrieved data to find more data,&rdquo; hence snowball." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/algorithms/graphs/wiki_data/" />
+
+
+
+<meta property="article:published_time" content="2021-02-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2021-02-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Graph Data from Wikipedia"/>
+<meta name="twitter:description" content="Building a Network from Unclean Data I&rsquo;m working through Complex Network Analysis in Python and one of the earlier examples is just too good to pass up, wherein the author generates useful Network data by combing through links from a starting Wikipedia page.
+This technique is called &ldquo;Snowball Sampling&rdquo; and entails starting from some seed, or starting point, and running the algorithm which &ldquo;uses retrieved data to find more data,&rdquo; hence snowball."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Graph Data from Wikipedia",
+  "url": "https://napsterinblue.github.io/notes/algorithms/graphs/wiki_data/",
+  "wordCount": "1288",
+  "datePublished": "2021-02-10T00:00:00&#43;00:00",
+  "dateModified": "2021-02-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Graph Data from Wikipedia</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Graph Data from Wikipedia</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2021-02-10T00:00:00Z "> 10 Feb 2021</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="building-a-network-from-unclean-data">Building a Network from Unclean Data</h2>
+
+<p>I&rsquo;m working through <a href="https://smile.amazon.com/Complex-Network-Analysis-Python-Recognize/dp/1680502697?sa-no-redirect=1">Complex Network Analysis in Python</a> and one of the earlier examples is just too good to pass up, wherein the author generates useful Network data by combing through links from a starting Wikipedia page.</p>
+
+<p>This technique is called &ldquo;Snowball Sampling&rdquo; and entails starting from some <em>seed</em>, or starting point, and running the algorithm which &ldquo;uses retrieved data to find <em>more</em> data,&rdquo; hence <em>snowball.</em> It does this by executing a Breadth-First Search from the starting seed, with a few thoughtful checks and data cleaning steps that I&rsquo;ll go through in the next section.</p>
+
+<h2 id="in-the-code">In the Code</h2>
+
+<p>The code, <a href="https://github.com/NapsterInBlue/complex-network-analysis-python/blob/master/book_files/wiki2net.py">copied from the book repository here</a>, looks pretty dense, but is actually quite elegant. Pasting in its entirety, but segmenting to make observations on what&rsquo;s going on under the hood.</p>
+
+<h3 id="core-objects">Core Objects</h3>
+
+<p>After the relevant library imports, we start with our main objects:</p>
+
+<ul>
+<li><code>F</code>: the blank network object that will hold our data</li>
+<li><code>SEED</code>: the title of the starting page</li>
+<li><code>todo_set</code>: A <code>set</code> (not <code>list</code>, for better retrieval!) that holds all pages we still need to crawl</li>
+<li><code>done_set</code>: A <code>set</code> holding all pages we&rsquo;ve already been to</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">wikipedia</span>
+
+<span class="n">F</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+
+<span class="n">SEED</span> <span class="o">=</span> <span class="s2">&#34;Complex network&#34;</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+<span class="n">todo_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>   <span class="c1"># The SEED itself</span>
+<span class="n">done_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>       <span class="c1"># Nothing is done yet</span></code></pre></div>
+<p>For this next section, it&rsquo;s extremely important that we keep track of what layer we&rsquo;re currently operating on. Wikipedia is enormous, and if we&rsquo;re not careful, our scraper would just go down the &ldquo;one more link&rdquo; rabbit hole and spend hours, if not days/months scraping until we finish the site.</p>
+
+<p>Therefore, for each page we scrape, we want to catalog both its title <strong>and</strong> what layer away from our seed the node is. This gives us:</p>
+
+<ul>
+<li><code>todo_lst</code>: A <code>list</code> of <code>(layer, page_title)</code> <code>tuples</code></li>
+<li><code>layer</code>: The current (integer) layer value, representing our distance from the seed</li>
+<li><code>page</code>: The current page name as a string</li>
+</ul>
+
+<p>We initialize <code>todo_lst</code> with the below because <em>we haven&rsquo;t yet begun scraping</em>. The first values of <code>layer</code> and <code>page</code> get updated accordingly.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">todo_lst</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SEED</span><span class="p">)]</span> <span class="c1"># The SEED is in the layer 0</span>
+
+<span class="n">layer</span><span class="p">,</span> <span class="n">page</span> <span class="o">=</span> <span class="n">todo_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></code></pre></div>
+<h3 id="a-clever-conditional">A Clever Conditional</h3>
+
+<p>Specific to this particular use-case, the author also provided us with a list, <code>STOPS</code>, which represent links that are either of very little informational value, or show up on virtually every page and provide no real insight, into the network built around your <code>seed</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">STOPS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&#34;International Standard Serial Number&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;International Standard Book Number&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;National Diet Library&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;International Standard Name Identifier&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;International Standard Book Number (Identifier)&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Pubmed Identifier&#34;</span><span class="p">,</span> <span class="s2">&#34;Pubmed Central&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Digital Object Identifier&#34;</span><span class="p">,</span> <span class="s2">&#34;Arxiv&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Proc Natl Acad Sci Usa&#34;</span><span class="p">,</span> <span class="s2">&#34;Bibcode&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Library Of Congress Control Number&#34;</span><span class="p">,</span> <span class="s2">&#34;Jstor&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Doi (Identifier)&#34;</span><span class="p">,</span> <span class="s2">&#34;Isbn (Identifier)&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Pmid (Identifier)&#34;</span><span class="p">,</span> <span class="s2">&#34;Arxiv (Identifier)&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Bibcode (Identifier)&#34;</span><span class="p">,</span> <span class="s2">&#34;Pmc (Identifier)&#34;</span><span class="p">,</span>
+         <span class="s2">&#34;Issn (Identifier)&#34;</span><span class="p">,</span> <span class="s2">&#34;S2Cid (Identifier)&#34;</span><span class="p">)</span></code></pre></div>
+<h3 id="data-collection-loop">Data Collection Loop</h3>
+
+<p>With all of these parts together, the following algorithm basically:</p>
+
+<ul>
+<li>Removes the next <code>(layer, page_title)</code> pair from the <code>todo_lst</code></li>
+<li>Uses this to open up the Wikipedia article corresponding to the <code>page_title</code></li>
+
+<li><p>Finds all of the links the article contains while</p>
+
+<ul>
+<li>Filtering out any pages that appear in our <code>STOPS</code> list</li>
+<li>Incrementing the <code>layer</code> value to be <code>current_layer + 1</code></li>
+<li>Adding the new pair to the end of our <code>todo_list</code>
+<br /></li>
+</ul></li>
+</ul>
+
+<p>This ordering is crucial, as it ensures that we scrape the pages in <code>layer</code> order (e.g. <code>0</code> before <code>1</code>s, all <code>1</code>s before any <code>2</code>s, etc) until the only pages left in our <code>todo_lst</code> are those with a higher <code>layer</code> value than we&rsquo;re interested in.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">filterwarnings</span>
+
+<span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="n">layer</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">del</span> <span class="n">todo_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#(1)</span>
+    <span class="n">done_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+    <span class="c1"># print(layer, page)</span>
+
+    <span class="k">try</span><span class="p">:</span> <span class="c1">#(2)</span>
+        <span class="n">wiki</span> <span class="o">=</span> <span class="n">wikipedia</span><span class="o">.</span><span class="n">page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">layer</span><span class="p">,</span> <span class="n">page</span> <span class="o">=</span> <span class="n">todo_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># print(&#34;Could not load&#34;, page)</span>
+        <span class="k">continue</span>
+
+    <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">wiki</span><span class="o">.</span><span class="n">links</span><span class="p">:</span> <span class="c1">#(3)</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">link</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">STOPS</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">link</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&#34;List Of&#34;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">link</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">todo_set</span> <span class="ow">and</span> <span class="n">link</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">done_set</span><span class="p">:</span>
+                <span class="n">todo_lst</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">layer</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">link</span><span class="p">))</span>
+                <span class="n">todo_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">F</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">link</span><span class="p">)</span>
+
+    <span class="n">layer</span><span class="p">,</span> <span class="n">page</span> <span class="o">=</span> <span class="n">todo_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#(4)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&#34;{} nodes, {} edges&#34;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="p">),</span> <span class="n">nx</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(</span><span class="n">F</span><span class="p">)))</span></code></pre></div>
+<pre><code>13506 nodes, 24391 edges
+</code></pre>
+
+<h3 id="some-more-clever-data-fixes">Some More Clever Data Fixes</h3>
+
+<p>The author also provides a nice chunk of code to resolve any naming inconsistencies between two pages of the same content (e.g. &ldquo;Complex Network&rdquo; vs the plural &ldquo;Complex Network<strong>s</strong>&rdquo;).</p>
+
+<p>It does this by checking all pairwise combinations of page titles to see if they match the singular/plural of the other, collecting matches into a list, <code>duplicates</code>.</p>
+
+<p>Then, they make use of <code>nx.contracted_nodes()</code>, whose middle argument is an iterable of node-key pairs telling <code>networkx</code> &ldquo;treat these two nodes as <em>one node</em>&rdquo;. Concretely, if we had a linear network (<code>A - B - C - D</code>) and called <code>nx.contracted_nodes()</code> with middle argument <code>[(B, C)]</code>, then the network would make a new node, <code>BC</code> that squashed the two together, giving us a new network <code>A - BC - D</code>. Finally, the <code>self_loops=False</code> argument ensures that we don&rsquo;t preserve the &ldquo;connection/relationship between <code>B</code> and <code>C</code>&rdquo; &ndash; they&rsquo;re the same node and that self-referencing loop becomes redundant.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">F</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">selfloop_edges</span><span class="p">(</span><span class="n">F</span><span class="p">))</span>
+<span class="n">duplicates</span> <span class="o">=</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="n">node</span> <span class="o">+</span> <span class="s2">&#34;s&#34;</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">F</span> <span class="k">if</span> <span class="n">node</span> <span class="o">+</span> <span class="s2">&#34;s&#34;</span> <span class="ow">in</span> <span class="n">F</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">dup</span> <span class="ow">in</span> <span class="n">duplicates</span><span class="p">:</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">contracted_nodes</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="o">*</span><span class="n">dup</span><span class="p">,</span> <span class="n">self_loops</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
+<p>Similarly, they check for multi-word titles that are space-delimited vs hyphen-delimited but represent the same content.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">duplicates</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> 
+              <span class="ow">in</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&#34;-&#34;</span><span class="p">,</span> <span class="s2">&#34; &#34;</span><span class="p">))</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">F</span><span class="p">]</span>
+              <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">y</span> <span class="ow">and</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">F</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">dup</span> <span class="ow">in</span> <span class="n">duplicates</span><span class="p">:</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">contracted_nodes</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="o">*</span><span class="n">dup</span><span class="p">,</span> <span class="n">self_loops</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
+<p>This line is a bit hand-wavy, but essentially any node that survives the deduping, gets stuck with a new <code>contraction</code> attribute that marks what node got deleted in the last step.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">F</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s1">&#39;Complex Network&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>{'contraction': {'Complex Networks': {}}}
+</code></pre>
+
+<p>And so this line just goes through and zeroes out all <code>contraction</code> values, because it&rsquo;s a useless attribute in this instance, and makes exporting the network to a standard format a chore</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;contraction&#34;</span><span class="p">)</span></code></pre></div>
+<h3 id="subgraphing">Subgraphing</h3>
+
+<p>At this point, we have a ton of nodes, and even more edges connecting them.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">edges</span><span class="p">))</span></code></pre></div>
+<pre><code>13390 23223
+</code></pre>
+
+<p>But <em>do we need all of this data</em>?</p>
+
+<p>Of the 14k nodes we pulled in our dataset, nearly 10k of them only have degree 1 (one in-edge from a neighbor, not no out-edge connecting to any data point in our first two layers). This means that we can lop off nearly 70% of the data we collected, without losing nodes that provide any real interesting properties.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">node_degrees</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">degree</span> <span class="k">for</span> <span class="n">title</span><span class="p">,</span> <span class="n">degree</span> <span class="ow">in</span> <span class="n">F</span><span class="o">.</span><span class="n">degree</span><span class="p">()])</span>
+<span class="n">node_degrees</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<pre><code>1    10436
+2     1596
+3      605
+5      230
+4      184
+dtype: int64
+</code></pre>
+
+<p>The author does this by defining a <code>core</code> set of nodes that all have degree <code>&gt;= 2</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">core</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">deg</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">degree</span><span class="p">())</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">deg</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">]</span></code></pre></div>
+<p>Then defines a new, final, graph <code>G</code>, derived from our original graph <code>F</code>, but only for the nodes of interest</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">core</span><span class="p">)</span></code></pre></div>
+<p>Not only does the node count go down considerably, we also automatically rid ourselves of edges connecting to nodes outside of our <code>core</code> set</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">))</span></code></pre></div>
+<pre><code>2954 12787
+</code></pre>
+
+<h3 id="writing">Writing</h3>
+
+<p>I&rsquo;m leaving this commented out, because I have no use for it in this notebook, but writing the graph object to memory is as easy as calling the function that writes the data to (one of many) standard graph data formats</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">write_graphml</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&#34;output.graphml&#34;</span><span class="p">)</span></code></pre></div>
+<h3 id="all-together">All Together</h3>
+
+<p>Finally, we can use the <code>in_degree</code> values as a measure of &ldquo;how fundamental is this page, in the world of our starting seed?&rdquo;. Anyone with even a cursory understanding of Graph/Network Analysis won&rsquo;t be surprised to see these results.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">top_indegree</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">in_degree</span><span class="p">())</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                      <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))[:</span><span class="mi">100</span><span class="p">]</span>
+
+<span class="n">top_indegree</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span></code></pre></div>
+<pre><code>[('Graph (Discrete Mathematics)', 68),
+ ('Vertex (Graph Theory)', 64),
+ ('Directed Graph', 58),
+ ('Social Network', 56),
+ ('Network Theory', 53),
+ ('Adjacency Matrix', 53),
+ ('Degree (Graph Theory)', 53),
+ ('Network Science', 51),
+ ('Graph Drawing', 50),
+ ('Edge (Graph Theory)', 50)]
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

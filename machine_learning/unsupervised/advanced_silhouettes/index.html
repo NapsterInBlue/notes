@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Advanced Silhouette Usage" />
+<meta property="og:description" content="As we mentioned in our notebook on Basic Clustering Evaluation Metrics, the Silhouette Score is a pretty robust tool to determine the appropriate number of clusters generated from an Unsupervised Algorithm.
+However, months later, I stumbled across another post buried in the sklearn docs that further elaborated on more fine-tuned inspection of your data and where the model over-under performs. This notebook gives an overview of reading the plots, and highlights some of the tricks in generating them." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/unsupervised/advanced_silhouettes/" />
+
+
+
+<meta property="article:published_time" content="2020-10-16T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-10-16T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Advanced Silhouette Usage"/>
+<meta name="twitter:description" content="As we mentioned in our notebook on Basic Clustering Evaluation Metrics, the Silhouette Score is a pretty robust tool to determine the appropriate number of clusters generated from an Unsupervised Algorithm.
+However, months later, I stumbled across another post buried in the sklearn docs that further elaborated on more fine-tuned inspection of your data and where the model over-under performs. This notebook gives an overview of reading the plots, and highlights some of the tricks in generating them."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Advanced Silhouette Usage",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/unsupervised/advanced_silhouettes/",
+  "wordCount": "734",
+  "datePublished": "2020-10-16T00:00:00&#43;00:00",
+  "dateModified": "2020-10-16T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Advanced Silhouette Usage</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Advanced Silhouette Usage</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-10-16T00:00:00Z "> 16 Oct 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>As we mentioned in <a href="https://napsterinblue.github.io/notes/machine_learning/unsupervised/basic_evaluation_metrics/">our notebook on Basic Clustering Evaluation Metrics</a>, the Silhouette Score is a pretty robust tool to determine the appropriate number of clusters generated from an Unsupervised Algorithm.</p>
+
+<p>However, months later, I stumbled across <a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html">another post buried in the sklearn docs</a> that further elaborated on more fine-tuned inspection of your data and where the model over-under performs. This notebook gives an overview of reading the plots, and highlights some of the tricks in generating them.</p>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>Recall that the formula for a point&rsquo;s Silhouette Coeffient is represented by the following:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/silhouette.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="advanced_silhouettes_2_0.png" alt="png" /></p>
+
+<p>And that optimizing for the highest value of <code>s</code> means simultaneously achieving the following objectives:</p>
+
+<ul>
+<li>maximizing <code>b</code>, and thus maximizing cross-class separability</li>
+<li>minimizing <code>a</code>, and thus favoring tightly-packed clusters</li>
+<li>dividing by <code>max(a, b)</code>, to normalize our numerator by whatever we&rsquo;re good at, so we don&rsquo;t overly value separability or centroid tightness.</li>
+</ul>
+
+<p>So, if we do our usual routine of generating some sample data that we want to cluster on</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+                  <span class="n">n_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                  <span class="n">centers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                  <span class="n">cluster_std</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">center_box</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
+                  <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># For reproducibility</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]);</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p><img src="advanced_silhouettes_4_1.png" alt="png" /></p>
+
+<p>And fit a simple <code>KMeans</code> to it</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">clusterer</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">cluster_labels</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code></pre></div>
+<p>We can visualize how the algorithm partitioned our data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">nipy_spectral</span><span class="p">(</span><span class="n">cluster_labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_clusters</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="p">);</span></code></pre></div>
+<p><img src="advanced_silhouettes_8_0.png" alt="png" /></p>
+
+<h3 id="reading-the-plots">Reading the Plots</h3>
+
+<p>I&rsquo;ve tucked the implementation away into a helper function <a href="https://github.com/NapsterInBlue/notes/tree/master/content/machine_learning/unsupervised/utils.py">here</a>.</p>
+
+<p>What I want to highlight, for the sake of reading, is this left plot that accompanies the one we generated above.</p>
+
+<p>First thing to point out is that the average silhouette score printed out before the figure matches the vertical red line, giving us an idea of how well our data scores, across the board.</p>
+
+<p>Additionally, we&rsquo;ve got these different-colored sections of the graph. These are each of the different points of <code>X</code>, grouped into their predicted clusters. They&rsquo;re sorted by their individual silhouette scores from smallest to largest and then plotted.</p>
+
+<ul>
+<li><p>Their <code>y</code> values have no direct bearing on the interpretation, apart from separating the classes from one another. In fact, under the hood, the plotter is plotting from the y-axis, left to right&ndash; not from the x-axis, bottom to top, as we expect by default.</p></li>
+
+<li><p>As far as the <code>x</code> values go, recall that a silhouette score ranges between <code>-1</code>, mislabel, to <code>1</code>, perfect fit. Therefore, we can see that group <code>1</code> achieves a high degree of cross-class separability and within-class tightness.</p></li>
+
+<li><p>The plotter starts at the bottom of a class group and plots its lowest score first (hence why you see <em>negative</em> values for the <code>0</code> class), progressively plotting better and better scores, creating the curvature you can see for each class.</p></li>
+</ul>
+
+<p>It&rsquo;s important to note that this figure would suggest that the <code>0</code> class doesn&rsquo;t enjoy as good a silhouette score, on average, as the other two classes and thus might not be a very good fit. Therefore, we might suspect that <code>n_clusters=3</code> isn&rsquo;t a good fit to our data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">make_silhouette_plot</span>
+
+<span class="n">make_silhouette_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span></code></pre></div>
+<pre><code>Average silhouette score: 0.5882004012129721
+</code></pre>
+
+<p><img src="advanced_silhouettes_11_1.png" alt="png" /></p>
+
+<p>Compare this to <code>n_clusters=4</code>, which achieves a better score than <code>3</code>, as evidenced both by the printout as well as the dashed, red line being further to the right than the previous plot.</p>
+
+<p>The cluster in the top-right still out-performs the other clusters by a good margin, but the new clustering scheme has smoothed out the performance of the other three.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">make_silhouette_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></code></pre></div>
+<pre><code>Average silhouette score: 0.6505186632729437
+</code></pre>
+
+<p><img src="advanced_silhouettes_13_1.png" alt="png" /></p>
+
+<p>Finally, if we look at the <code>n_clusters=2</code> case, we can see that the scores are higher on average, and that the obvious case performs even stronger than in previous implementations.</p>
+
+<p>The decision between 2 and 4 clusters comes down to application of the model at this point, as both are solid candidates.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">make_silhouette_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></code></pre></div>
+<pre><code>Average silhouette score: 0.7049787496083262
+</code></pre>
+
+<p><img src="advanced_silhouettes_15_1.png" alt="png" /></p>
+
+<p>Finally, compare this to the clearly-worse <code>n_clusters-8</code> to see that multiple classes have points with negative silhouette scores, there is no clear &ldquo;best in class&rdquo; cluster to anchor our intuitive understanding, and the &ldquo;gradual-ness&rdquo; of each curve would suggest that the model isn&rsquo;t very confident in this separation&ndash; in fact, it&rsquo;s not likely that we&rsquo;d even see these same clusters if we had used a different seed to power the initial Mean selection.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">make_silhouette_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_clusters</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span></code></pre></div>
+<pre><code>Average silhouette score: 0.32799178719839805
+</code></pre>
+
+<p><img src="advanced_silhouettes_17_1.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

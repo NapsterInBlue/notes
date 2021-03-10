@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Cross Validation" />
+<meta property="og:description" content="Occasionally, our measures for model accuracy can be misleading. This typically occurs when our model fitting overly-generalizes to whatever data it was trained on, and the way we split out train/test sets don&rsquo;t do a very good job of exposing the oversight.
+To this end, we employ Validation Sets&ndash; data held out of our Training Sets&ndash; to approximate our Test Error.
+Sample Model Before we get started, let&rsquo;s make our work reproducible." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/validation/cross_validation/" />
+
+
+
+<meta property="article:published_time" content="2018-06-01T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-01T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cross Validation"/>
+<meta name="twitter:description" content="Occasionally, our measures for model accuracy can be misleading. This typically occurs when our model fitting overly-generalizes to whatever data it was trained on, and the way we split out train/test sets don&rsquo;t do a very good job of exposing the oversight.
+To this end, we employ Validation Sets&ndash; data held out of our Training Sets&ndash; to approximate our Test Error.
+Sample Model Before we get started, let&rsquo;s make our work reproducible."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cross Validation",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/validation/cross_validation/",
+  "wordCount": "815",
+  "datePublished": "2018-06-01T00:00:00&#43;00:00",
+  "dateModified": "2018-06-01T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Cross Validation</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Cross Validation</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-01T00:00:00Z "> 01 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Occasionally, our measures for model accuracy can be misleading. This typically occurs when our model fitting overly-generalizes to whatever data it was trained on, and the way we split out train/test sets don&rsquo;t do a very good job of exposing the oversight.</p>
+
+<p>To this end, we employ Validation Sets&ndash; data held out of our Training Sets&ndash; to approximate our Test Error.</p>
+
+<h2 id="sample-model">Sample Model</h2>
+
+<p>Before we get started, let&rsquo;s make our work reproducible.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>Now let&rsquo;s build a model</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span></code></pre></div>
+<p>We&rsquo;re going to deliberately make a lopsided balance between how much of our data is training and how much is test.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">make_data</span><span class="p">():</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span><span class="n">n_informative</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                       <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=.</span><span class="mo">01</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">make_data</span><span class="p">()</span>
+<span class="p">[</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">make_data</span><span class="p">()]</span></code></pre></div>
+<pre><code>[(990, 20), (10, 20), (990,), (10,)]
+</code></pre>
+
+<p>And build a Decision Tree on top of it</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span></code></pre></div>
+<pre><code>DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,
+                      max_leaf_nodes=None, min_impurity_decrease=0.0,
+                      min_impurity_split=None, min_samples_leaf=1,
+                      min_samples_split=2, min_weight_fraction_leaf=0.0,
+                      presort=False, random_state=None, splitter='best')
+</code></pre>
+
+<h3 id="evaluating-the-model">Evaluating the Model</h3>
+
+<p>And if we revisit the Root Mean Squared Error as our measure of model accuracy, we see that this is perhaps a respectable level of error.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+
+<span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">))</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">rmse</span></code></pre></div>
+<pre><code>200.2823964921704
+</code></pre>
+
+<p>However, looking at the distribution of predictions vs actuals, we can see that a lot of this error comes a few points in <code>y_train</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">),</span> <span class="n">test_y</span><span class="p">);</span></code></pre></div>
+<p><img src="cross_validation_16_0.png" alt="png" /></p>
+
+<p>The model was fit to predict on a target distribution that looked basically normal</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">train_y</span><span class="p">);</span></code></pre></div>
+<p><img src="cross_validation_18_0.png" alt="png" /></p>
+
+<p>by the (bad) luck of sampling, the 1% of <code>y</code> that made up <code>test_y</code> didn&rsquo;t really look like that at all.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">test_y</span><span class="p">);</span></code></pre></div>
+<p><img src="cross_validation_20_0.png" alt="png" /></p>
+
+<p>So how do we ensure that we don&rsquo;t get &ldquo;gotcha&rsquo;d&rdquo; when the distribution/variation of the 1% we held out isn&rsquo;t accurately captured by our training set?</p>
+
+<h2 id="cross-validation">Cross-Validation</h2>
+
+<p>Cross-Validation involves a <em>second</em> splitting step after you&rsquo;ve removed your Test data from your starting population.</p>
+
+<p>By training then scoring on this intermediate set of data before checking your Test accuracy, you have more information about the performance of your model.</p>
+
+<p>Moreover, when used to direct training/hyperparameter search, withholding your data helps correct overfitting during training.</p>
+
+<h3 id="validation-set">Validation Set</h3>
+
+<p>And so we&rsquo;ll further split our Training dataset</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">train_y</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>((990, 20), (990,))
+</code></pre>
+
+<p>A third will now be used for Validation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">make_data</span><span class="p">()</span>
+
+<span class="n">train_X</span><span class="p">,</span> <span class="n">validation_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">validation_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=.</span><span class="mi">33</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">train_y</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>((663, 20), (663,))
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">validation_X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">validation_y</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>((327, 20), (327,))
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test_X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">test_y</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>((10, 20), (10,))
+</code></pre>
+
+<p>Refitting the model with the Validation records omitted</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span></code></pre></div>
+<pre><code>DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,
+                      max_leaf_nodes=None, min_impurity_decrease=0.0,
+                      min_impurity_split=None, min_samples_leaf=1,
+                      min_samples_split=2, min_weight_fraction_leaf=0.0,
+                      presort=False, random_state=None, splitter='best')
+</code></pre>
+
+<p>And our performance on the Validation set is about 60 points better than our last test!</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">validation_y</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">validation_X</span><span class="p">))</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">rmse</span></code></pre></div>
+<pre><code>143.2710672835756
+</code></pre>
+
+<p>Indeed, our model happens to be less overfit this time around.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mse</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">))</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
+<span class="n">rmse</span></code></pre></div>
+<pre><code>168.02073456013332
+</code></pre>
+
+<p>But the fact that our Validation MSE wound up being lower than our Test MSE was completely arbitrary, another consequence of the random sample.</p>
+
+<p>Indeed, in Chapter 5 ISL uses multiple Validation sets to determine what the appropriate Polynomial Degree is for a simulated regression problem. The <em>True</em> Test Error is shown in the left chart, but the right chart demonstrates that your MSE can vary wildly by the sheer luck of how you sampled your data&ndash; though generally moving the same way as the Degree increases.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/diff_val_sets.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_validation_38_0.png" alt="png" /></p>
+
+<h3 id="k-fold-cross-validation">K-Fold Cross-Validation</h3>
+
+<p>What we want to do instead is repeat that test/train splitting process across <em>multiple</em> samples of data within our dataset.</p>
+
+<p>We do this with K-Fold Cross Validation, which splits the dataset up into <code>k</code> sets, then trains on <code>k-1</code> of them, testing against the holdout, ultimately returning each accuracy score.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/crossval.jpg&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cross_validation_41_0.jpeg" alt="jpeg" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">make_data</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="c1"># what model we use</span>
+                         <span class="n">model</span><span class="p">,</span>
+                         <span class="c1"># data we&#39;ll feed it</span>
+                         <span class="n">train_X</span><span class="p">,</span>
+                         <span class="n">train_y</span><span class="p">,</span> 
+                         <span class="c1"># how we score each split</span>
+                         <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_squared_error&#39;</span><span class="p">,</span>
+                         <span class="c1"># how many cuts to make</span>
+                         <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">accuracies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">scores</span><span class="p">)</span>
+<span class="n">accuracies</span></code></pre></div>
+<pre><code>array([ 92.59567985, 106.70686122, 111.12034656, 100.3642714 ,
+        90.38853955,  94.77325883,  85.00335984,  97.94133301,
+        98.682085  ,  98.72319924])
+</code></pre>
+
+<p>As we can see, there&rsquo;s still a good amount of variation depending on which slice of data we were testing against.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">accuracies</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></code></pre></div>
+<pre><code>7.208537550908835
+</code></pre>
+
+<p>Therefore, we&rsquo;ll average out all of the cross-validation scores to get a more stable estimate.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">accuracies</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></code></pre></div>
+<pre><code>97.62989345115201
+</code></pre>
+
+<p>Effectively, taking these <code>k</code> different looks at our data means that <em>our model has been evaluated in against every point in our training set</em>. Thus when we read an MSE of <code>97.63</code>, we don&rsquo;t have to worry about whether or not we scored on some fringe part of the distribution or that we overfit.</p>
+
+<p>Indeed, more-sophisticated approaches to Machine Learning leverage K-fold Cross Validation as an intermediate training step, the algorithm proceeds in the direction that minimizes the Cross Validation Error, then redefines the folds to prevent overfitting.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

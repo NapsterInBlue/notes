@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Word Embeddings" />
+<meta property="og:description" content="Machine Learning applications ultimately boil down to a bunch of matrix multiplication plus some extra stuff. So seeing how it&rsquo;s difficult to multiply strings by strings, it stands to reason that we want to represent our string data in some fashion.
+Thankfully Word Embeddings do just this.
+Overview Say we have a vocabulary, V, of 10,000 words that include
+[a, aaron, ..., zulu, &lt;UNK&gt;]  (here, &lt;UNK&gt; is a stand-in for any words we might not have considered)" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/text/embeddings/" />
+
+
+
+<meta property="article:published_time" content="2018-10-24T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-24T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Word Embeddings"/>
+<meta name="twitter:description" content="Machine Learning applications ultimately boil down to a bunch of matrix multiplication plus some extra stuff. So seeing how it&rsquo;s difficult to multiply strings by strings, it stands to reason that we want to represent our string data in some fashion.
+Thankfully Word Embeddings do just this.
+Overview Say we have a vocabulary, V, of 10,000 words that include
+[a, aaron, ..., zulu, &lt;UNK&gt;]  (here, &lt;UNK&gt; is a stand-in for any words we might not have considered)"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Word Embeddings",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/text/embeddings/",
+  "wordCount": "429",
+  "datePublished": "2018-10-24T00:00:00&#43;00:00",
+  "dateModified": "2018-10-24T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Word Embeddings</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Word Embeddings</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-24T00:00:00Z "> 24 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Machine Learning applications ultimately boil down to a bunch of matrix multiplication plus some extra stuff. So seeing how it&rsquo;s difficult to multiply strings by strings, it stands to reason that we want to represent our string data in some fashion.</p>
+
+<p>Thankfully Word Embeddings do just this.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>Say we have a vocabulary, <code>V</code>, of 10,000 words that include</p>
+
+<pre><code>[a, aaron, ..., zulu, &lt;UNK&gt;]
+</code></pre>
+
+<p>(here, <code>&lt;UNK&gt;</code> is a stand-in for any words we might not have considered)</p>
+
+<p>Through Word Embedding, each word in our vocabulary gets some n-dimensional vector that repsents the word&rsquo;s meaning. You can construct arbitrarily-many dimensions to represent the word, but intuitively the learned embeddings (more on this below) will represent where the word falls on a number of spectrums, such as:</p>
+
+<ul>
+<li>hot vs cold</li>
+<li>happy vs sad</li>
+<li>open vs closed</li>
+</ul>
+
+<p>and many, many others. It&rsquo;s also worth noting that these values won&rsquo;t always be human-interpretable.</p>
+
+<p>Expressing a word as its Word Embedding first requires two objects:</p>
+
+<h4 id="one-hot-representation">One-Hot Representation</h4>
+
+<p>We can represent any word in this vocabulary as a one-hot vector of length <code>vocabulary_size</code> that looks like</p>
+
+<pre><code>[0 0 0 0 ... 0 0 1 0 0 ... 0 ]
+</code></pre>
+
+<p>If <code>i</code> is the list index of the word in question, then the vector is straight <code>0</code>s across the board, save for a <code>1</code> at the <code>i</code>th index.</p>
+
+<h4 id="embedding-matrix">Embedding Matrix</h4>
+
+<p>The Embedding Matrix is a <code>vocabulary_size X enbedding_dimension</code> size matrix of numbers. For instance, if we wanted a 300-dimensional embedding for the vocabulary outlined above, our Embedding Matrix, <code>E</code> would have dimensions <code>10000 x 300</code>.</p>
+
+<p>So when we want to extract the Embedding Vector representation of a word, multiply the One Hot Representation by the Embedding Matrix like so</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/embedding_matrix.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="embeddings_11_0.png" alt="png" /></p>
+
+<p>In practice, the Embedding Matrix, <code>E</code> is instantiated randomly and learned by training. It is also a very sparse matrix, and so we use the <code>Embedding</code> object in <code>keras.layers</code> to handle efficient calculation for us.</p>
+
+<h2 id="training-embeddings">Training Embeddings</h2>
+
+<p>As outlined in course 5 of Andrew Ng&rsquo;s Deep Learning specialization, one approach for training the Embedding Matrix is to programmatically cycle through words 4 at a time, attempting to predict the next.</p>
+
+<p>Here, we:</p>
+
+<ul>
+<li>Establish a target word, &ldquo;juice&rdquo;</li>
+<li>Generate one-hot representations for &ldquo;a glass of orange&rdquo;</li>
+<li>Multiply by <code>E</code> to get embedding vectors</li>
+<li>Stack the embedding vectors</li>
+<li>Feed this matrix to a Dense layer and try and predict the word &ldquo;juice&rdquo; using a softmax output</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/learning_embedding.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="embeddings_16_0.png" alt="png" /></p>
+
+<p>Alternatively, we could try other context/target strategies, such as sandwiching, previous word, or taking an arbitrary number of nearby words (which is more popular in practice)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/other_embedding.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="embeddings_18_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Assortativity" />
+<meta property="og:description" content="When examining the nature of your network&rsquo;s arrangement, the concept of assortativity is a complicated, albeit deeply-intuitive one. You can think of it as the network analog to a correlation or coincidence score&ndash; it&rsquo;s bounded between [-1, 1] and represents how much nodes in the network have self-arranged with other nodes that look like it.
+Data To dive into this concept, I&rsquo;ll borrow a dataset representing faculty relationships at a university, keyed by the department they work in (group for each node)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/algorithms/graphs/assortativity/" />
+
+
+
+<meta property="article:published_time" content="2021-03-04T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2021-03-04T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Assortativity"/>
+<meta name="twitter:description" content="When examining the nature of your network&rsquo;s arrangement, the concept of assortativity is a complicated, albeit deeply-intuitive one. You can think of it as the network analog to a correlation or coincidence score&ndash; it&rsquo;s bounded between [-1, 1] and represents how much nodes in the network have self-arranged with other nodes that look like it.
+Data To dive into this concept, I&rsquo;ll borrow a dataset representing faculty relationships at a university, keyed by the department they work in (group for each node)."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Assortativity",
+  "url": "https://napsterinblue.github.io/notes/algorithms/graphs/assortativity/",
+  "wordCount": "1425",
+  "datePublished": "2021-03-04T00:00:00&#43;00:00",
+  "dateModified": "2021-03-04T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Assortativity</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Assortativity</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2021-03-04T00:00:00Z "> 04 Mar 2021</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>When examining the nature of your network&rsquo;s arrangement, the concept of <em>assortativity</em> is a complicated, albeit deeply-intuitive one. You can think of it as the network analog to a correlation or coincidence score&ndash; it&rsquo;s bounded between <code>[-1, 1]</code> and represents how much nodes in the network have self-arranged with other nodes that look like it.</p>
+
+<h2 id="data">Data</h2>
+
+<p>To dive into this concept, I&rsquo;ll borrow a dataset representing faculty relationships at a university, keyed by the department they work in (<code>group</code> for each node).</p>
+
+<p>(<a href="http://hal.elte.hu/~nepusz/research/datasets/">Link</a>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_graphml</span><span class="p">(</span><span class="s1">&#39;data/univ_dataset_TSPE.graphml&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># simple helper function</span>
+
+<span class="n">pos</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">new_pos</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">pos</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">pos</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">new_pos</span><span class="p">:</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+        
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span></code></pre></div>
+<p>Inexplicably, every time I run it, there&rsquo;s this wild outlier</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">draw</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></code></pre></div>
+<p><img src="assortativity_5_0.png" alt="png" /></p>
+
+<p>so I&rsquo;m going to drop it for the sake of visual clarity.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="s1">&#39;n10&#39;</span><span class="p">)</span></code></pre></div>
+<p>Much better!</p>
+
+<p>Now to the matter at hand. How much did this network self-organize by the node attribute <code>group</code>?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">group_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">idx</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)}</span>
+
+<span class="n">color_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mf">0.0</span><span class="p">:</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span>
+              <span class="mf">1.0</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+              <span class="mf">2.0</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span>
+              <span class="mf">3.0</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">}</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">color_dict</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">group_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span></code></pre></div>
+<p>A fair amount, it seems</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">draw</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">new_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span></code></pre></div>
+<p><img src="assortativity_11_0.png" alt="png" /></p>
+
+<p>In fact, the assortativity coefficient is actually quite high.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">attribute_assortativity_coefficient</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>0.7048747599784635
+</code></pre>
+
+<p>&hellip; but how did we arrive at it?</p>
+
+<h2 id="constituent-parts">Constituent Parts</h2>
+
+<p>Before we walk through the underlying <code>networkx</code> code, I want to share the key formula from <a href="https://arxiv.org/abs/cond-mat/0209450">the seminal paper on the topic.</a></p>
+
+<p>The following equation gives us the assortativity coefficient, <code>r</code>. Here, we&rsquo;re only considering the <em>discrete</em> case (continuous in a few)&ndash; the paper that introduces the concept starts by encoding a categorical variable to numeric and going from there.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/assortativity.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="assortativity_15_0.png" alt="png" /></p>
+
+<p>Let&rsquo;s break this down a bit, using the table they provided at the beginning</p>
+
+<ul>
+<li><code>r</code> represents the assortativity coefficient</li>
+<li><code>e</code> is the &ldquo;fraction of edges in a network that connect a vertex of type <code>i</code> to type <code>j</code>&rdquo;. This is essentially a co-incidence matrix, normalized by the number of values, therefore the value of <code>e</code> sum to 1.</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">.</span><span class="mi">258</span><span class="p">,</span> <span class="o">.</span><span class="mo">016</span><span class="p">,</span> <span class="o">.</span><span class="mo">035</span><span class="p">,</span> <span class="o">.</span><span class="mo">013</span><span class="p">],</span>
+              <span class="p">[</span><span class="o">.</span><span class="mo">012</span><span class="p">,</span> <span class="o">.</span><span class="mi">157</span><span class="p">,</span> <span class="o">.</span><span class="mo">05</span><span class="mi">8</span><span class="p">,</span> <span class="o">.</span><span class="mo">01</span><span class="mi">9</span><span class="p">],</span>
+              <span class="p">[</span><span class="o">.</span><span class="mo">013</span><span class="p">,</span> <span class="o">.</span><span class="mo">023</span><span class="p">,</span> <span class="o">.</span><span class="mi">306</span><span class="p">,</span> <span class="o">.</span><span class="mo">035</span><span class="p">],</span>
+              <span class="p">[</span><span class="o">.</span><span class="mo">005</span><span class="p">,</span> <span class="o">.</span><span class="mo">007</span><span class="p">,</span> <span class="o">.</span><span class="mo">024</span><span class="p">,</span> <span class="o">.</span><span class="mo">016</span><span class="p">]])</span>
+
+<span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></code></pre></div>
+<pre><code>0.9969999999999999
+</code></pre>
+
+<ul>
+<li>For a given node, <code>i</code>, the <code>a</code> and <code>b</code> terms are the fraction of that node&rsquo;s in/outbound edges that connect to the various other classes. In an undirected graph, these are equivalent.</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">b</span><span class="p">)</span></code></pre></div>
+<pre><code>array([0.322, 0.246, 0.377, 0.052])
+
+
+
+array([0.288, 0.203, 0.423, 0.083])
+</code></pre>
+
+<ul>
+<li><code>Tr</code> is a Linear Algebra operation where you sum the values along the diag. So in the right-hand chunk, summing <code>e</code> down the diag means summing the total proportion of edges in the network that map from same-type to same-type nodes.</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tr_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="n">tr_e</span></code></pre></div>
+<pre><code>0.7370000000000001
+</code></pre>
+
+<ul>
+<li>The double-bar <code>e**2</code> term is a bit dense. Double-bar in this context means &ldquo;the sum of all elements in the matrix&rdquo;, that&rsquo;s easy enough. Otherwise, you should recognize that squaring the matrix <code>e</code> and taking the sum of <code>a * b</code> for all values of <code>i</code> are literally the same thing&ndash; just consolidates it all into one step.</li>
+</ul>
+
+<p>Stare at this until you believe that.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span></code></pre></div>
+<pre><code>0.30646100000000004
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">e_squared_barbar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span> <span class="err">@</span> <span class="n">e</span><span class="p">)</span>
+<span class="n">e_squared_barbar</span></code></pre></div>
+<pre><code>0.306461
+</code></pre>
+
+<p>Putting it altogether, we get</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span>
+    <span class="p">(</span><span class="n">tr_e</span> <span class="o">-</span> <span class="n">e_squared_barbar</span><span class="p">)</span>
+    <span class="o">/</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e_squared_barbar</span><span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+<pre><code>0.6207855650511365
+</code></pre>
+
+<p>which is consistent with the value reported in the paper.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/assortativity.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="assortativity_28_0.png" alt="png" /></p>
+
+<h2 id="in-networkx">In <code>networkx</code></h2>
+
+<p>Getting back to it, let&rsquo;s see how this is all stitched together under the hood.</p>
+
+<p><code>node_attribute_xy</code></p>
+
+<p>In the example above, we <em>started</em> with our matrix, <code>e</code>&ndash; the proportional coincidence matrix. So before we can really get going, we have to start there.</p>
+
+<p>The <code>nx.node_attribute_xy()</code> function is an <strong>awesome</strong> generator that looks at every edge to serve up the <code>attribute</code> tuple for each connected pair</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">xy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">node_attribute_xy</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="s1">&#39;group&#39;</span><span class="p">))</span>
+
+<span class="nb">list</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="n">xy</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span>
+<span class="p">)[:</span><span class="mi">10</span><span class="p">]</span></code></pre></div>
+<pre><code>[(1.0, 0.0),
+ (1.0, 0.0),
+ (1.0, 0.0),
+ (1.0, 2.0),
+ (1.0, 2.0),
+ (1.0, 2.0),
+ (1.0, 3.0),
+ (1.0, 0.0),
+ (1.0, 0.0),
+ (1.0, 3.0)]
+</code></pre>
+
+<p><code>mixing_dict</code></p>
+
+<p>Next, we pipe that list of tuples into <code>nx.mixing_dict()</code> to get a nested-dict representation of our matrix <code>e</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">mixing_dict</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span></code></pre></div>
+<pre><code>{2.0: {2.0: 96, 0.0: 21, 1.0: 13, 3.0: 2},
+ 0.0: {0.0: 315, 1.0: 41, 3.0: 14, 2.0: 13},
+ 1.0: {0.0: 24, 1.0: 250, 2.0: 6, 3.0: 2},
+ 3.0: {0.0: 11, 3.0: 2, 2.0: 2, 1.0: 3}}
+</code></pre>
+
+<p>Alternatively, we could just use the following function that combines the last two steps</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mixing_dict</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">attribute_mixing_dict</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">)</span></code></pre></div>
+<p><code>mixing_matrix</code></p>
+
+<p>Finally, we build our <code>e</code> matrix from the mixing dict, calculated above.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">manual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">mixing_dict</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">mixing_dict</span><span class="p">[</span><span class="n">row</span><span class="p">])):</span>
+        <span class="n">manual</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">mixing_dict</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+        
+<span class="n">manual</span></code></pre></div>
+<pre><code>array([[315.,  41.,  13.,  14.],
+       [ 24., 250.,   6.,   2.],
+       [ 21.,  13.,  96.,   2.],
+       [ 11.,   3.,   2.,   2.]])
+</code></pre>
+
+<p>Of course, there&rsquo;s a simple helper method that does this for us.</p>
+
+<p>We can either get this as raw counts</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mix_mat_raw</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">attribute_mixing_matrix</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">mix_mat_raw</span></code></pre></div>
+<pre><code>array([[315.,  41.,  13.,  14.],
+       [ 24., 250.,   6.,   2.],
+       [ 21.,  13.,  96.,   2.],
+       [ 11.,   3.,   2.,   2.]])
+</code></pre>
+
+<p>Or normalize the whole thing to sum to 1 (which is a necessary characteristic of <code>e</code>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mix_mat_raw</span> <span class="o">/</span> <span class="n">mix_mat_raw</span><span class="o">.</span><span class="nb">sum</span><span class="p">()</span></code></pre></div>
+<pre><code>array([[0.38650307, 0.05030675, 0.01595092, 0.01717791],
+       [0.02944785, 0.30674847, 0.00736196, 0.00245399],
+       [0.02576687, 0.01595092, 0.11779141, 0.00245399],
+       [0.01349693, 0.00368098, 0.00245399, 0.00245399]])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">mix_mat</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">attribute_mixing_matrix</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">)</span>
+<span class="n">mix_mat</span></code></pre></div>
+<pre><code>array([[0.38650307, 0.05030675, 0.01595092, 0.01717791],
+       [0.02944785, 0.30674847, 0.00736196, 0.00245399],
+       [0.02576687, 0.01595092, 0.11779141, 0.00245399],
+       [0.01349693, 0.00368098, 0.00245399, 0.00245399]])
+</code></pre>
+
+<p>Finally, we plug-and-chug as above and see a <em>considerable</em> assortativity by <code>group</code>&ndash; which mirrors our visual intuition nicely</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">tr_e</span> <span class="o">=</span> <span class="n">mix_mat</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span>
+
+<span class="n">e_squared_barbar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">mix_mat</span> <span class="err">@</span> <span class="n">mix_mat</span><span class="p">)</span>
+
+<span class="p">(</span>
+    <span class="p">(</span><span class="n">tr_e</span> <span class="o">-</span> <span class="n">e_squared_barbar</span><span class="p">)</span>
+    <span class="o">/</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e_squared_barbar</span><span class="p">)</span>
+<span class="p">)</span></code></pre></div>
+<pre><code>0.7048747599784635
+</code></pre>
+
+<p>In the likely event that you don&rsquo;t want to do this all by hand, there&rsquo;s absolutely a function that handles this all in a flash.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">attribute_assortativity_coefficient</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>0.7048747599784635
+</code></pre>
+
+<h2 id="continuous-analog">Continuous Analog</h2>
+
+<p>Although the actual math is different, it&rsquo;s possible to run the same function to apply the same general method on arbitrary continuous data.</p>
+
+<p>To demonstrate, let&rsquo;s build a trivial variable, based on the <code>id</code> value that a node gets instantiated with.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">list</span><span class="p">((</span>
+    <span class="n">data</span>
+    <span class="k">for</span>    <span class="n">node</span><span class="p">,</span> <span class="n">data</span>
+    <span class="ow">in</span>     <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">))[:</span><span class="mi">5</span><span class="p">]</span></code></pre></div>
+<pre><code>[{'group': 2.0, 'id': 'n0'},
+ {'group': 0.0, 'id': 'n1'},
+ {'group': 2.0, 'id': 'n2'},
+ {'group': 2.0, 'id': 'n3'},
+ {'group': 1.0, 'id': 'n4'}]
+</code></pre>
+
+<p>Literally, just stripping off the leading <code>n</code> and casting as an <code>int</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">node_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">:])</span>
+             <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span> 
+             <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)}</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">node_ids</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;node_id&#39;</span><span class="p">)</span>
+
+<span class="nb">list</span><span class="p">((</span>
+    <span class="n">data</span>
+    <span class="k">for</span>    <span class="n">node</span><span class="p">,</span> <span class="n">data</span>
+    <span class="ow">in</span>     <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">))[:</span><span class="mi">5</span><span class="p">]</span></code></pre></div>
+<pre><code>[{'group': 2.0, 'id': 'n0', 'node_id': 0},
+ {'group': 0.0, 'id': 'n1', 'node_id': 1},
+ {'group': 2.0, 'id': 'n2', 'node_id': 2},
+ {'group': 2.0, 'id': 'n3', 'node_id': 3},
+ {'group': 1.0, 'id': 'n4', 'node_id': 4}]
+</code></pre>
+
+<p>And so running the equation over our <code>node_id</code> values, we get a value that&rsquo;s very close to <code>0</code>, suggesting that there is NO assortativity, with respect to <code>node_id</code>.</p>
+
+<p>Put another way, this suggests that the nodes were introduced to the network in a random fashion&ndash; as we showed above there is clearly assortativity by <code>group</code>. So if nodes were added one <em>group</em> at a time, it follows that there would be a high degree of intra-group correlation. Summing that over the network, we&rsquo;d expect to see something positive but small, probably in the <code>.2-.4</code> range.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">attribute_assortativity_coefficient</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;node_id&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>-0.015185949939552698
+</code></pre>
+
+<h3 id="degree-assortativity">Degree Assortativity</h3>
+
+<p>Finally, we can peek at one of the more popular measures in this space and see how <em>degree</em> assortative our data is.</p>
+
+<p>Do high-degree nodes disproportionately seek out other high degree nodes? Think about it: how often do celebrities marry total nobodies, vs other &ldquo;nodes&rdquo; with comparable star power?</p>
+
+<p>To start, we&rsquo;ll tack on a raw <code>degree</code> attribute and calculate the way we know how.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">degrees</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="n">degree</span>
+             <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">degree</span> 
+             <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">}</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">set_node_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">degrees</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;degree&#39;</span><span class="p">)</span>
+
+<span class="nb">list</span><span class="p">((</span>
+    <span class="n">data</span>
+    <span class="k">for</span>    <span class="n">node</span><span class="p">,</span> <span class="n">data</span>
+    <span class="ow">in</span>     <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="p">))[:</span><span class="mi">5</span><span class="p">]</span></code></pre></div>
+<pre><code>[{'group': 2.0, 'id': 'n0', 'node_id': 0, 'degree': 15},
+ {'group': 0.0, 'id': 'n1', 'node_id': 1, 'degree': 36},
+ {'group': 2.0, 'id': 'n2', 'node_id': 2, 'degree': 8},
+ {'group': 2.0, 'id': 'n3', 'node_id': 3, 'degree': 18},
+ {'group': 1.0, 'id': 'n4', 'node_id': 4, 'degree': 38}]
+</code></pre>
+
+<p>Looks pretty random to me.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">attribute_assortativity_coefficient</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;degree&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>-0.0015635016182241753
+</code></pre>
+
+<p>Checking against the native function, I was surprised by how much I was off</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">degree_assortativity_coefficient</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></code></pre></div>
+<pre><code>0.0356095440281665
+</code></pre>
+
+<p>Until I realized that this particular network is a <em>directed</em> graph</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></code></pre></div>
+<pre><code>networkx.classes.digraph.DiGraph
+</code></pre>
+
+<p>And that there&rsquo;s an additional wrinkle you have to keep straight when rewriting the equation for <code>r</code> to consider in-degree vs out-degree separately. I&rsquo;ll omit the particulars for now, but if it turns out that this is crucial to understand, I&rsquo;ll come back and elaborate.</p>
+
+<p>Casting <code>G</code> as an undirected graph for a sec, this is MUCH closer to what we did more manually :)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">degree_assortativity_coefficient</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">G</span><span class="p">))</span></code></pre></div>
+<pre><code>-0.004034673332927811
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

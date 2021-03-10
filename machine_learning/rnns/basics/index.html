@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Recurrent Neural Network Basics" />
+<meta property="og:description" content="Recurrent Neural Networks are designed to learn information from sequential data.
+We start with datasets of x time steps in a row, for example:
+ x words in a sentence x sequential stock ticks x days of weather in a row  Thus, we say that there are T_x elements in a given point of data.
+In the most basic case, we have some handoff of information, a_i from layer i-1 to i." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/rnns/basics/" />
+
+
+
+<meta property="article:published_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Recurrent Neural Network Basics"/>
+<meta name="twitter:description" content="Recurrent Neural Networks are designed to learn information from sequential data.
+We start with datasets of x time steps in a row, for example:
+ x words in a sentence x sequential stock ticks x days of weather in a row  Thus, we say that there are T_x elements in a given point of data.
+In the most basic case, we have some handoff of information, a_i from layer i-1 to i."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Recurrent Neural Network Basics",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/rnns/basics/",
+  "wordCount": "293",
+  "datePublished": "2018-10-22T00:00:00&#43;00:00",
+  "dateModified": "2018-10-22T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Recurrent Neural Network Basics</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Recurrent Neural Network Basics</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-22T00:00:00Z "> 22 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Recurrent Neural Networks are designed to learn information from <em>sequential</em> data.</p>
+
+<p>We start with datasets of <code>x</code> time steps in a row, for example:</p>
+
+<ul>
+<li><code>x</code> words in a sentence</li>
+<li><code>x</code> sequential stock ticks</li>
+<li><code>x</code> days of weather in a row</li>
+</ul>
+
+<p>Thus, we say that there are <code>T_x</code> elements in a given point of data.</p>
+
+<p>In the most basic case, we have some handoff of information, <code>a_i</code> from layer <code>i-1</code> to <code>i</code>. This gets run through a cell at each step and outputs:</p>
+
+<ul>
+<li><code>y_i</code> the prediction at the <code>ith</code> step</li>
+<li><code>a_i</code> the carry-forward information to the same cell</li>
+</ul>
+
+<h2 id="visually">Visually</h2>
+
+<p>Each cell calculates given information of both, <em>this element</em> as well as <em>the output of the last element</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/base_rnn.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="basics_6_0.png" alt="png" /></p>
+
+<p>Specifically at the cell level, this happens through pairs of Weight matricies and Bias terms.</p>
+
+<ul>
+<li><code>W_aa</code>, <code>b_a</code>: to this activation from the last activation</li>
+<li><code>W_ax</code>, <code>b_x</code>: to this activation from the input data</li>
+<li><code>W_ya</code>, <code>b_y</code>: (not pictured): to this output from this activation</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rnn_cell.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="basics_8_0.png" alt="png" /></p>
+
+<p>The values for <code>W_aa</code>, <code>W_ay</code>, and <code>W_ax</code> are literally the same object, regardless which element, <code>t</code>, you&rsquo;re looking at.</p>
+
+<h2 id="cost-function">Cost Function</h2>
+
+<p>The output at each layer has its own cost function that looks like our typical logistic/softmax cost</p>
+
+<p>$\mathcal{L}^{\langle t \rangle}(\hat{y}^{\langle t \rangle}, y^{\langle t \rangle}) = -y^{\langle t \rangle} log \hat{y}^{\langle t \rangle} -(1-y^{\langle t \rangle}) log (1-\hat{y}^{\langle t \rangle})$</p>
+
+<p>The key difference here, however, is that there&rsquo;s an over-arching cost <code>L</code> that applies across <em>each layer</em></p>
+
+<p>$\mathcal{L}(\hat{y}, y) = \sum_{t=1}^{T_x} \mathcal{L}^{\langle t \rangle}(\hat{y}^{\langle t \rangle}, y^{\langle t \rangle})$</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rnn_backprop.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="basics_15_0.png" alt="png" /></p>
+
+<p>This allows us a great deal of flexibility in how we construct our Recurrent Networks</p>
+
+<h2 id="different-architectures">Different Architectures</h2>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rnn_types.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="basics_18_0.png" alt="png" /></p>
+
+<ul>
+<li>one-to-one: Vanilla MLP</li>
+<li>one-to-many: text generation</li>
+<li>many-to-one: gender prediction based on audio clip</li>
+<li>many-to-many(1): language translation</li>
+<li>many-to-many(2): video classification</li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

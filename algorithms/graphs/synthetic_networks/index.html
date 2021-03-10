@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Generating Synthetic Networks" />
+<meta property="og:description" content="Building Dummy Data In much the same way that libraries like sklearn and seaborn come, batteries-included, with utilities to pull canonical datasets or generate novel data following some known distribution, networkx provides dozens of similar utilities. The Graph Generators documentation houses far more methods than I know or care to cover. For simplicity&rsquo;s sake, I&rsquo;ll group these methods&ndash; broady&ndash; into three categories
+Canonical This is used to generate known, well-documented, networks within the Network Science literature&ndash; think Iris, but for dots and lines." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/algorithms/graphs/synthetic_networks/" />
+
+
+
+<meta property="article:published_time" content="2020-02-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-02-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Generating Synthetic Networks"/>
+<meta name="twitter:description" content="Building Dummy Data In much the same way that libraries like sklearn and seaborn come, batteries-included, with utilities to pull canonical datasets or generate novel data following some known distribution, networkx provides dozens of similar utilities. The Graph Generators documentation houses far more methods than I know or care to cover. For simplicity&rsquo;s sake, I&rsquo;ll group these methods&ndash; broady&ndash; into three categories
+Canonical This is used to generate known, well-documented, networks within the Network Science literature&ndash; think Iris, but for dots and lines."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Generating Synthetic Networks",
+  "url": "https://napsterinblue.github.io/notes/algorithms/graphs/synthetic_networks/",
+  "wordCount": "500",
+  "datePublished": "2020-02-10T00:00:00&#43;00:00",
+  "dateModified": "2020-02-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Generating Synthetic Networks</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Generating Synthetic Networks</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-02-10T00:00:00Z "> 10 Feb 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="building-dummy-data">Building Dummy Data</h2>
+
+<p>In much the same way that libraries like <code>sklearn</code> and <code>seaborn</code> come, batteries-included, with utilities to pull canonical datasets or generate novel data following some known distribution, <code>networkx</code> provides dozens of similar utilities. The <a href="https://networkx.org/documentation/stable/reference/generators.html#graph-generators"><code>Graph Generators</code> documentation</a> houses far more methods than I know or care to cover. For simplicity&rsquo;s sake, I&rsquo;ll group these methods&ndash; broady&ndash; into three categories</p>
+
+<h3 id="canonical">Canonical</h3>
+
+<p>This is used to generate known, well-documented, networks within the Network Science literature&ndash; think Iris, but for dots and lines. These include many different networks of varying complexity</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">florentine_families_graph</span><span class="p">())</span></code></pre></div>
+<p><img src="synthetic_networks_2_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">karate_club_graph</span><span class="p">())</span></code></pre></div>
+<p><img src="synthetic_networks_3_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">davis_southern_women_graph</span><span class="p">())</span></code></pre></div>
+<p><img src="synthetic_networks_4_0.png" alt="png" /></p>
+
+<h3 id="simple-synthetic">Simple Synthetic</h3>
+
+<p>Additionally, the library has methods that generate networks by following a simple set of rules. Such as</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># linear</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">path_graph</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_6_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># circle/cycle</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">cycle_graph</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_7_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># balanced binary tree</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">balanced_tree</span><span class="p">(</span>
+    <span class="n">r</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="c1"># branching factor</span>
+    <span class="n">h</span><span class="o">=</span><span class="mi">3</span>  <span class="c1"># height</span>
+<span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_8_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># grid</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">grid_2d_graph</span><span class="p">(</span>
+    <span class="n">m</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="c1"># rows</span>
+    <span class="n">n</span><span class="o">=</span><span class="mi">5</span> <span class="c1"># columns</span>
+<span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_9_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># star</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">star_graph</span><span class="p">(</span><span class="mi">25</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_10_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># everything-connected-to-everything</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">complete_graph</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_11_0.png" alt="png" /></p>
+
+<h3 id="noisy-synthetic">Noisy Synthetic</h3>
+
+<p>Finally, the last class of generators uses a hierarchy of rules to generate their graphs. This is particularly useful in simulating data closer to what you&rsquo;d see in the wild. I&rsquo;ll try and cover them with a bit more insight.</p>
+
+<h4 id="erdos-renyi">Erdos-Renyi</h4>
+
+<p>This graph is rooted in the binomial distribution, where there are <code>N(N-1)/2</code> possible edges, each occuring with probability <code>p</code>. Playing with <code>p</code> is a nice lever to pull when you want to ratchet sparsity up/down. However, it&rsquo;s difficult to predict the effect that has on various network statistics you might be calculating. <a href="https://smile.amazon.com/Complex-Network-Analysis-Python-Recognize/dp/1680502697?sa-no-redirect=1">Complex Network Analysis in Python</a> suggests this as your best bet when generating fake data, unless you know another generation strategy that gets you closer to your ideal data usecase.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">erdos_renyi_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">1</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_13_0.png" alt="png" /></p>
+
+<h4 id="watts-strogatz">Watts-Strogatz</h4>
+
+<p>The Watts-Strogatz generator, while very similar to Erdos-Renyi, tends to generate &ldquo;more realistic&rdquo; data than its predecessor, apparently. It does this by generating <code>n</code> points in a circle, then connecting each point to its <code>k</code> nearest neighbors. Finally, it looks over all <code>(from, to)</code> edge pairs and randomly changes the value of <code>to</code> to a yet-unconnected node, with probability <code>p</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">watts_strogatz_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">4</span><span class="p">))</span></code></pre></div>
+<p><img src="synthetic_networks_15_0.png" alt="png" /></p>
+
+<h3 id="barabasi-albert">Barabasi-Albert</h3>
+
+<p>According to the book, the Barabasi-Albert <em>preferential attachment</em> model is useful when trying to simulate &ldquo;hubs&rdquo; or &ldquo;celebrity&rdquo; nodes with a high degree of attachment.</p>
+
+<p>It does this by attaching each new node to <code>m</code> other nodes&ndash; with a probability weighted to how connected each candidate node is. As a consequence of this, you can see that nodes inserted closer to the beginning have a higher degree than those that eked in at the end and tossed two (often) their only two connections.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">barabasi_albert_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">circular_layout</span><span class="p">(</span><span class="n">G</span><span class="p">));</span></code></pre></div>
+<p><img src="synthetic_networks_17_0.png" alt="png" /></p>
+
+<h3 id="holme-kim-power-law">Holme-Kim / Power Law</h3>
+
+<p>Finally, the Holme-Kim/Power Law generator does everything described in the Barabasi-Albert, but also introduces a triad between any three connected components, with probability <code>p</code>.</p>
+
+<p>Concretely, if we have <code>A - B</code> and <code>B - C</code>, then we&rsquo;ll have a connected loop of <code>A - B - C - A - B - C ...</code> with probability <code>p</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">powerlaw_cluster_graph</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">G</span><span class="p">)</span></code></pre></div>
+<p><img src="synthetic_networks_19_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="LSTMs" />
+<meta property="og:description" content="A more robust version of the Gated Recurrent Unit, Long-Short-Term Memory cell provides a powerful utility for learning feature importance over potentially much-longer distances.
+Key Differences Andrew Ng diagrams this whole process nicely with the following.
+from IPython.display import Image Image(&#39;images/lstm_ng.PNG&#39;) Couple things to point out here
+Two Tracks Recall that in the GRU architecture, the output was the memory cell&ndash; or rather, c==a
+Here, however, there&rsquo;s both an explicit memory cell that spans the top of each cell as well as an activation value that gets passed along the bottoms." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/rnns/lstm/" />
+
+
+
+<meta property="article:published_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-22T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="LSTMs"/>
+<meta name="twitter:description" content="A more robust version of the Gated Recurrent Unit, Long-Short-Term Memory cell provides a powerful utility for learning feature importance over potentially much-longer distances.
+Key Differences Andrew Ng diagrams this whole process nicely with the following.
+from IPython.display import Image Image(&#39;images/lstm_ng.PNG&#39;) Couple things to point out here
+Two Tracks Recall that in the GRU architecture, the output was the memory cell&ndash; or rather, c==a
+Here, however, there&rsquo;s both an explicit memory cell that spans the top of each cell as well as an activation value that gets passed along the bottoms."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LSTMs",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/rnns/lstm/",
+  "wordCount": "296",
+  "datePublished": "2018-10-22T00:00:00&#43;00:00",
+  "dateModified": "2018-10-22T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>LSTMs</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">LSTMs</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-22T00:00:00Z "> 22 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>A more robust version of the Gated Recurrent Unit, Long-Short-Term Memory cell provides a powerful utility for learning feature importance over potentially much-longer distances.</p>
+
+<h2 id="key-differences">Key Differences</h2>
+
+<p>Andrew Ng diagrams this whole process nicely with the following.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/lstm_ng.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="lstm_4_0.png" alt="png" /></p>
+
+<p>Couple things to point out here</p>
+
+<h3 id="two-tracks">Two Tracks</h3>
+
+<p>Recall that in the GRU architecture, the output was the memory cell&ndash; or rather, <code>c==a</code></p>
+
+<p>Here, however, there&rsquo;s both an explicit memory cell that spans the top of each cell as well as an activation value that gets passed along the bottoms.</p>
+
+<h3 id="explicit-gates">Explicit Gates</h3>
+
+<p>The GRU had an <em>update gate</em> that dictated how to let things in and out of memory. The <code>Gamma_u</code> value determined everything you learned from your input data and one-minus that was everything you forgot from existing memory.</p>
+
+<p>In the LSTM architecture, we have explicit <strong>update</strong> and <strong>forget</strong> gates that determine our <em>cell</em> values, as well as an output gate, <code>Gamma_o</code>.</p>
+
+<h2 id="in-summary">In Summary</h2>
+
+<p><a href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">The more canonical blogpost</a> about LSTMs includes this clean visual to show how all of these pieces fit together.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/lstm_colah.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="lstm_13_0.png" alt="png" /></p>
+
+<p>In order we&rsquo;ve got:</p>
+
+<ul>
+<li>The <strong>Forget Gate</strong> (two left-most icons) uses the input and previous activation to dictate what we forget from our cell.</li>
+<li>The middle four icons make up our <strong>Update Gate</strong>
+
+<ul>
+<li>First we determine what and how to learn from the input and previous activation</li>
+<li>Then we add this information, elementwise, to our memory cell that&rsquo;s already been cleaned of any prior memory we didn&rsquo;t want.</li>
+</ul></li>
+<li>At this point, the memory cell that carries over to the next layer is locked in</li>
+<li>Finally, the last three icons govern how we define our output and the activation value passed to the next layer
+
+<ul>
+<li>Note that by construction, this calculation involves both remembered features from above and activation-specific features below</li>
+</ul></li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

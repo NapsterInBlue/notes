@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Inception Architecture" />
+<meta property="og:description" content="As we&rsquo;ve discussed in other notebooks, a key reason that we employ convolution to our image networks is to adjust the complexity of our model.
+When we apply N convolutional filters to a given layer, the following layer has final dimension equal to N&ndash; one for each channel.
+1x1 Convolution Because convolution gets applied across all channels, a 1x1 convolution is less about capturing features in a given area of any channel, but instead translating information into other, easier-to-compute dimensions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/inception/" />
+
+
+
+<meta property="article:published_time" content="2018-10-06T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-06T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Inception Architecture"/>
+<meta name="twitter:description" content="As we&rsquo;ve discussed in other notebooks, a key reason that we employ convolution to our image networks is to adjust the complexity of our model.
+When we apply N convolutional filters to a given layer, the following layer has final dimension equal to N&ndash; one for each channel.
+1x1 Convolution Because convolution gets applied across all channels, a 1x1 convolution is less about capturing features in a given area of any channel, but instead translating information into other, easier-to-compute dimensions."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Inception Architecture",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/inception/",
+  "wordCount": "629",
+  "datePublished": "2018-10-06T00:00:00&#43;00:00",
+  "dateModified": "2018-10-06T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Inception Architecture</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Inception Architecture</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-06T00:00:00Z "> 06 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>As we&rsquo;ve discussed <a href="https://napsterinblue.github.io/notes/machine_learning/neural_nets/conv_intuition/#why-convolution">in other notebooks</a>, a key reason that we employ convolution to our image networks is to adjust the complexity of our model.</p>
+
+<p>When we apply <code>N</code> convolutional filters to a given layer, the following layer has final dimension equal to <code>N</code>&ndash; one for each channel.</p>
+
+<h2 id="1x1-convolution">1x1 Convolution</h2>
+
+<p>Because convolution gets applied across all channels, a <code>1x1</code> convolution is less about capturing features in a given area of any channel, but instead translating information into other, easier-to-compute dimensions.</p>
+
+<h3 id="intuition">Intuition</h3>
+
+<p>It&rsquo;s helpful to consider a <code>1x1</code> convolution as a sort of &ldquo;Fully Connected sub-layer&rdquo; that maps the value in all channels to one output cell in the next layer.</p>
+
+<p>You can see that this intuition holds below, considering that we&rsquo;re evaluating 32 input values against 32 weights&ndash; basic hidden layer stuff.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/one_by_one.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_6_0.png" alt="png" /></p>
+
+<p>Additionally, applying more <code>1x1</code> convolution filters allows us to translate between the final input dimension to arbitrarily-many dimensions for the next layer, while maintaining the information gain of training (because each FC sub-layer will still update on backprop like a normal network).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/net_in_net.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_8_0.png" alt="png" /></p>
+
+<p>But how is this useful?</p>
+
+<h3 id="computation-benefits">Computation Benefits</h3>
+
+<p>Consider a simple case where we want to go from a <code>28x28x192</code> layer via 32 <code>5x5</code> filters</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/shrink_channels_before.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_12_0.png" alt="png" /></p>
+
+<p>The amount of calculations that happen here are a direct function of:</p>
+
+<ul>
+<li>The dimensions of the output layer</li>
+<li>The number of channels in the input layer</li>
+<li>The size of the filters</li>
+</ul>
+
+<p>Giving us</p>
+
+<p>$ (28 * 28 * 32) * (192) * (5 * 5) \approx 120M$</p>
+
+<p>Now see what happens when we use <code>1x1</code> convolution to create an intermediate layer.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/shrink_channels_after.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_16_0.png" alt="png" /></p>
+
+<p>Enumerating the calculations happens in two stages.</p>
+
+<p>First, going from the input layer to the hidden layer.</p>
+
+<p>$ (28 * 28 * 16) * (192) * (1 * 1) \approx 2.4M $</p>
+
+<p>Then going from the hidden layer to the output layer</p>
+
+<p>$ (28 * 28 * 32) * (16) * (5 * 5) \approx 10M $</p>
+
+<p>Summing the two, we get 12 Million &ndash; <strong>nearly a tenth of the number of computations</strong> as before, while still outputting a <code>28x28x32</code> layer, and maintaining strong information gain by employing multiple &ldquo;Fully Connected sub-layers&rdquo; as mentioned above.</p>
+
+<h2 id="inception-network">Inception Network</h2>
+
+<h3 id="block-level">Block Level</h3>
+
+<p>And so the Inception Network developed by Google uses this to great effect. Instead of figuring out what filter/kernel size to apply from layer to layer, they build in <code>1x1</code>, <code>3x3</code>, <code>5x5</code>, as well as a <code>Max-Pool</code> layer for good measure, then concatenate them all together into a huge, <code>256</code>-channel output. They leave it to backpropagation to figure out which sections of the output are worth using for information gain.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/inception_motivation.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_25_0.png" alt="png" /></p>
+
+<p>Mechanically, as above, they leverage the computation-reduction afforded by <code>1x1</code> filters for each component. This practice is often referred to as a <strong>bottleneck layer</strong> wherein you shrink the representation before expanding again via convolution filters.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/inception_block.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_27_0.png" alt="png" /></p>
+
+<p>This results in:</p>
+
+<ul>
+<li>Very flexible learning strategies</li>
+<li>Relatively cheap computation</li>
+</ul>
+
+<h3 id="at-scale">At Scale</h3>
+
+<p>So much so, that the architecture is implemented as a bunch of these blocks chained together</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/inception_unzoomed.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="inception_31_0.png" alt="png" /></p>
+
+<h2 id="using-it">Using It</h2>
+
+<h3 id="v3">V3</h3>
+
+<p>As we mentioned in the <a href="https://napsterinblue.github.io/notes/machine_learning/neural_nets/vgg/">VGG architecture notebook</a>, the Inception architecture is available for use in <code>keras</code> (and also is a heafty download if you haven&rsquo;t yet used it!)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.applications</span> <span class="kn">import</span> <span class="n">inception_v3</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">inception_v3</span><span class="o">.</span><span class="n">InceptionV3</span><span class="p">()</span></code></pre></div>
+<pre><code>Using TensorFlow backend.
+</code></pre>
+
+<p>I&rsquo;ll spare you scrolling through <code>model.summary()</code>, it&rsquo;s pretty huge.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span></code></pre></div>
+<pre><code>313
+
+
+
+Total params: 23,851,784
+Trainable params: 23,817,352
+Non-trainable params: 34,432
+</code></pre>
+
+<p><a href="https://keras.io/applications/#inceptionv3">Documentation is available here</a></p>
+
+<h3 id="inception-resnet">Inception ResNet</h3>
+
+<p>Alternatively, there is promising work being done to combine the best elements of the Inception framework with the information-passing elements <a href="https://napsterinblue.github.io/notes/machine_learning/computer_vision/resnets/">residual Neural Networks</a>.</p>
+
+<p>You can employ the latest version of this work, again using <code>keras</code>, with the following.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.applications</span> <span class="kn">import</span> <span class="n">inception_resnet_v2</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">inception_resnet_v2</span><span class="o">.</span><span class="n">InceptionResNetV2</span><span class="p">()</span></code></pre></div>
+<p>It&rsquo;s even bigger</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span></code></pre></div>
+<pre><code>782
+
+
+
+Total params: 55,873,736
+Trainable params: 55,813,192
+Non-trainable params: 60,544
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

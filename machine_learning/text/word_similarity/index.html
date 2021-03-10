@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Word Similarities" />
+<meta property="og:description" content="One of the more popular characteristics of Word Embeddings is that it affords a way to look at the similarity between words.
+Canonically, the GloVe embedding boasts the ability to serve up words in similar feature space and demonstrate that they have similar meaning.
+from IPython.display import Image Image(&#39;images/glove_nearest.PNG&#39;) The above merely considers the straight-line distance between two points, but cosine similarity has been a shown to be a more effective similarity measure when working with text data." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/text/word_similarity/" />
+
+
+
+<meta property="article:published_time" content="2018-10-24T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-24T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Word Similarities"/>
+<meta name="twitter:description" content="One of the more popular characteristics of Word Embeddings is that it affords a way to look at the similarity between words.
+Canonically, the GloVe embedding boasts the ability to serve up words in similar feature space and demonstrate that they have similar meaning.
+from IPython.display import Image Image(&#39;images/glove_nearest.PNG&#39;) The above merely considers the straight-line distance between two points, but cosine similarity has been a shown to be a more effective similarity measure when working with text data."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Word Similarities",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/text/word_similarity/",
+  "wordCount": "344",
+  "datePublished": "2018-10-24T00:00:00&#43;00:00",
+  "dateModified": "2018-10-24T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Word Similarities</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Word Similarities</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-24T00:00:00Z "> 24 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>One of the more popular characteristics of Word Embeddings is that it affords a way to look at the similarity between words.</p>
+
+<p>Canonically, the <a href="https://nlp.stanford.edu/projects/glove/">GloVe embedding</a> boasts the ability to serve up words in similar feature space and demonstrate that they have similar meaning.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/glove_nearest.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="word_similarity_2_0.png" alt="png" /></p>
+
+<p>The above merely considers the straight-line distance between two points, but <strong>cosine similarity</strong> <a href="https://cmry.github.io/notes/euclidean-v-cosine">has been a shown to be a more effective similarity measure</a> when working with text data. Mathematically, we can represent this with</p>
+
+<p>$sim(u, v) = \frac{u^Tv}{\Vert{u}\Vert_2 \Vert{v}\Vert_2 }$</p>
+
+<p>Or we could import it for simple use from <code>sklearn</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="kn">import</span> <span class="n">cosine_similarity</span></code></pre></div>
+<h3 id="composability">Composability</h3>
+
+<p>Finally, a characteristic of a good Word Embedding matrix is the ability to do &ldquo;word math&rdquo; with words in your vocabulary. One of the more canonical examples of this is</p>
+
+<pre><code>man - woman ~ king - queen
+</code></pre>
+
+<p>This is because, all things equal, the only difference between each pair of words should be on one &ldquo;gender&rdquo; axis.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/man_woman_small.jpg&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="word_similarity_9_0.jpeg" alt="jpeg" /></p>
+
+<p>As an extension of this, we can create a fun word analogy calculator (borrowed from Andrew Ng&rsquo;s 5th Deep Learning Coursera course) that gets the cosine similarity between two words, then finds the partner word for a third input that closest-resembles the relationship of the first two.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">complete_analogy</span><span class="p">(</span><span class="n">word_a</span><span class="p">,</span> <span class="n">word_b</span><span class="p">,</span> <span class="n">word_c</span><span class="p">,</span> <span class="n">word_to_vec_map</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Performs the word analogy task as explained above: a is to b as c is to ____. 
+</span><span class="s2">    
+</span><span class="s2">    Arguments:
+</span><span class="s2">    word_a -- a word, string
+</span><span class="s2">    word_b -- a word, string
+</span><span class="s2">    word_c -- a word, string
+</span><span class="s2">    word_to_vec_map -- dictionary that maps words to their corresponding vectors. 
+</span><span class="s2">    
+</span><span class="s2">    Returns:
+</span><span class="s2">    best_word --  the word such that v_b - v_a is close to v_best_word - v_c, as measured by cosine similarity
+</span><span class="s2">    &#34;&#34;&#34;</span>
+
+    <span class="n">word_a</span><span class="p">,</span> <span class="n">word_b</span><span class="p">,</span> <span class="n">word_c</span> <span class="o">=</span> <span class="n">word_a</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">word_b</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">word_c</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    
+    <span class="n">e_a</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="n">word_a</span><span class="p">]</span>
+    <span class="n">e_b</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="n">word_b</span><span class="p">]</span>
+    <span class="n">e_c</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="n">word_c</span><span class="p">]</span>
+    
+    <span class="n">words</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">max_cosine_sim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+    <span class="n">best_word</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">e_b</span> <span class="o">-</span> <span class="n">e_a</span>
+    
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>        
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">[</span><span class="n">word_a</span><span class="p">,</span> <span class="n">word_b</span><span class="p">,</span> <span class="n">word_c</span><span class="p">]</span> <span class="p">:</span>
+            <span class="k">continue</span>
+        
+        <span class="n">attempt</span> <span class="o">=</span> <span class="n">word_to_vec_map</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">-</span> <span class="n">e_c</span>
+        <span class="n">cosine_sim</span> <span class="o">=</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">attempt</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">cosine_sim</span> <span class="o">&gt;</span> <span class="n">max_cosine_sim</span><span class="p">:</span>
+            <span class="n">max_cosine_sim</span> <span class="o">=</span> <span class="n">cosine_sim</span>
+            <span class="n">best_word</span> <span class="o">=</span> <span class="n">w</span>
+        
+    <span class="k">return</span> <span class="n">best_word</span></code></pre></div>
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="QQ Plots" />
+<meta property="og:description" content="Overview Short and sweet, a QQ plot is used to check the normality of a given data distribution.
+Their construction is pretty straight-forward. Essentially you:
+(Borrowing visuals from StatQuest):
+ Sort your data and label each point as its own quantile (10th, 42nd, 99th, etc). Normalized data is your cleanest way to go here.  from IPython.display import Image Image(&#39;../images/qq_data.PNG&#39;)  Then, using the quantiles from step (1), fire up your vanilla N ~ (0, 1) distribution, and sample the same quantiles from it  Image(&#39;." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/basics/qq_plots/" />
+
+
+
+<meta property="article:published_time" content="2019-09-11T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-11T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="QQ Plots"/>
+<meta name="twitter:description" content="Overview Short and sweet, a QQ plot is used to check the normality of a given data distribution.
+Their construction is pretty straight-forward. Essentially you:
+(Borrowing visuals from StatQuest):
+ Sort your data and label each point as its own quantile (10th, 42nd, 99th, etc). Normalized data is your cleanest way to go here.  from IPython.display import Image Image(&#39;../images/qq_data.PNG&#39;)  Then, using the quantiles from step (1), fire up your vanilla N ~ (0, 1) distribution, and sample the same quantiles from it  Image(&#39;."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "QQ Plots",
+  "url": "https://napsterinblue.github.io/notes/stats/basics/qq_plots/",
+  "wordCount": "442",
+  "datePublished": "2019-09-11T00:00:00&#43;00:00",
+  "dateModified": "2019-09-11T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>QQ Plots</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">QQ Plots</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-11T00:00:00Z "> 11 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>Short and sweet, a QQ plot is used to check the normality of a given data distribution.</p>
+
+<p>Their construction is pretty straight-forward. Essentially you:</p>
+
+<p>(Borrowing visuals from <a href="https://www.youtube.com/watch?v=okjYjClSjOg">StatQuest</a>):</p>
+
+<ol>
+<li>Sort your data and label each point as its own quantile (10th, 42nd, 99th, etc). Normalized data is your cleanest way to go here.</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/qq_data.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="qq_plots_3_0.png" alt="png" /></p>
+
+<ol>
+<li>Then, using the quantiles from step (1), fire up your vanilla <code>N ~ (0, 1)</code> distribution, and sample the same quantiles from <em>it</em></li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/qq_theory.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="qq_plots_5_0.png" alt="png" /></p>
+
+<p><strong>Note</strong>: Because quantiles are a strictly ordinal measure (think median vs mean), comparing quantiles to quantiles across different distributions may very well yield inconsistent values.</p>
+
+<h2 id="generating-qq-plots">Generating QQ Plots</h2>
+
+<p>For starters, we&rsquo;ll download an interesting dataset using <code>yellowbrick</code> and ignore like 80% of it, lol</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">yellowbrick.datasets</span> <span class="kn">import</span> <span class="n">load_nfl</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">load_nfl</span><span class="p">(</span><span class="n">return_dataset</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span></code></pre></div>
+<p>The dataset describes overall Receiving stats for the 2018 season. <a href="https://www.pro-football-reference.com/years/2018/receiving.htm">There&rsquo;s a lot here</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rk</th>
+      <th>Player</th>
+      <th>Id</th>
+      <th>Tm</th>
+      <th>Age</th>
+      <th>G</th>
+      <th>GS</th>
+      <th>Tgt</th>
+      <th>Rec</th>
+      <th>Ctch_Rate</th>
+      <th>...</th>
+      <th>FirstTeamAllPro</th>
+      <th>C_pos</th>
+      <th>CB_pos</th>
+      <th>DT_pos</th>
+      <th>FB_pos</th>
+      <th>QB_pos</th>
+      <th>RB_pos</th>
+      <th>T_pos</th>
+      <th>TE_pos</th>
+      <th>WR_pos</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>Michael Thomas</td>
+      <td>ThomMi05</td>
+      <td>NOR</td>
+      <td>25</td>
+      <td>16</td>
+      <td>16</td>
+      <td>147</td>
+      <td>125</td>
+      <td>0.850</td>
+      <td>...</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>Zach Ertz</td>
+      <td>ErtzZa00</td>
+      <td>PHI</td>
+      <td>28</td>
+      <td>16</td>
+      <td>16</td>
+      <td>156</td>
+      <td>116</td>
+      <td>0.744</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>DeAndre Hopkins</td>
+      <td>HopkDe00</td>
+      <td>HOU</td>
+      <td>26</td>
+      <td>16</td>
+      <td>16</td>
+      <td>163</td>
+      <td>115</td>
+      <td>0.706</td>
+      <td>...</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>Julio Jones</td>
+      <td>JoneJu02</td>
+      <td>ATL</td>
+      <td>29</td>
+      <td>16</td>
+      <td>16</td>
+      <td>170</td>
+      <td>113</td>
+      <td>0.665</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>Adam Thielen</td>
+      <td>ThieAd00</td>
+      <td>MIN</td>
+      <td>28</td>
+      <td>16</td>
+      <td>16</td>
+      <td>153</td>
+      <td>113</td>
+      <td>0.739</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 29 columns</p>
+</div>
+
+<p>For the sake of demonstration, let&rsquo;s consider total yardage.</p>
+
+<p>This skewed distribution makes a ton of sense when you consider how many players don&rsquo;t get a lot of touches during the season.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Yds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">();</span></code></pre></div>
+<p><img src="qq_plots_13_0.png" alt="png" /></p>
+
+<p>Now we&rsquo;ll fire up <code>statsmodels.api</code>, which has a really clean utility for generating QQ plots.</p>
+
+<p>Go figure this distribution isn&rsquo;t very normal.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">qqplot</span>
+
+<span class="n">qqplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Yds&#39;</span><span class="p">],</span> <span class="n">line</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">);</span></code></pre></div>
+<p><img src="qq_plots_15_0.png" alt="png" /></p>
+
+<p>The &ldquo;Longest Reception&rdquo; metric, on the other hand, looks a bit more palatable&ndash; what, because it has an inherent upper-bound at the length of a football field.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Lng&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">();</span></code></pre></div>
+<p><img src="qq_plots_17_0.png" alt="png" /></p>
+
+<p>Not perfect, but certainly normal-er!</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">qqplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Lng&#39;</span><span class="p">],</span> <span class="n">line</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">);</span></code></pre></div>
+<p><img src="qq_plots_19_0.png" alt="png" /></p>
+
+<p>&hellip; but also runs into having a negative-yard-longest-reception?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span> <span class="o">=</span> <span class="n">qqplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Lng&#39;</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">]);</span></code></pre></div>
+<p><img src="qq_plots_21_0.png" alt="png" /></p>
+
+<p>No, that&rsquo;s accurate</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Lng&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">min</span><span class="p">()</span></code></pre></div>
+<pre><code>-11
+</code></pre>
+
+<p>lol</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Lng&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">11</span><span class="p">][</span><span class="s1">&#39;Player&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>492    Russell Wilson
+Name: Player, dtype: object
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

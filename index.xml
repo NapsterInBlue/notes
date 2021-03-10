@@ -1,0 +1,2081 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Data Science Notes</title>
+    <link>https://napsterinblue.github.io/notes/</link>
+    <description>Recent content on Data Science Notes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 04 Mar 2021 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://napsterinblue.github.io/notes/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Assortativity</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/assortativity/</link>
+      <pubDate>Thu, 04 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/assortativity/</guid>
+      <description>When examining the nature of your network&amp;rsquo;s arrangement, the concept of assortativity is a complicated, albeit deeply-intuitive one. You can think of it as the network analog to a correlation or coincidence score&amp;ndash; it&amp;rsquo;s bounded between [-1, 1] and represents how much nodes in the network have self-arranged with other nodes that look like it.
+Data To dive into this concept, I&amp;rsquo;ll borrow a dataset representing faculty relationships at a university, keyed by the department they work in (group for each node).</description>
+    </item>
+    
+    <item>
+      <title>Centrality Measures</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/centrality_measures/</link>
+      <pubDate>Fri, 19 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/centrality_measures/</guid>
+      <description>%pylab inline import networkx as nx import pandas as pd Populating the interactive namespace from numpy and matplotlib  layout_dict = dict() def draw_network_plot(graph, color_dict=None): global layout_dict if graph.name not in layout_dict: layout_dict[graph.name] = nx.spring_layout(graph) layout = layout_dict[graph.name] fig, ax = plt.subplots(figsize=(12, 10)) nx.draw_networkx(G, ax=ax, node_color=color_dict, pos=layout) as_series = lambda x: pd.Series(dict(x)).sort_values(ascending=False) The Data Quick. Forget everything you know about Renaissance Italy.
+Okay cool. Now, let&amp;rsquo;s take a look at a few of the major families.</description>
+    </item>
+    
+    <item>
+      <title>Basic Terminology and Inspection</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/basic_terms/</link>
+      <pubDate>Thu, 11 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/basic_terms/</guid>
+      <description>Node Inspection For this, we&amp;rsquo;ll throw together a bare-bones network representing a straight-line, directed path from 1 to 4, peppering in weights along the edges.
+%pylab inline import networkx as nx F = nx.DiGraph() F.add_weighted_edges_from([(1, 2, .3), (2, 3, .4), (3, 4, .5)]) Populating the interactive namespace from numpy and matplotlib  Simple stuff, yeah?
+nx.draw_networkx(F) Here, we built F with simple integers, but we could have just as easily used str or any other hashable type.</description>
+    </item>
+    
+    <item>
+      <title>Networkx vs Numpy/Pandas</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/numpy_pandas/</link>
+      <pubDate>Thu, 11 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/numpy_pandas/</guid>
+      <description>Under the hood any data that you can represent in a graph, you can also represent as a matrix of values. Therefore, networkx has a ton of great tools for translating between graph thinking and your typical Data Science numpy/pandas fare.
+Simple Data To demonstrate this, we&amp;rsquo;ll load the canonical dataset representing a group of kids in a karate cohort and measuring if they interacted outside of class at all.</description>
+    </item>
+    
+    <item>
+      <title>Graph Data from Wikipedia</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/wiki_data/</link>
+      <pubDate>Wed, 10 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/wiki_data/</guid>
+      <description>Building a Network from Unclean Data I&amp;rsquo;m working through Complex Network Analysis in Python and one of the earlier examples is just too good to pass up, wherein the author generates useful Network data by combing through links from a starting Wikipedia page.
+This technique is called &amp;ldquo;Snowball Sampling&amp;rdquo; and entails starting from some seed, or starting point, and running the algorithm which &amp;ldquo;uses retrieved data to find more data,&amp;rdquo; hence snowball.</description>
+    </item>
+    
+    <item>
+      <title>Logging: Basic Structure and Objects</title>
+      <link>https://napsterinblue.github.io/notes/python/development/logging_basics/</link>
+      <pubDate>Wed, 28 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/logging_basics/</guid>
+      <description>Overview The logging module in Python is a very powerful tool that I&amp;rsquo;ve summarily neglected learning until this week. However, as it&amp;rsquo;s often utilized as part of a robust ML pipeline, I finally took the plunge. In this notebook, I&amp;rsquo;m going to distill the basics I got from the docs, as well as show a simple project that highlights some of the behavior and configuration patterns.
+Levels logging operates using a concept of &amp;ldquo;levels,&amp;rdquo; which correspond to varying levels of message-severity.</description>
+    </item>
+    
+    <item>
+      <title>Getting JSON Handling Right</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/to_json/</link>
+      <pubDate>Mon, 26 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/to_json/</guid>
+      <description>Motivation I&amp;rsquo;m currently going through the Deployment of ML Models course on Udemy and in the sixth module, they start implementing a testing suite to ensure stability in a package comprised of pandas, sklearn, and numpy.
+I almost glossed over this section until I realized that I wasn&amp;rsquo;t totally up to speed what they were doing as far as formatting goes. I&amp;rsquo;ve written a ton about pd.read_csv() and felt pretty comfortable about that.</description>
+    </item>
+    
+    <item>
+      <title>LRU Caching</title>
+      <link>https://napsterinblue.github.io/notes/python/development/lru_cache/</link>
+      <pubDate>Wed, 21 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/lru_cache/</guid>
+      <description>Caching is an invaluable tool for lowering the stress of repeated computes on your expensive functions, if you anticipate calling it with a relatively-narrow set of arguments. I read about it in the context of model.predict() calls, but wanted to lean on a more canonical example to show the how performance compares, caching vs non. The code is lifted and altered from the functools.lru_cache() documentation.
+By Example Below, I&amp;rsquo;ve got two identical implementations for recursively serving up Fibonacci numbers&amp;ndash; the only difference being that one of them counts the number of times the function is called, and the other caches the results its seen for later use.</description>
+    </item>
+    
+    <item>
+      <title>Advanced Silhouette Usage</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/unsupervised/advanced_silhouettes/</link>
+      <pubDate>Fri, 16 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/unsupervised/advanced_silhouettes/</guid>
+      <description>As we mentioned in our notebook on Basic Clustering Evaluation Metrics, the Silhouette Score is a pretty robust tool to determine the appropriate number of clusters generated from an Unsupervised Algorithm.
+However, months later, I stumbled across another post buried in the sklearn docs that further elaborated on more fine-tuned inspection of your data and where the model over-under performs. This notebook gives an overview of reading the plots, and highlights some of the tricks in generating them.</description>
+    </item>
+    
+    <item>
+      <title>Transforming Tags into Categorical Data</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/tags_to_columns/</link>
+      <pubDate>Sun, 11 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/tags_to_columns/</guid>
+      <description>I&amp;rsquo;ve encountered a few instances where I need to make clean, dummied data columns from a column that contains a list of attributes. This notebook will go one step further and show an example of generating one such list from a bunch of string fields, generated by concatenating arbitrarily-many &amp;lt;tag&amp;gt; objects together.
+An Example In the repo Building Machine Learning Powered Applications, the author has a slick chunk of code that takes a DataFrame containing a column with a bunch of tags (I&amp;rsquo;ve dropped everything else, for simplicity&amp;rsquo;s sake)</description>
+    </item>
+    
+    <item>
+      <title>Using Calibration Curves to Pick Your Classifier</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/model_selection/calibration_curves/</link>
+      <pubDate>Fri, 09 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/model_selection/calibration_curves/</guid>
+      <description>Motivation Very similar to our discussion on using QQ plots to check the Normality of your data, Calibration Curves are used to check the quantile relationship between your predictions and the underlying values they try to predict.
+So what does that mean?
+Recall that nearly all implementations of our Classifiers actually output a probability under the hood, which is compared against some threshold to make our decisions. Now imagine sorting all of those probability values, smallest to largest.</description>
+    </item>
+    
+    <item>
+      <title>Creating Custom Legends</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/custom_legends/</link>
+      <pubDate>Wed, 07 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/custom_legends/</guid>
+      <description>Occasionally, the need might arise to generate your own custom legend for your data. I swear this happens often in the wild, but I&amp;rsquo;m pretty proud of how contrived an example I cooked up.
+Example Let&amp;rsquo;s say that we work for the Queenstown Ministry of Travel, that we have a naive understanding of causality, and that there&amp;rsquo;s a second Titanic ship coming into our port, which we know will sink.</description>
+    </item>
+    
+    <item>
+      <title>Histogram Tricks for Comparing Classes</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/multiclass_hists/</link>
+      <pubDate>Wed, 07 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/multiclass_hists/</guid>
+      <description>Looking at the different distributions of features between various classes is the first step in building any sort of classifier. However, even univariate analysis can lead to some cluttered visualizations fore more than a couple of different classes.
+Example We&amp;rsquo;ll load up our old, reliable Iris Dataset
+%pylab inline import pandas as pd from sklearn.datasets import load_iris data = load_iris() df = pd.DataFrame(data[&amp;#39;data&amp;#39;], columns=data[&amp;#39;feature_names&amp;#39;]) Populating the interactive namespace from numpy and matplotlib  Map the 0, 1, 2 into actual flower names.</description>
+    </item>
+    
+    <item>
+      <title>How Markovify works</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/markov/markovify/</link>
+      <pubDate>Fri, 12 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/markov/markovify/</guid>
+      <description>Markovify is one of the more elegant libraries I&amp;rsquo;ve come across. While it can be extended for general Markov Process use, it was written to generate novel sentences using Markov Chains on a corpus of text.
+Its interface is extremely clean and astoundingly fast, fitting and predicting instantaneously
+import re import markovify with open(&amp;#34;Harry Potter and the Sorcerer.txt&amp;#34;) as f: text = f.readlines() # drop chapter headings and blank lines text = [x for x in text if not x.</description>
+    </item>
+    
+    <item>
+      <title>Minimal CLI construction with Click</title>
+      <link>https://napsterinblue.github.io/notes/python/development/minimal_cli/</link>
+      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/minimal_cli/</guid>
+      <description>Click is an excellent library that handles a lot of the minutate in setting up a robust Command-Line Interface.
+There&amp;rsquo;s a TON of functionality built in, but I&amp;rsquo;m writing this notebook so I can remember how to set up straight-forward implementations, such as the one found in my library kneejerk
+from IPython.display import Image Image(&amp;#39;./images/kneejerk.PNG&amp;#39;) A Minimal Example I whipped up a small script that provides an interace to either:</description>
+    </item>
+    
+    <item>
+      <title>A Useful Context Manager</title>
+      <link>https://napsterinblue.github.io/notes/python/sql/context_manager/</link>
+      <pubDate>Mon, 08 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/sql/context_manager/</guid>
+      <description>Found all over the Python ecosystem, &amp;ldquo;Context Managers&amp;rdquo; are the with something as var: you might use for, say, file I/O:
+with open(&amp;#39;test.txt&amp;#39;, &amp;#39;w&amp;#39;) as f: pass Essentially, this has the behavior of:
+ Entering a context and executing some code (here, opening test.txt in write mode) Doing some stuff (just passing here) Doing cleanup/shutdown behavior (closing the file)  This is similar to how we interact with SQL code, insofar as we:</description>
+    </item>
+    
+    <item>
+      <title>Intelligently inserting or updating records</title>
+      <link>https://napsterinblue.github.io/notes/python/sql/insert_update/</link>
+      <pubDate>Mon, 08 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/sql/insert_update/</guid>
+      <description>Imagine a scenario where you&amp;rsquo;ve got game backed by a simple database of names and scores
+from utils import connect_to_db with connect_to_db(&amp;#39;test.db&amp;#39;) as cursor: cursor.execute(&amp;#39;&amp;#39;&amp;#39;drop table if exists records&amp;#39;&amp;#39;&amp;#39;) cursor.execute(&amp;#39;&amp;#39;&amp;#39; create table records ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, value INTEGER ) &amp;#39;&amp;#39;&amp;#39; ) And on the first day, Nick has 1, Ben has 2, and Adam has 3
+with connect_to_db(&amp;#39;test.db&amp;#39;) as cursor: cursor.execute(&amp;#39;&amp;#39;&amp;#39;insert into records (name, value) values (&amp;#39;Nick&amp;#39;, 1)&amp;#39;&amp;#39;&amp;#39;) cursor.</description>
+    </item>
+    
+    <item>
+      <title>Joint primary keys</title>
+      <link>https://napsterinblue.github.io/notes/python/sql/joint_primary_keys/</link>
+      <pubDate>Mon, 08 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/sql/joint_primary_keys/</guid>
+      <description>Occasionally, we&amp;rsquo;ll find ourselves building bridge tables that map many to many observations. For instance, we might have a table of Students and a table of Classes. Students can take multiple classes and likewise, classes can enroll multiple students.
+Thus, we&amp;rsquo;ll want to create a table of records that maps all unique (student_id, class_id) pairs. Empahsis on unique.
+We might do that like so
+from utils import connect_to_db with connect_to_db(&amp;#39;classes.db&amp;#39;) as cursor: cursor.</description>
+    </item>
+    
+    <item>
+      <title>Basics, Thinking in Tables</title>
+      <link>https://napsterinblue.github.io/notes/stats/bayes/basics_tables/</link>
+      <pubDate>Mon, 27 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/bayes/basics_tables/</guid>
+      <description>Review If your Stats 425 is still kicking around in your head, you might remember Bayes&amp;rsquo; Theorem. Which generalizes a nice, symmetric property of Conditional Probability
+$P(A|B)P(B) = P(B|A) P(A)$
+Into the following
+$p(H|D) = \frac{p(H)~p(D|H)}{p(D)}$
+Where H is your Hypothesis and D is your Data.
+Bowls In a trivial example, we&amp;rsquo;ve got two identical bags with colored stones inside.
+Bag 1 has 10 white stones and 20 black stones.</description>
+    </item>
+    
+    <item>
+      <title>Bayesian Updates and the Dice Problem</title>
+      <link>https://napsterinblue.github.io/notes/stats/bayes/dice/</link>
+      <pubDate>Mon, 27 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/bayes/dice/</guid>
+      <description>An interesting application of our Bayesian Approach, the author of Think Bayes introduces a toy problem where we&amp;rsquo;ve got a bag of D&amp;amp;D dice, randomly select a die and roll it. From here, we want to know the probability that the die was a d4, d6, ..., d20.
+What makes this problem novel/interesting is how repeated rolls of the selected die allow us to update our estimation.
+Rolled a 6 In the simple case, imagine that we pulled out a die and rolled a 6.</description>
+    </item>
+    
+    <item>
+      <title>Monty Hall and Bayes</title>
+      <link>https://napsterinblue.github.io/notes/stats/bayes/monty_hall/</link>
+      <pubDate>Mon, 27 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/bayes/monty_hall/</guid>
+      <description>Overview A bit of a brain-wrinkler, the Monty Hall is one of the more famous problems to come out of probability theory.
+You probably know the setup:
+- 3 Doors: A, B, C - 1 has a prize, 2 have a dud - You pick a door - Monty Hall opens a second door, revealing a dud - Do you switch to the open door?  You might have memorized that the optimal solution is &amp;ldquo;always switch.</description>
+    </item>
+    
+    <item>
+      <title>Best Linear Programming Resource I&#39;ve Seen</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/optimization/linear_programming_tutorial/</link>
+      <pubDate>Mon, 20 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/optimization/linear_programming_tutorial/</guid>
+      <description>Not a lot that I could say on the matter that wasn&amp;rsquo;t fantastically-handled by this blog series.
+Instead, I&amp;rsquo;ll follow along the posts, distilling key principles and elaborating where needed.
+Part 1 In a valid system of linear constraints, there&amp;rsquo;s some region of feasible solutions, as the author represents in gray.
+from IPython.display import Image Image(&amp;#39;images/simple_linear_case.PNG&amp;#39;) Then, as they show by inspection, the maxima of linear programming problems lies at the corners of these areas.</description>
+    </item>
+    
+    <item>
+      <title>Correspondence Analysis</title>
+      <link>https://napsterinblue.github.io/notes/stats/techniques/correspondence/</link>
+      <pubDate>Mon, 13 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/techniques/correspondence/</guid>
+      <description>Often described as &amp;ldquo;the categorical analogue to PCA&amp;rdquo;, Correspondence Analysis is a dimension-reduction technique that describes the relationship and distribution between two categorical variables.
+Reading papers on the topic proved to be needlessly dense and uninformative&amp;ndash; my lightbulb moment on this topic came when I stumbled across Francois Husson&amp;rsquo;s fantastic tutorial series on YouTube. 100% worth the watch and is where I&amp;rsquo;ll pull many of my images from.
+Intuition For starters, this analysis assumes that our data is prepared as a cross-tabulation of two categorical variables.</description>
+    </item>
+    
+    <item>
+      <title>Multiple Correspondence Analysis</title>
+      <link>https://napsterinblue.github.io/notes/stats/techniques/mca/</link>
+      <pubDate>Mon, 13 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/techniques/mca/</guid>
+      <description>Overview Like Correspondence Analysis, but with Multiple An extension of our notebook on Correspondence Analysis, Multiple Correspondence Analysis allows us to extend this methodology beyond a cross-tab of two different variables into arbitrarily-many.
+For instance, a pretty canonical dataset used to describe this method (see this paper) is a taste profiling of various wines from different experts.
+Like before, we start out with a dataset with I individuals as rows and J columns as features.</description>
+    </item>
+    
+    <item>
+      <title>Basic Clustering Evaluation Metrics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/unsupervised/basic_evaluation_metrics/</link>
+      <pubDate>Wed, 08 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/unsupervised/basic_evaluation_metrics/</guid>
+      <description>Overview One of the fundamental characteristics of a clustering algorithm is that it&amp;rsquo;s, for the most part, an unsurpervised learning process. Whereas traditional prediction and classification problems have a whole host of accuracy measures (RMSE, Entropy, Precision/Recall, etc), it might seem a little more abstract coming up with a comparable measure of &amp;ldquo;goodness of fit&amp;rdquo; for the way an unsupervised model aligns with our data.
+Most introductory texts in the space (e.</description>
+    </item>
+    
+    <item>
+      <title>Concordance as a Measure of Model Fit</title>
+      <link>https://napsterinblue.github.io/notes/stats/survival_analysis/concordance/</link>
+      <pubDate>Tue, 07 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/survival_analysis/concordance/</guid>
+      <description>The whole idea of concordance as a success metric makes a lot more sense when you look at the definition of the word itself.
+ an alphabetical list of the words (especially the important ones) present in a text, usually with citations of the passages concerned.
+ Simply put, the Concordance Index is a measure of how well-sorted our predictions are.
+How we actually arrive at this measure requires a little more digging.</description>
+    </item>
+    
+    <item>
+      <title>Cox Modeling Using Lifelines</title>
+      <link>https://napsterinblue.github.io/notes/stats/survival_analysis/cox_lifelines/</link>
+      <pubDate>Sun, 05 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/survival_analysis/cox_lifelines/</guid>
+      <description>Extending from our notebook on the math and intuition behind the Cox Model let&amp;rsquo;s do a practical example using real data.
+The Data We&amp;rsquo;ll use the Telco Customer Churn dataset on Kaggle, which is basically a bunch of client records for a telecom company, where the goal is to predict churn (Churn) and the duration it takes for churn to happen (tenure).
+%pylab inline import pandas as pd Populating the interactive namespace from numpy and matplotlib  Lot of potentially-useful information here, this notebook does a particularly good job exploring the data.</description>
+    </item>
+    
+    <item>
+      <title>Cox Proportional Hazard Math</title>
+      <link>https://napsterinblue.github.io/notes/stats/survival_analysis/cox_math/</link>
+      <pubDate>Fri, 03 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/survival_analysis/cox_math/</guid>
+      <description>As hinted at the end of our notebook on the Kaplan-Meier Estimator, we can enrich our approximations of Survival and Hazard curves by using covariate (attribute) data from our records. One of the most popular methods of doing so is by employing the Cox Proportional Hazard model.
+Borrowing once more from the lifelines documentation, the Cox model estimates a given hazard function as
+from IPython.display import Image Image(&amp;#39;images/lifelines_cox_eq.PNG&amp;#39;) Essentially, this model behaves in two parts:</description>
+    </item>
+    
+    <item>
+      <title>Building Blocks</title>
+      <link>https://napsterinblue.github.io/notes/stats/survival_analysis/building_blocks/</link>
+      <pubDate>Thu, 02 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/survival_analysis/building_blocks/</guid>
+      <description>Survival Analysis, broadly-speaking, is a corner of statistics that deals with answering questions regarding &amp;ldquo;time to event&amp;rdquo; for a given population. It has applications in all kinds of contexts, from healthcare, to marketing, to manufacturing, etc.
+There&amp;rsquo;s all sorts of nuance and rabbit-holing to be done, learning the ins and outs, but first, it&amp;rsquo;d help to establish some of the fundamental concepts and their derivations.
+The Data Obviously, if we&amp;rsquo;re trying to train a model to make predictions on time and events, we need data that informs us of time spent as well as event occurences.</description>
+    </item>
+    
+    <item>
+      <title>Kaplan-Meier Estimate</title>
+      <link>https://napsterinblue.github.io/notes/stats/survival_analysis/kaplan_meier/</link>
+      <pubDate>Thu, 02 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/survival_analysis/kaplan_meier/</guid>
+      <description>So before we get underway with our fancy-pants tuned models to approximate our survival/hazard equations, it&amp;rsquo;s worth highlighting a simple estimator that provides a useful, if naive, approximation with minimal headache.
+This straight-forward equation is called the Kaplan-Meier Estimate and is used as a proxy for evaluating the Survival Function at a given point in time.
+from IPython.display import Image Image(&amp;#39;images/km_eq.PNG&amp;#39;) The n_i term is the population still at risk right before time i (not yet swallowed by F(t)), and d_i is the number of events that occur on time i.</description>
+    </item>
+    
+    <item>
+      <title>Likelihood</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/likelihood/</link>
+      <pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/likelihood/</guid>
+      <description>from IPython.display import Image Likelihood Josh Starmer does a great job succinctly explaining Likelihood as the counterpart to probability.
+Whereas probability describes the chance of seeing an observation, given a probability distribution
+Image(&amp;#39;../images/starmer_prob.PNG&amp;#39;) Likelihood describes the chance that we&amp;rsquo;re looking at a certain probability distribution, working backwards from given a sample.
+Image(&amp;#39;../images/starmer_likelihood.PNG&amp;#39;) Likelihood Ratios As zedstatistics then goes on to explain, the values for a given likelihood are mostly immaterial.</description>
+    </item>
+    
+    <item>
+      <title>Generating Synthetic Networks</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/synthetic_networks/</link>
+      <pubDate>Mon, 10 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/synthetic_networks/</guid>
+      <description>Building Dummy Data In much the same way that libraries like sklearn and seaborn come, batteries-included, with utilities to pull canonical datasets or generate novel data following some known distribution, networkx provides dozens of similar utilities. The Graph Generators documentation houses far more methods than I know or care to cover. For simplicity&amp;rsquo;s sake, I&amp;rsquo;ll group these methods&amp;ndash; broady&amp;ndash; into three categories
+Canonical This is used to generate known, well-documented, networks within the Network Science literature&amp;ndash; think Iris, but for dots and lines.</description>
+    </item>
+    
+    <item>
+      <title>Singular Value Decomposition in Python</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/svd_python/</link>
+      <pubDate>Thu, 10 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/svd_python/</guid>
+      <description>Example: Compression Near the bottom of the writeup in the AMA, they demonstrate how useful SVD is a way of compressing/uncompressing data.
+This will make a good working example as any.
+They assemble a 25 X 15 matrix of zeros and ones that form an image of a 0. Per the example, there are really only different types of columns that go into constructing the bigger picture&amp;ndash; and thus some obvious information redundancy that we can leverage.</description>
+    </item>
+    
+    <item>
+      <title>SVD Intuition</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/understanding_svd/</link>
+      <pubDate>Wed, 09 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/understanding_svd/</guid>
+      <description>This was one of the more illuminating math videos I&amp;rsquo;ve come across and it did wonders for grounding my intuition on this topic. This notebook will mostly follow along, typing ideas from our other notebooks.
+Overview Recall the intuition that we arrived at for eigenvectors when we went from following our basis vectors i and j in a linear transformation to finding the eigenvectors and watching the transformation from the perspective of the stretch/shrink on these vectors.</description>
+    </item>
+    
+    <item>
+      <title>Change of Basis</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/change_of_basis/</link>
+      <pubDate>Tue, 08 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/change_of_basis/</guid>
+      <description>Overview Another Linear Algebra concept, another link to a great 3blue1brown video.
+As we sort of teased out in our &amp;ldquo;Duality&amp;rdquo; section of our notebook on Dot Products, the orientation with which we perceive points in space is arbitrary, so long as our origin points, (0, 0), overlap.
+Up to this point, we&amp;rsquo;ve always considered linear transformations with respect to how they manipulate our basis vectors i and j.</description>
+    </item>
+    
+    <item>
+      <title>Eigenvectors and Eigenvalues</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/eigenvectors_and_values/</link>
+      <pubDate>Tue, 08 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/eigenvectors_and_values/</guid>
+      <description>Motivation Following along with 3blue1brown&amp;rsquo;s series on The Essence of Linear Algebra, the topic of Eigenvectors and Eigenvalues shows up nearly last.
+When I learned this in undergrad, it was a series of equations and operations that I memorized. However, revisiting to write this notebook, I&amp;rsquo;ve now got a good intuition for conceptualizing eigenvectors represent, as well as understand their use/role in Linear Algebra.
+For starters, he presents a matrix A that represents a simple linear transformation and encourages us to watch the yellow line below.</description>
+    </item>
+    
+    <item>
+      <title>Cross Products</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/cross_products/</link>
+      <pubDate>Mon, 07 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/cross_products/</guid>
+      <description>Overview In his video on cross products, 3blue1brown kicks off by sharing that the cross product between two vectors v and w is the area of a parallelogram created by affixing each vector to the end of the other. Mathematically, this is equivalent to the determinant.
+from IPython.display import Image Image(&amp;#39;images/cross_product_almost.PNG&amp;#39;) However, halfway through the video, he admits that this definition was simply to prep your understanding for the actual concept.</description>
+    </item>
+    
+    <item>
+      <title>Determinants</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/determinants/</link>
+      <pubDate>Mon, 07 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/determinants/</guid>
+      <description>Geometric Interpretation In his video on determinants, 3blue1brown provides a nice geometric interpretation for the determinant of a matrix, A.
+ Generally, the determinant represents the factor by which a matrix scales the area/volume/etc after a linear transformation.
+ This is a better approach than rote memorization of the formula for calculating a determinant and just rolling with it (like I did for years).
+from IPython.display import Image Image(&amp;#39;images/determinant_formula_2d.PNG&amp;#39;) 2D Intuition To see why this is the case, let&amp;rsquo;s consider a couple simple shapes/transformations.</description>
+    </item>
+    
+    <item>
+      <title>Dot Products</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/dot_products/</link>
+      <pubDate>Mon, 07 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/dot_products/</guid>
+      <description>Overview The dot product between two vectors is simply the sum of the element-wise products between the two vectors, or:
+np.dot([a, b, c].T, [d, e, f].T) -&amp;gt; ad + be + cf  This takes us from two vectors of arbitrary, shared, 1 x n dimensions to just a scalar, but what does it actually mean?
+Geometric Interpretation Per (surprise) 3blue1brown, we can see that the dot product represents the length of the projection of one vector onto the other, multiplied by the length of that second vector</description>
+    </item>
+    
+    <item>
+      <title>Linear Transformations</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/linear_transformations/</link>
+      <pubDate>Mon, 07 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/linear_transformations/</guid>
+      <description>Rethinking One of the best, earliest insights that I got from watching 3blue1brown&amp;rsquo;s excellent videos on The Essence of Linear Algebra is how to conceptualize a linear transformation performed by a matrix, A.
+For starters, he conceptualizes everything he talks about relative to the unit vectors i and j, which are vectors of magnitude 1 that point in the x and y directions, respectively.
+from IPython.display import Image Image(&amp;#39;images/basis_unit_vectors.PNG&amp;#39;) Thus, for any matrix, A, that defines a linear transformation, we should make it a habit to immediately identify the columns of A as mappings for these unit vectors.</description>
+    </item>
+    
+    <item>
+      <title>Null Space and Kernels</title>
+      <link>https://napsterinblue.github.io/notes/stats/lin_alg/null_space_and_kernels/</link>
+      <pubDate>Mon, 07 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/lin_alg/null_space_and_kernels/</guid>
+      <description>Main Idea 3blue1brown discusses Null Spaces in the context of inverse matricies.
+If you map from one space to another using a matrix A then you can undo that mapping using its inverse, A^-1. That is, of course, provided that the matrix is invertible. This means&amp;ndash; among a ton of other things via the Invertible Matrix Theorem&amp;ndash; that the mappings between the two spaces is one-to-one.
+Under this condition, we have a matrix A with a non-zero determinant, whose only solution that lands on the point [0 0]^T is the original point (0, 0).</description>
+    </item>
+    
+    <item>
+      <title>Hierarchical Clustering</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/unsupervised/hierarchical_clustering/</link>
+      <pubDate>Wed, 02 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/unsupervised/hierarchical_clustering/</guid>
+      <description>It&amp;rsquo;s not wildly off base to remark that a dendrogram, the visual result of Hierarchical Clustering, looks sort of like a Decision Tree, but in reverse.
+(Pulled from Google Images)
+from IPython.display import Image Image(&amp;#39;images/dendrogram.PNG&amp;#39;) But whereas the Decision Tree starts from all points collected together and making successive splits to separate the data, Hierarchical Clustering starts with all disjoint points and iteratively finds groupings of similar points.
+Algorithm Actually performing Hierarchical Clustering all begins with some measure of &amp;ldquo;dissimilarity.</description>
+    </item>
+    
+    <item>
+      <title>Support Vector Machines Overview</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/classification/svm/</link>
+      <pubDate>Mon, 30 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/classification/svm/</guid>
+      <description>The Big Idea The key notion of of this notebook is that we want to formulate some line/hyperplane that we can use to draw a line through our data, maximizing separation between two classes.
+After we&amp;rsquo;ve done this, prediction is as simple as:
+ Draw the hyperplane Look at your point If it&amp;rsquo;s above the hyperplane, predict class A, otherwise B  Like most concepts we got out of ISL, we&amp;rsquo;ll start with a simple, straight-forward case and introduce complexity/relax assumptions until we get to the fancy-pants out-of-the-box implementations you might find in your favorite Data Science library.</description>
+    </item>
+    
+    <item>
+      <title>Boosted Models</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/model_selection/boosting/</link>
+      <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/model_selection/boosting/</guid>
+      <description>The concept of Boosting a given model extends, intuitively, from two other Data Science concepts:
+ Principal Component Analysis, which aims to find an axis that explains the most variation, re-orient your original data, then find a new axis that explains what the first couldnt, etc Bootstrapping, which involves maximizing the use of a dataset by repeated sampling with replacement and aggregating model generation  Essentially, want to make simple model that predicts on y.</description>
+    </item>
+    
+    <item>
+      <title>From Trees to Forests to Boosted Trees</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/trees/trees_forests_boosted/</link>
+      <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/trees/trees_forests_boosted/</guid>
+      <description>Overview In general, when we fit a Decision Tree, we run the risk of putting together a model with extremely-high variance&amp;ndash; the tree that winds up being fit is highly dependent on how we split our data into train/test.
+The following sections present methods for overcoming this shortcoming by building many different Decision Trees and leveraging them together for prediction. As outlined in our discussion of Boostrapping, we can counter this variance by aggregating our relevant statistics many times.</description>
+    </item>
+    
+    <item>
+      <title>Decision Tree Basics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_basics/</link>
+      <pubDate>Wed, 25 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_basics/</guid>
+      <description>Overview The basic idea of Decision Trees isn&amp;rsquo;t hard to grok&amp;ndash; indeed following the flow-chart of decision criteria is why they&amp;rsquo;re considered one of the more powerful algorithms from an interpretability standpoint.
+We&amp;rsquo;ll cover actually building the tree below. So skipping ahead, after we&amp;rsquo;ve constructed our tree we wind up with m neat rectangles in some many-dimensional space. It&amp;rsquo;s important to note that when we&amp;rsquo;re done, every single data point&amp;ndash; trained or new&amp;ndash; maps directly onto one of these m rectangles.</description>
+    </item>
+    
+    <item>
+      <title>Decision Tree Pruning</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_pruning/</link>
+      <pubDate>Wed, 25 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_pruning/</guid>
+      <description>As mentioned in our notebook on Decision Trees we can apply hard stops such as max_depth, max_leaf_nodes, or min_samples_leaf to enforce hard-and-fast rules we employ when fitting our Decision Trees to prevent them from growing unruly and thus overfitting.
+Alternatively, Chapter 8 of ISL proposes a process called Cost Complexity Pruning, which acts as a sort of countermeasure for paring down a large tree that was trained more-or-less unpenalized. The method employs a constant alpha that penalizes our cost function for each of our terminal nodes for a given tree, denoted as |T|.</description>
+    </item>
+    
+    <item>
+      <title>Splines and Generalized Additive Models</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/splines_and_gams/</link>
+      <pubDate>Sun, 22 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/splines_and_gams/</guid>
+      <description>from IPython.display import Image General Form Chapter 7 of ISL describes increasing our model complexity beyond simple, linear regression. We can add some complexity to our fit if we design our fit scheme to consider polynomial fits or step functions.
+Generically though, we can express our linear form as
+$y_i = \beta_0 + \beta_1 b_1(x_i) + \beta_2 b_2(x_i) + \beta_3 b_3(x_i) + &amp;hellip; + \beta_K b_K(x_i) + \epsilon_i$
+Where all of these beta terms are some fixed, arbitrary functions.</description>
+    </item>
+    
+    <item>
+      <title>Partial Least Squares</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/partial_least_squares/</link>
+      <pubDate>Fri, 20 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/partial_least_squares/</guid>
+      <description>As mentioned in our notebook on Principal Component Analysis, the chief goal of a dimension reduction technique is to express the observations of our p-dimensional dataset, X as a linear combination of m-dimensional vectors (m &amp;lt; p), Z, using a mapping optimized &amp;ldquo;to explain the most variation in our data.&amp;rdquo;
+But whereas PCA is an unsupervised method that involves figuring out how to explain variation in X, the Partial Least Squares method introduces a supervised alternative and considers our target, Y, in the dimension reduction.</description>
+    </item>
+    
+    <item>
+      <title>Ridge and Lasso Regression</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/ridge_lasso/</link>
+      <pubDate>Wed, 18 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/ridge_lasso/</guid>
+      <description>We touched on this a bit in our discussion of Regularization in Neural Networks, but I feel that it bears elaboration for the regression case.
+In general, both of the following techniques we&amp;rsquo;ll look at aim to dampen the effect of a small subset of regression coefficients from dominating our prediction schemes. Additionally, both will use our formula for the Residual Sum of Squares as a jumping off point</description>
+    </item>
+    
+    <item>
+      <title>Bootstrapping</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/bootstrap/</link>
+      <pubDate>Tue, 17 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/bootstrap/</guid>
+      <description>Motivation The majority of the time, our standard &amp;ldquo;build a model&amp;rdquo; workflow involves splitting a dataset up into train, test, and validation sets. However, this is all predicated on having enough data to split and derive meaningful inference.
+In the event that we have a smaller dataset, we might employ the bootstrap method of oversampling from our population, with replacement, many times. Done enough times, we arrive at
+Example, Before Bootstrap Chapter 5 of ISL has a suggests some hypothetical statistic that they want to measure.</description>
+    </item>
+    
+    <item>
+      <title>Chi Squared Goodness of Fit</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/chi_squared/</link>
+      <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/chi_squared/</guid>
+      <description>A Test for Comparing Discrete Distributions I found Sal Khan&amp;rsquo;s explanation to be as straight-forward as it was useful.
+Essentially, the Chi-Squared test is used when:
+ You&amp;rsquo;ve got k discrete classes Some idea of their distribution A number of observed values that fall into said classes  In the case of the video, we want to check if a shop owner&amp;rsquo;s approximation of visitors-by-day as a percentage of their week is accurate or not.</description>
+    </item>
+    
+    <item>
+      <title>Linear/Quadratic Discriminant Analysis</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/classification/discriminant_analysis/</link>
+      <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/classification/discriminant_analysis/</guid>
+      <description>Motivation We&amp;rsquo;re trying to define lines that maximize the separation (or discriminates) between multiple classes. Full stop.
+Borrowing from ISL, the following images show:
+ The true data distributions on the left The theoretical best line of separation (Bayes&amp;rsquo; decision boundary), as dashed lines Some example data, sampled on the true dists, on the right images Our calculation of these &amp;ldquo;lines that maximize separation&amp;rdquo;, as solid lines  For the case where we have 2 classes and 1 feature in X</description>
+    </item>
+    
+    <item>
+      <title>Odds and LogOdds</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/odds_log_odds/</link>
+      <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/odds_log_odds/</guid>
+      <description>Odds The probabilty of an event occuring is a simple ratio of &amp;ldquo;instances where it happens&amp;rdquo; divided by &amp;ldquo;all possibilities&amp;rdquo;, or
+$\frac{ObservedTrue}{AllObservations}$
+For example, rolling a 1 on a 6-sided die is
+$\frac{1}{6} = .166667$
+By contrast, the odds of an event is a flat look at &amp;ldquo;instances that it happens&amp;rdquo; against &amp;ldquo;instances that it doesn&amp;rsquo;t happen&amp;rdquo;. In our dice example, we&amp;rsquo;d simply have
+$1:5$
+Odds Ratio Alternatively, we could express the odds of an event as a ratio of</description>
+    </item>
+    
+    <item>
+      <title>Interaction Terms in Python</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/interaction_terms/</link>
+      <pubDate>Wed, 11 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/interaction_terms/</guid>
+      <description>Vanilla OLS Say we&amp;rsquo;ve got a dataset
+from warnings import filterwarnings filterwarnings(&amp;#39;ignore&amp;#39;)from yellowbrick.datasets import load_bikeshare X, y = load_bikeshare() Where we measure the number of DC-area bikes rented
+y.head() 0 16 1 40 2 32 3 13 4 1 Name: riders, dtype: int64  Based on a number of features
+X.head()  .dataframe tbody tr th:only-of-type { vertical-align: middle; } .dataframe tbody tr th { vertical-align: top; } .dataframe thead th { text-align: right; }    season year month hour holiday weekday workingday weather temp feelslike humidity windspeed     0 1 0 1 0 0 6 0 1 0.</description>
+    </item>
+    
+    <item>
+      <title>Leverage, Influence, and Cook&#39;s Distance</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/leverage_influence_cook/</link>
+      <pubDate>Wed, 11 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/leverage_influence_cook/</guid>
+      <description>More than Outliers The Stats 101 approach to data inspection is to take a look at your variables via some box-and-whisker plot, finding your outliers by examining whether they fall in or out of 1.5 times your IQR. Like so
+from IPython.display import Image Image(&amp;#39;./images/box_whisker.jpg&amp;#39;) This would alert us to points we&amp;rsquo;d consider dropping if our results look funny, but how do we describe the impact of these points on our models?</description>
+    </item>
+    
+    <item>
+      <title>QQ Plots</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/qq_plots/</link>
+      <pubDate>Wed, 11 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/qq_plots/</guid>
+      <description>Overview Short and sweet, a QQ plot is used to check the normality of a given data distribution.
+Their construction is pretty straight-forward. Essentially you:
+(Borrowing visuals from StatQuest):
+ Sort your data and label each point as its own quantile (10th, 42nd, 99th, etc). Normalized data is your cleanest way to go here.  from IPython.display import Image Image(&amp;#39;../images/qq_data.PNG&amp;#39;)  Then, using the quantiles from step (1), fire up your vanilla N ~ (0, 1) distribution, and sample the same quantiles from it  Image(&amp;#39;.</description>
+    </item>
+    
+    <item>
+      <title>Evaluation using Residual Plots</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/residual_plots/</link>
+      <pubDate>Tue, 10 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/residual_plots/</guid>
+      <description>Goal One of the key assumptions of any linear model is homoscedasticity, which&amp;ndash; apart from being a $2 word that I need to spellcheck every time&amp;ndash; means that the variance of your error terms stays generally-consistent across all fitted values.
+Thus, it becomes essential to collect your error residuals and examine them against your predicted values. And if you&amp;rsquo;re being really diligent, your independent X variables, as well.
+Visually, this basically means that we want to see the former, not the latter, of the two pictures below.</description>
+    </item>
+    
+    <item>
+      <title>F Statistic</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/f_statistic/</link>
+      <pubDate>Mon, 09 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/f_statistic/</guid>
+      <description>Overview The F-Statistic of a Linear Regression seeks to answer &amp;ldquo;Does the introduction of these variables give us greater information gain when trying to explain variation in our target?&amp;rdquo;
+I like the way that Ben Lambert explains and will paraphrase.
+First you make two models&amp;ndash; a restricted model that&amp;rsquo;s just the intercept and an unrestricted model that includes new x_i values
+$R: y = \alpha $
+$U: y = \alpha + \beta_1 x_1 + \beta_2 x_2$</description>
+    </item>
+    
+    <item>
+      <title>R Squared Measure of Fit</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/r_squared/</link>
+      <pubDate>Mon, 09 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/r_squared/</guid>
+      <description>Components Suppose we&amp;rsquo;ve got a spattering of points that look like the following
+from IPython.display import Image Image(&amp;#39;images/r2_points.PNG&amp;#39;) We&amp;rsquo;d say that the Total Sum of Squares represents the combined amount of variation in Y across all points. In this case, we measure and sum the distance of each point (maroon) from the average Y value (red).
+We square each value when we sum so values above and below the average height don&amp;rsquo;t cancel out.</description>
+    </item>
+    
+    <item>
+      <title>Interpretability: Decision Attribution</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_attribution/</link>
+      <pubDate>Wed, 04 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_attribution/</guid>
+      <description>Cracking open the intermediate layers of a Convolutional Neural Network can be incredibly instructive and help reinforce your intuition for the types of features learned within a &amp;ldquo;black box&amp;rdquo; algorithm. However, from an image classification standpoint, it&amp;rsquo;s hard to overstate just how effective seeing a simple heatmap of &amp;ldquo;decision attribution&amp;rdquo; can be for debugging and understanding the behavior of your model as a whole.
+In this notebook, we&amp;rsquo;ll give a quick overview of an approach that lets us achieve just that&amp;ndash; adapted from Chapter 5 of Chollet&amp;rsquo;s excellent Deep Learning book.</description>
+    </item>
+    
+    <item>
+      <title>Interpretability: Find the Essence of Filters</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_filter_essence/</link>
+      <pubDate>Mon, 05 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_filter_essence/</guid>
+      <description>%pylab inline import tensorflow as tf tf.logging.set_verbosity(tf.logging.ERROR) from keras import backend as K Populating the interactive namespace from numpy and matplotlib Using TensorFlow backend.  Recall the general architecture of the VGG model (Notes here).
+from IPython.display import Image Image(&amp;#39;images/vgg_long.png&amp;#39;) If we load up the keras implementation of the weights (ignoring the top layers, as we&amp;rsquo;re not actually going to be predicting anything)
+from keras.applications import VGG16 model = VGG16(weights=&amp;#39;imagenet&amp;#39;, include_top=False) &amp;hellip; we can see that it&amp;rsquo;s very large.</description>
+    </item>
+    
+    <item>
+      <title>Visualizing Model Structure</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/visualizing_structure/</link>
+      <pubDate>Mon, 05 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/visualizing_structure/</guid>
+      <description>Occasionally, you might find yourself toying with a keras application that&amp;rsquo;s sufficiently complicated to merit graduating from the vanilla, Sequential() API to doing things functionally. While the expressiveness that this allows is immediately desirable for the sake of creativity, keeping a mental model of the model flow in your head becomes increasingly tedious. More to the point, the neat, vertical printout of model.summary() will likely do an insufficient job at relating the branching architecture you&amp;rsquo;ve created.</description>
+    </item>
+    
+    <item>
+      <title>Drawing Simple Rectangles in PIL</title>
+      <link>https://napsterinblue.github.io/notes/python/images/rectangles/</link>
+      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/images/rectangles/</guid>
+      <description>Quick Color Checks When I found myself doing analysis on color using numpy, I kept getting turned around and having trouble conceptualizing the color representation for the R, G, B values I was seeing.
+PIL makes this really easy to do. All you have to do is call Image.new() and specify the color parameter accordingly.
+from PIL import Image rect = Image.new(mode=&amp;#39;RGB&amp;#39;, size=(200, 200), color=(0, 74, 127)) rect Layering in More Colors If we wanted to look at more colors than one at a time, we could probably leverage some matplotlib &amp;ldquo;span&amp;rdquo; method, or use the built-in tools that PIL provides.</description>
+    </item>
+    
+    <item>
+      <title>Only Get Non-Alpha Pixels in an Image</title>
+      <link>https://napsterinblue.github.io/notes/python/numpy/filter_alpha_points/</link>
+      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/numpy/filter_alpha_points/</guid>
+      <description>This week, I found myself wanting to do some computation over pixels in an image.
+This image, in fact
+from PIL import Image im = Image.open(&amp;#39;images/Abomasnow.png&amp;#39;) im In particular, I wanted to run K-means clustering over the image to determine what the 3 most popular colors were&amp;ndash; visually, I expected to see something like green, white, and maybe pink/gray(?)
+A First Pass I load my Image object into numpy.array that sklearn can eat</description>
+    </item>
+    
+    <item>
+      <title>Opening an Image from a URL</title>
+      <link>https://napsterinblue.github.io/notes/python/images/img_from_url/</link>
+      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/images/img_from_url/</guid>
+      <description>I&amp;rsquo;ve determined that I&amp;rsquo;d be a much happier Nick if I had this image on my local machine. However, for the sake of this tutorial, I&amp;rsquo;m stubbornly refusing to get it via any means besides Python.
+This is easy enough.
+First, we&amp;rsquo;ll reach out to the hosting site with requests
+import requests url = &amp;#39;https://i.redd.it/kvzncux8fre11.jpg&amp;#39; conn = requests.get(url) conn &amp;lt;Response [200]&amp;gt;  However, when we print the first few characters of this enormous string, we&amp;rsquo;ve got the leading b character informing us that this is a byte string.</description>
+    </item>
+    
+    <item>
+      <title>Parsing Reddit Comments with PRAW</title>
+      <link>https://napsterinblue.github.io/notes/python/development/parsing_reddit/</link>
+      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/parsing_reddit/</guid>
+      <description>PRAW praw, or the Python Reddit API Wrapper, is our best tool for interfacing with Reddit content.
+Getting Set up Installing praw is as easy as pip install praw.
+However, it doesn&amp;rsquo;t work out of the box. Before we can get rolling, we need to set up the proper credentials to use the underlying API.
+Assuming you&amp;rsquo;ve got an existing Reddit account, you can go to https://www.reddit.com/prefs/apps/ and create a new &amp;ldquo;application.</description>
+    </item>
+    
+    <item>
+      <title>Installing Graphviz on Windows</title>
+      <link>https://napsterinblue.github.io/notes/algorithms/graphs/graphviz_windows/</link>
+      <pubDate>Tue, 09 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/algorithms/graphs/graphviz_windows/</guid>
+      <description>Being able to plot/generate graph-based images (be it networkx, a keras model structure, or what have you) is a very handy utility to have. However, the backend needed to support simple calls to, say keras.utils.plot_model() is nontrivial&amp;ndash; at least on Windows.
+Getting the Binary sorted out Basically, the Python libraries used to do this kind of operation are actually wrappers/interfaces around a popular Open Source tool called Graphviz, so merely pip installing your library of choice only gets at the wrapper, not the underlying codebase that&amp;rsquo;ll do the heavy lifting.</description>
+    </item>
+    
+    <item>
+      <title>Basics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/gans/basics/</link>
+      <pubDate>Mon, 08 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/gans/basics/</guid>
+      <description>from IPython.display import Image Overview GANs have been in the Machine Learning spotlight since the seminal paper by Ian Goodfellow et al in 2014.
+The general idea is that you&amp;rsquo;ve got a bunch of data that you want to learn &amp;ldquo;the essence of,&amp;rdquo; and you make yourself two networks:
+ A Generator, G, that learns the underlying data generation distribution of our sample data (e.g. how you might express every R, G, B value in terms of some probability distribution), then uses random noise to generate new data A Discriminator, D, that learns to tell the difference between real data and data that the Generator passed  Then training just becomes:</description>
+    </item>
+    
+    <item>
+      <title>Constructing a Vanilla GAN</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/gans/vanilla_gan/</link>
+      <pubDate>Mon, 08 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/gans/vanilla_gan/</guid>
+      <description>from IPython.display import Image Implementing Following along with Chollet&amp;rsquo;s example in his Deep Learning book, he builds a GAN over a bunch of frog images from CIFAR. It&amp;rsquo;s a great, succinct bit of code, so I&amp;rsquo;m not going to copy-paste it all here. Instead, I&amp;rsquo;ll comment on the things that stand out as non-obvious and important section by section
+Building the Generator  Everything starts off by defining the generator_input relative to some latent_dim&amp;ndash; the dimension of our latent space that we&amp;rsquo;re going to use to generate noise.</description>
+    </item>
+    
+    <item>
+      <title>Maximum Likelihood Estimators</title>
+      <link>https://napsterinblue.github.io/notes/stats/techniques/mle/</link>
+      <pubDate>Sat, 06 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/techniques/mle/</guid>
+      <description>from IPython.display import Image Note: The following images and intuition comes from this video
+Overview Note: The following images and intuition comes from this video
+Maximum Likelihood Estimators are used to approximate probability distributions, given some data.
+Though we don&amp;rsquo;t have every single data point that could possibly fall within a distribution, we can arrive at a decent guess for the parameters that define a distribution the data we do have.</description>
+    </item>
+    
+    <item>
+      <title>Fine-Tuning Pretrained Networks</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/fine_tuning_conv_nets/</link>
+      <pubDate>Wed, 12 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/fine_tuning_conv_nets/</guid>
+      <description>Perhaps the most practical, &amp;ldquo;remember this snippet&amp;rdquo; worthy section of Chollet&amp;rsquo;s notebook on using pretrained networks is the section where he outlines how to fine-tune your pre-trained ConvNets for your use case.
+Generally, he breaks this practice up into 5 simple steps:
+1. Add a custom network on top of an already-trained base network To do this, we&amp;rsquo;ll import one of the pre-trained network objects from keras, without the dense layer attache</description>
+    </item>
+    
+    <item>
+      <title>Itertools Recipe: Power Set</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_powerset/</link>
+      <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_powerset/</guid>
+      <description>The itertools docs has a ton of slick recipes for using the library to good effect. Some of the code is more useful than illustrative, so I wanted to use these notebooks to break down a few of the functions.
+This is
+# poor import style, but I want to copy-paste the code # as-is from the docs from itertools import * import itertools power_set() This one&amp;rsquo;s one of my favorite recipes.</description>
+    </item>
+    
+    <item>
+      <title>Itertools Recipe: Round Robin</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_round_robin/</link>
+      <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_round_robin/</guid>
+      <description>The itertools docs has a ton of slick recipes for using the library to good effect. Some of the code is more useful than illustrative, so I wanted to use these notebooks to break down a few of the functions.
+This is
+# poor import style, but I want to copy-paste the code # as-is from the docs from itertools import * import itertools roundrobin() def roundrobin(*iterables): &amp;#34;roundrobin(&amp;#39;ABC&amp;#39;, &amp;#39;D&amp;#39;, &amp;#39;EF&amp;#39;) --&amp;gt; A D E B F C&amp;#34; # Recipe credited to George Sakkis num_active = len(iterables) nexts = cycle(iter(it).</description>
+    </item>
+    
+    <item>
+      <title>Itertools Building Blocks</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_building_blocks/</link>
+      <pubDate>Fri, 24 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_building_blocks/</guid>
+      <description>There are a lot of goodies included in the itertools library to enable clever functional programming
+import itertools print(dir(itertools)) [&#39;__doc__&#39;, &#39;__loader__&#39;, &#39;__name__&#39;, &#39;__package__&#39;, &#39;__spec__&#39;, &#39;_grouper&#39;, &#39;_tee&#39;, &#39;_tee_dataobject&#39;, &#39;accumulate&#39;, &#39;chain&#39;, &#39;combinations&#39;, &#39;combinations_with_replacement&#39;, &#39;compress&#39;, &#39;count&#39;, &#39;cycle&#39;, &#39;dropwhile&#39;, &#39;filterfalse&#39;, &#39;groupby&#39;, &#39;islice&#39;, &#39;permutations&#39;, &#39;product&#39;, &#39;repeat&#39;, &#39;starmap&#39;, &#39;takewhile&#39;, &#39;tee&#39;, &#39;zip_longest&#39;]  Let&amp;rsquo;s look at a few
+Infinites count Basically works like a cheap enumerate()
+for _, count_val in zip(range(100), itertools.count()): pass print(count_val) 99  repeat Is used to serve up the same value until an end condition is reached</description>
+    </item>
+    
+    <item>
+      <title>Itertools Recipe: All Equal</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_all_equal/</link>
+      <pubDate>Fri, 24 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_all_equal/</guid>
+      <description>The itertools docs has a ton of slick recipes for using the library to good effect. Some of the code is more useful than illustrative, so I wanted to use these notebooks to break down a few of the functions.
+This is
+# poor import style, but I want to copy-paste the code # as-is from the docs from itertools import * import itertools all_equal() def all_equal(iterable): &amp;#34;Returns True if all the elements are equal to each other&amp;#34; g = groupby(iterable) return next(g, True) and not next(g, False) Demo all_equal(&amp;#39;aaaaaaaaa&amp;#39;) True  all_equal(&amp;#39;aaaaaaab&amp;#39;) False  Why this works This one relies on how the itertools.</description>
+    </item>
+    
+    <item>
+      <title>Itertools Recipe: N at a Time</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_grouper/</link>
+      <pubDate>Fri, 24 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_grouper/</guid>
+      <description>The itertools docs has a ton of slick recipes for using the library to good effect. Some of the code is more useful than illustrative, so I wanted to use these notebooks to break down a few of the functions.
+This is
+# poor import style, but I want to copy-paste the code # as-is from the docs from itertools import * import itertools n_at_a_time() Note: The docs call this function grouper() but I think this name is a bit clearer</description>
+    </item>
+    
+    <item>
+      <title>Itertools Recipe: Sliding Window</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/itertools_sliding_window/</link>
+      <pubDate>Fri, 24 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/itertools_sliding_window/</guid>
+      <description>The itertools docs has a ton of slick recipes for using the library to good effect. Some of the code is more useful than illustrative, so I wanted to use these notebooks to break down a few of the functions.
+# poor import style, but I want to copy-paste the code # as-is from the docs from itertools import * import itertools pairwise() def pairwise(iterable): &amp;#34;s -&amp;gt; (s0,s1), (s1,s2), (s2, s3), .</description>
+    </item>
+    
+    <item>
+      <title>Image Data Augmentation</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/data_augmentation/</link>
+      <pubDate>Tue, 12 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/data_augmentation/</guid>
+      <description>Motivation Image data&amp;ndash; particularly labeled image data&amp;ndash; is tough to come by. All told, if you&amp;rsquo;ve got 1000 images split, say, 500/250/250 and naively dump it into a model, you&amp;rsquo;re on a fast track to overfitting. A CV application that correctly spots a particular cat on the left side of an image should have no problem finding it on the right side if the image were flipped, yeah?
+Data Augmentation, such as flipping, rotation, shearing, and zooming allows us to introduce noise and variability to our images, thus generating &amp;ldquo;more&amp;rdquo; training data.</description>
+    </item>
+    
+    <item>
+      <title>Keras API Basics</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/keras_api/</link>
+      <pubDate>Sat, 19 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/keras_api/</guid>
+      <description>The keras API provides an excellent wrapper around various Deep Learning libraries, allowing both ease of use/uniform code while still plugging into expressive backends.
+Generally speaking, keras allows two interfaces to the underlying libraries it abstracts:
+ Sequential, object-oriented Functional, as the name implies  To explain the difference, we&amp;rsquo;ll make the same Network in both fashions. This will consist of:
+ Creating the structure:  Dense, 32-node layer, that takes input shape 784 Another 2 Dense 32 layers A final Dense 10 layer with a softmax() activation function  Compiling the model with the categorical_crossentropy loss function and adam optimizer Printing a summary of our model  Sequential API from keras import layers from keras import models Using TensorFlow backend.</description>
+    </item>
+    
+    <item>
+      <title>PCA: Principal Component Analysis</title>
+      <link>https://napsterinblue.github.io/notes/stats/techniques/pca/</link>
+      <pubDate>Thu, 15 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/techniques/pca/</guid>
+      <description>Overview Principal Component Analysis is a technique used to extract one or more dimensions that capture as much of the variation of data as possible.
+Intuition Following along with this YouTube video, say we have some data points that look like the following.
+from IPython.display import Image Image(&amp;#39;images/pca_yt_1.png&amp;#39;) Most of the variation can be explained, not by x or y alone, but a combination of the two.
+Image(&amp;#39;images/pca_yt_2.png&amp;#39;) Indeed, if you rotate the image relative to this axis, the data looks much more organized, with the most variance explained by our &amp;ldquo;new x axis&amp;rdquo;, and the second-most variance explained by our &amp;ldquo;new y axis.</description>
+    </item>
+    
+    <item>
+      <title>Simpson&#39;s Paradox</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/simpsons/</link>
+      <pubDate>Tue, 13 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/simpsons/</guid>
+      <description>Simpson&amp;rsquo;s Paradox is an interesting statistical property that arises when you arrive at misleading conclusions due to overlooking confounding variables in your data.
+Ultimately, the only way to overcome the paradox (should it even arise&amp;hellip;) is a thorough understanding of your data and that it represents.
+Simple Overview This video was very helpful in helping me gain some intuition with simple examples.
+A More Concrete Example import requests import pandas as pd We&amp;rsquo;ll lean on a longitudinal dataset from South Africa.</description>
+    </item>
+    
+    <item>
+      <title>GloVe Embedding</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/text/glove/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/text/glove/</guid>
+      <description>As we mentioned in the Word2Vec notebook, training your Embedding Matrix involves setting up some fake task for a Neural Network to optimize over.
+Stanford&amp;rsquo;s GloVe Embedding model is very similar to the Word2Vec implementation, but with one crucial difference:
+GloVe places a higher importance on frequency of co-occurrence between two words.
+Training Notes First, an enormous vocab_size x vocab_size matrix is constructed as a result of a pass through of your entire corpus to get all unique words.</description>
+    </item>
+    
+    <item>
+      <title>Sentiment Classification</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/rnns/sentiment_analysis/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/rnns/sentiment_analysis/</guid>
+      <description>Given a Word Embedding that&amp;rsquo;s compatible with our corpus, could make a reasonably-accurate sentiment classifier by taking a naive average across all the encoding vectors in our sentence.
+from IPython.display import Image Image(&amp;#39;images/sentiment_naive.png&amp;#39;) However, this approach falls short when you have an important context word that negates the rest of your sentence. For instance in the sentence
+ Completely lacking in good taste, good service, and good ambiance
+ The word &amp;ldquo;good&amp;rdquo; appears three times and likely out-weighs the negative word &amp;ldquo;lacking&amp;rdquo; enough that you might predict a &amp;ldquo;fair&amp;rdquo; to &amp;ldquo;good&amp;rdquo; sentiment.</description>
+    </item>
+    
+    <item>
+      <title>Word Embeddings</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/text/embeddings/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/text/embeddings/</guid>
+      <description>Machine Learning applications ultimately boil down to a bunch of matrix multiplication plus some extra stuff. So seeing how it&amp;rsquo;s difficult to multiply strings by strings, it stands to reason that we want to represent our string data in some fashion.
+Thankfully Word Embeddings do just this.
+Overview Say we have a vocabulary, V, of 10,000 words that include
+[a, aaron, ..., zulu, &amp;lt;UNK&amp;gt;]  (here, &amp;lt;UNK&amp;gt; is a stand-in for any words we might not have considered)</description>
+    </item>
+    
+    <item>
+      <title>Word Similarities</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/text/word_similarity/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/text/word_similarity/</guid>
+      <description>One of the more popular characteristics of Word Embeddings is that it affords a way to look at the similarity between words.
+Canonically, the GloVe embedding boasts the ability to serve up words in similar feature space and demonstrate that they have similar meaning.
+from IPython.display import Image Image(&amp;#39;images/glove_nearest.PNG&amp;#39;) The above merely considers the straight-line distance between two points, but cosine similarity has been a shown to be a more effective similarity measure when working with text data.</description>
+    </item>
+    
+    <item>
+      <title>Word2Vec</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/text/word2vec/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/text/word2vec/</guid>
+      <description>As mentioned in the Word Embeddings notebook, there are many ways to train a Neural Network to produce a Word Embedding matrix for a given vocabulary.
+One of the more popular implementations of this is TensorFlow&amp;rsquo;s Word2Vec. This notebook should provide a high-level intuition of this training approach.
+Fake Task The key takeaway for understanding how we fit an embedding layer is that we set our data up to solve an arbitrary problem when iterating over a corpus of text.</description>
+    </item>
+    
+    <item>
+      <title>Gated Recurrent Units</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/rnns/gru/</link>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/rnns/gru/</guid>
+      <description>The problem with regular Recurrent Neural Networks is that, due to the vanishing gradient problem, they struggle to remember specific information over a period of time. For instance the following sentences
+The cat ate ... and was full The cats ate ... and were full  might be completely identical, save for the plurality of the subject, and by extension the tense of &amp;ldquo;was&amp;rdquo; vs &amp;ldquo;were&amp;rdquo;
+Memory Cells Gated Recurrent Units have this concept of a memory cell, c that learns and carries information from once layer to the next.</description>
+    </item>
+    
+    <item>
+      <title>LSTMs</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/rnns/lstm/</link>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/rnns/lstm/</guid>
+      <description>A more robust version of the Gated Recurrent Unit, Long-Short-Term Memory cell provides a powerful utility for learning feature importance over potentially much-longer distances.
+Key Differences Andrew Ng diagrams this whole process nicely with the following.
+from IPython.display import Image Image(&amp;#39;images/lstm_ng.PNG&amp;#39;) Couple things to point out here
+Two Tracks Recall that in the GRU architecture, the output was the memory cell&amp;ndash; or rather, c==a
+Here, however, there&amp;rsquo;s both an explicit memory cell that spans the top of each cell as well as an activation value that gets passed along the bottoms.</description>
+    </item>
+    
+    <item>
+      <title>Recurrent Neural Network Basics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/rnns/basics/</link>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/rnns/basics/</guid>
+      <description>Recurrent Neural Networks are designed to learn information from sequential data.
+We start with datasets of x time steps in a row, for example:
+ x words in a sentence x sequential stock ticks x days of weather in a row  Thus, we say that there are T_x elements in a given point of data.
+In the most basic case, we have some handoff of information, a_i from layer i-1 to i.</description>
+    </item>
+    
+    <item>
+      <title>Neural Style Transfer</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/style_transfer/</link>
+      <pubDate>Wed, 10 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/style_transfer/</guid>
+      <description>Overview One of the funner/more popular tricks you can employ using Deep Learning is the notion of style transfer between two images, like the canonical examples shown below.
+from IPython.display import Image Image(&amp;#39;images/style_transfer.png&amp;#39;) To get started, you want to determine some cost function that takes into consideration both:
+ Content: how similar the principal shapes are between the Content Image and the Generated Image (e.g. the bridge clock tower) Style: How much the Generated Image &amp;ldquo;looks/feels&amp;rdquo; like the Style Image  (more on these below)</description>
+    </item>
+    
+    <item>
+      <title>Object Detection Rough Intuition</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/yolo_intuition/</link>
+      <pubDate>Tue, 09 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/yolo_intuition/</guid>
+      <description>Don&amp;rsquo;t yet understand how this works in practice, but wanted to get some thoughts down about the theory of how this all works.
+Overview So for a given image, our model&amp;rsquo;s prediction will have the following scheme:
+ Generate a box around an object, defined by  bx, by: coordinates of the center of the box bw, bh: width and height of the boxes  Note: these values are scaled as percentages between (0, 0) and (1, 1), as we assume unit length of the image  from IPython.</description>
+    </item>
+    
+    <item>
+      <title>Inception Architecture</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/inception/</link>
+      <pubDate>Sat, 06 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/inception/</guid>
+      <description>As we&amp;rsquo;ve discussed in other notebooks, a key reason that we employ convolution to our image networks is to adjust the complexity of our model.
+When we apply N convolutional filters to a given layer, the following layer has final dimension equal to N&amp;ndash; one for each channel.
+1x1 Convolution Because convolution gets applied across all channels, a 1x1 convolution is less about capturing features in a given area of any channel, but instead translating information into other, easier-to-compute dimensions.</description>
+    </item>
+    
+    <item>
+      <title>Saving/Loading Models</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/saving_loading/</link>
+      <pubDate>Sat, 06 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/saving_loading/</guid>
+      <description>Say we had some simple data
+import numpy as np X = np.random.rand(1000, 100, 100) y = np.random.rand(1000).reshape(-1, 1) X.shape, y.shape ((1000, 100, 100), (1000, 1))  And we trained a model on it
+from keras.models import Sequential from keras.layers import Dense, Input, Flatten model = Sequential() model.add(Dense(4, input_shape=(100, 100), activation=&amp;#39;relu&amp;#39;)) model.add(Dense(4, activation=&amp;#39;relu&amp;#39;)) model.add(Flatten()) model.add(Dense(1, activation=&amp;#39;relu&amp;#39;)) model.compile(optimizer=&amp;#39;adam&amp;#39;, loss=&amp;#39;mean_squared_error&amp;#39;) model.fit(X, y, verbose=0) &amp;lt;keras.callbacks.History at 0x1c6247f0&amp;gt;  How do we go about saving it?</description>
+    </item>
+    
+    <item>
+      <title>Transfer Learning</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/transfer_learning/</link>
+      <pubDate>Sat, 06 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/transfer_learning/</guid>
+      <description>Transfer learning is the act of using a pre-trained network as a way to give you a huge head start on training a neural network for whatever your current application is. There are a number of canonical networks floating around, all trained on significantly-better hardware than you or I readliy have on hand, furthermore, because so many of the earlier layers are so abstract, they&amp;rsquo;re often useful for whatever purpose you&amp;rsquo;re designing with, out of the box.</description>
+    </item>
+    
+    <item>
+      <title>Residual Networks</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/resnets/</link>
+      <pubDate>Fri, 05 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/resnets/</guid>
+      <description>Motivation Consider a very deep image-classification neural network like the one below
+from IPython.display import Image Image(&amp;#39;images/very_deep_network.png&amp;#39;) A typical shortcoming of this sort of architecture is overfitting of the data.
+This is a result of information gain from back-propagation not making it all the way back to our earlier layers in the network (due to the vanishing gradient problem). After a certain point, the earlier layers stop changing much at all, and the later layers over-adjust to the data it&amp;rsquo;s trained on.</description>
+    </item>
+    
+    <item>
+      <title>VGG Architecture</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/vgg/</link>
+      <pubDate>Fri, 05 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/vgg/</guid>
+      <description>One of the more popular Convolutional Network architectures is called VGG-16, named such because it was created by the Visual Geometry Group and contains 16 hidden layers (more on this below).
+Essentially, it&amp;rsquo;s architecture can be described as:
+ Multiple convolutional layers A max pooling layer Rinse, repeat for awhile A couple Fully Connected Layers SoftMax for multiclass predection  And that&amp;rsquo;s it. The key advantage of VGG is its simplicty.</description>
+    </item>
+    
+    <item>
+      <title>Confidence Intervals</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/conf_ints/</link>
+      <pubDate>Wed, 03 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/conf_ints/</guid>
+      <description>Confidence Interval vs Level If you&amp;rsquo;ve got a bunch of data and you&amp;rsquo;re trying to approximate the average value, you&amp;rsquo;re going to have to bake in some wiggle room for your prediction.
+Assuming that you&amp;rsquo;ve already cleared our usual sampling conditions, we want essentially want to come up with an expression of
+$ourEstimate \pm marginOfError$
+How we calculate this &amp;ldquo;marginOfError&amp;rdquo; depends on whether we&amp;rsquo;re looking at a sample mean or proportion (more below), but is basically the product of two parts:</description>
+    </item>
+    
+    <item>
+      <title>CNN Organization</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/cnn_organization/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/cnn_organization/</guid>
+      <description>In the Deep Learning notes space, we&amp;rsquo;ve got a notebook outlining a potential architecture for a network to predict on the MNist dataset. Here, we&amp;rsquo;ll walk through how to match that implementation in TensorFlow using Keras.
+Overview Our instantiation will basically look like the following:
+ Generate our Data Create Placeholders Create Variable objects  Data The dataset is a smaller resolution, but the exercise is the same
+from sklearn.</description>
+    </item>
+    
+    <item>
+      <title>CNN organization</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_project_structure/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_project_structure/</guid>
+      <description>Now that we&amp;rsquo;ve got a few notebooks outlining the intuition and mechanics of Convolution with image-based Neural Nets, let&amp;rsquo;s talk about how we go about structuring our model.
+Example Architecture Andrew Ng maps out a potential architecture approach for modeling an MNist classifier.
+from IPython.display import Image Image(&amp;#39;images/conv_mnist.png&amp;#39;) Few things to note here:
+ Because there aren&amp;rsquo;t any learned parameters in our Pooling layers, we consider them &amp;ldquo;in the same layer as the adjacent Convolution step&amp;rdquo; The hyperparameters numFilters, filterShape, filterStride were all arbitrarily chosen and can be modified/explored from layer to layer to try and increase performance We do two layers of Convolution/pooling and then start using the same dense, robust layers as we&amp;rsquo;ve seen with our usual Networks.</description>
+    </item>
+    
+    <item>
+      <title>Convolution Hyperparameters</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_hyperparams/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_hyperparams/</guid>
+      <description>Motivation Our initial convolution intuition was built on the notion of a filter that scanned over an image extracting relevant features and reducing dimensionality into the next layers.
+from IPython.display import Image Image(&amp;#39;images/conv_sliding.png&amp;#39;) However, applying similar filters in subsequent layers would create a telescoping effect where basically hack-and-slash away at the dimension of our data until there&amp;rsquo;s nothing left in the final layers.
+Thankfully, there are hyperparameters we can employ to correct for this.</description>
+    </item>
+    
+    <item>
+      <title>Convolution Intuition</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_intuition/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/conv_intuition/</guid>
+      <description>What Is It? Convolution is a technique that is largely used in Image data as a method of abstracting simple features such as edges or color scale. It is an elegant technique, used in earlier layers of deep image networks to dramatically reduce computation and extract component features used in assembling more complicated features for later layers in the network.
+Furthermore, in addition to learning the simple-feature characteristics on your data, the convolutional filter also *implicitly encodes the location* as well.</description>
+    </item>
+    
+    <item>
+      <title>Cropping an Image</title>
+      <link>https://napsterinblue.github.io/notes/python/images/cropping/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/images/cropping/</guid>
+      <description>I had a picture of my dog that I wanted to trim down a bit. The picture itself had width 400 and height 553.
+from IPython.display import Image Image(&amp;#39;images/daisy.jpg&amp;#39;) Using PIL Load in the image
+from PIL import Image im = Image.open(&amp;#39;images/daisy.jpg&amp;#39;) im Inspecting the docstring for im.crop() had me scratching my head a bit
+Returns a rectangular region from this image. The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate.</description>
+    </item>
+    
+    <item>
+      <title>PIL vs OpenCV</title>
+      <link>https://napsterinblue.github.io/notes/python/images/libs/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/images/libs/</guid>
+      <description>As I&amp;rsquo;m standing on the precipice of doing a bunch of image processing/classification, it occurs to me that I don&amp;rsquo;t know a whole lot about the available tools and packages for working with images. The following is a look at the two more-popular libraries.
+PIL and cv2 both support general image processing, such as:
+ Conversion between image types Image transformation Image filtering  PIL (Pillow) The Python Image Library</description>
+    </item>
+    
+    <item>
+      <title>Pooling</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/pooling/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/pooling/</guid>
+      <description>Pooling is a technique used to efficiently reduce dimensionality, and therefore complexity and computation.
+It involves sectioning off your original image and applying some reductive function to the values in those cells. Just like convolution, we can set filter size and stride hyperparameters to adjust the output size.
+Example: Applying np.max() to the values
+from IPython.display import Image Image(&amp;#39;images/pooling.png&amp;#39;) Max Pooling is the preferred method over any other calculation (e.</description>
+    </item>
+    
+    <item>
+      <title>Generating Classification Datasets</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/datasets/make_classification/</link>
+      <pubDate>Fri, 14 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/datasets/make_classification/</guid>
+      <description>When you&amp;rsquo;re tired of running through the Iris or Breast Cancer datasets for the umpteenth time, sklearn has a neat utility that lets you generate classification datasets.
+Its use is pretty simple. A call to the function yields a attributes and a target column of the same length
+import numpy as np from sklearn.datasets import make_classification X, y = make_classification() print(X.shape, y.shape) (100, 20) (100,)  Customizing Additionally, the function takes a bunch of parameters that allow you to modify your dataset including:</description>
+    </item>
+    
+    <item>
+      <title>Model Improvement Strategy Heuristics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/improving_performance/</link>
+      <pubDate>Fri, 14 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/improving_performance/</guid>
+      <description>In the Bias, Variance, and Regularization notebook, we touched on different strategies for improvimg model performance, depending on where we were seeing deficiencies in the cost/loss functions. This notebook will elaborate and provide a more-general approach.
+Different Benchmarks Irrespective of which accuracy measure you focus on (precision, recall, etc), when deciding where and how to make model improvements, it&amp;rsquo;s all about comparing accuracy levels between benchmarks.
+We&amp;rsquo;ll use three comparison benchmarks for model performance:</description>
+    </item>
+    
+    <item>
+      <title>ROC and AUC</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/roc_auc/</link>
+      <pubDate>Fri, 14 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/roc_auc/</guid>
+      <description>You may have seen images like this 1000 times, with some memorized understanding that the better the orange line hugs the top-left the &amp;ldquo;better your model is.&amp;rdquo;
+%pylab inline from IPython.display import Image Image(&amp;#39;images/basic_roc.PNG&amp;#39;) Populating the interactive namespace from numpy and matplotlib  Unpacking why that&amp;rsquo;s the case is pretty straight-forward after you frame this info with a a new fundamental assumption:
+ The whole goal of your model is to figuroute out how to separate your data points into two distributions.</description>
+    </item>
+    
+    <item>
+      <title>Basic TensorFlow Building Blocks</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/basics/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/basics/</guid>
+      <description>The following is an abbreviated look at Chapter 3 of Learning TensorFlow.
+Workflow Working in TensorFlow boils down to two simple steps
+ Construct your execution graph Run it in a session  Say you wanted to use TensorFlow to implement the following.
+from IPython.display import Image Image(&amp;#39;images/graph.png&amp;#39;) Construct your execution graph Arriving at our final value of 5 requires a few intermediate values along the way. We could express this in pure python with the following:</description>
+    </item>
+    
+    <item>
+      <title>Precision, Recall, and F1</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/precision_recall_f1/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/precision_recall_f1/</guid>
+      <description>Say we&amp;rsquo;ve got a simple binary classification dataset.
+from sklearn.datasets import load_breast_cancer import numpy as np data = load_breast_cancer() X = data.data y = data.target print(X.shape, y.shape) (569, 30) (569,)  And we throw an arbitrary model at it
+from sklearn.linear_model import LogisticRegression model = LogisticRegression() model.fit(X, y) true_probs = model.predict_proba(X)[:, 1] preds = (true_probs &amp;gt; .5).astype(int) The model will yield some distribution of predictions on the confusion matrix.</description>
+    </item>
+    
+    <item>
+      <title>Simple Optimization in TensorFlow</title>
+      <link>https://napsterinblue.github.io/notes/python/tensorflow/simple_optimization/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/tensorflow/simple_optimization/</guid>
+      <description>Actually using TensorFlow to optimize/fit a model is similar to the workflow we outlined in the Basics section, but with a few crucial additions:
+ Placeholder variables for X and y Defining a loss function Select an Optimizer object you want to use Make a train node that uses the Optimizer to minimize the loss Run your Session() to fetch the train node, passing your placeholders X and y with feed_dict  Another Iris Example Assuming comfort with the general intuition of Logistic Regression, we&amp;rsquo;ll spin up a trivial example to demonstrate setting up the probem in TensorFlow.</description>
+    </item>
+    
+    <item>
+      <title>Batch Normalization</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/batch_norm/</link>
+      <pubDate>Wed, 05 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/batch_norm/</guid>
+      <description>Recall the effect of normalization on the cost function back when we considered Logistic Regression.
+By recasting our data in terms of a fixed mean and standard deviation, it made our hypothetical cost function follow a rounder, evener distribution, thereby making our Gradient Descent approach much easier.
+from IPython.display import Image Image(&amp;#39;images/normalization.png&amp;#39;) Batch Normalization essentially does the same thing, but for hidden layers of a Neural Network.
+But why do we to normalize in the hidden layer steps?</description>
+    </item>
+    
+    <item>
+      <title>Multi-Class Regression with SoftMax</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/multiclass/</link>
+      <pubDate>Wed, 05 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/multiclass/</guid>
+      <description>Note, these notes were taken in the context of Week 3 of Improving Deep Neural Networks
+When your prediction task extends beyond a binary classification, you want to rely less on the sigmoid function and logistic regression. While you might see some success doing it anyways, and then doing some numpy.max() dancing over your results, a much cleaner approach is to use the SoftMax function.
+The Math Essentially, softmax takes an arbitrary results vector, Z, and instead of applying our typical sigmoid function to it, instead does the following:</description>
+    </item>
+    
+    <item>
+      <title>Random Search and Appropriate Search-Space Scaling</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/model_selection/random_search/</link>
+      <pubDate>Wed, 05 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/model_selection/random_search/</guid>
+      <description>Grid search isn&amp;rsquo;t always our best approach for figuring out our best hyperparameters.
+In the example of Deep Learning and Adam Optimization, there are several different hyperparameters to consider. Some, like the alpha constant, need tuning. On the other hand, constants like epsilon are basically taken as granted and don&amp;rsquo;t affect the model.
+from IPython.display import Image Image(&amp;#39;images/feature_grid.PNG&amp;#39;) By grid searching over any feature space that includes epsilon, we&amp;rsquo;re putting five times the computation on our system for less-than-negligible performance gain.</description>
+    </item>
+    
+    <item>
+      <title>Exponentially Weighted Moving Averages</title>
+      <link>https://napsterinblue.github.io/notes/stats/techniques/ewma/</link>
+      <pubDate>Sun, 26 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/techniques/ewma/</guid>
+      <description>Say we have a dataset like the following.
+%pylab inline from helpers import make_dataset, make_fig X, y = make_dataset() make_fig(X, y); Populating the interactive namespace from numpy and matplotlib  If we drew a line following the shape of the data, there would be a clear dip in the middle.
+We could achieve by rolling through the data, taking the average of the 3 points we&amp;rsquo;re looking at.
+import pandas as pd rolling = pd.</description>
+    </item>
+    
+    <item>
+      <title>Mini Batch Gradient Descent</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/mini_batch/</link>
+      <pubDate>Sun, 26 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/mini_batch/</guid>
+      <description>Because of the way that we vectorize our implementations of forward and back propagation, the calculations on each step are done in a single matrix multiplication operation. This is great for performance&amp;rsquo;s sake, but at scale, it represents an issue. Because most deep-learning applications tend to amass huge datasets to get piped into them, it becomes increasingly difficult to perform all of these in-memory computations when you can&amp;rsquo;t, well, hold everything in memory.</description>
+    </item>
+    
+    <item>
+      <title>Momentum, RMSprop, and Adam Optimization for Gradient Descent</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/adam_opt/</link>
+      <pubDate>Sun, 26 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/adam_opt/</guid>
+      <description>Say we&amp;rsquo;re trying to optimize over an oblong cost function like the one below.
+from IPython.display import Image Image(&amp;#39;images/momentum_1.png&amp;#39;) Traditionally, we know that there&amp;rsquo;s a large emphasis on the learning rate, alpha, that dictates the step size of our gradient descent.
+Too large, and we wind up over-shooting paths that would allow us to converge sooner (purple). Too small, and it takes forever to run (blue).
+Image(&amp;#39;images/momentum_2.png&amp;#39;) However, you look at these lines, they learn at a reasonable pace in the X plane, while oscillating back and forth in the Y.</description>
+    </item>
+    
+    <item>
+      <title>Bias, Variance, and Regularization</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/regularization/</link>
+      <pubDate>Mon, 20 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/regularization/</guid>
+      <description>I really like the way Andrew Ng describes bias and variance in Week 1 of Improving Deep Neural Networks.
+%pylab inline from IPython.display import Image Image(&amp;#39;images/bias_variance.PNG&amp;#39;) Populating the interactive namespace from numpy and matplotlib  A model with high bias often looks linear and takes broad stroke approach to classification.
+Whereas a model with high variance has complicated fitting behavior to its training set, and thus predicts poorly on new data.</description>
+    </item>
+    
+    <item>
+      <title>Contour plots</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/contours/</link>
+      <pubDate>Mon, 20 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/contours/</guid>
+      <description>Contour plots allow us to project a third dimension of data down onto an X, Y axis, be it a functional relationship between two dimensions of data or some decision threshold of a given model.
+But before we can start plotting this third dimension of data, we have to figure out how to calculate it.
+Meshgrid Say we&amp;rsquo;ve got two simple vectors, x and y.
+%pylab inline x = np.</description>
+    </item>
+    
+    <item>
+      <title>Scatter plot tips</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/scatter/</link>
+      <pubDate>Mon, 20 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/scatter/</guid>
+      <description>Scatter plots are the bread and butter of anyone doing data exploration. It&amp;rsquo;s particularly useful to style each point plotted based on values. So let&amp;rsquo;s look at a simple example.
+%pylab inline from sklearn.datasets import make_classification from sklearn.linear_model import LogisticRegression X, y = make_classification(n_features=2, n_redundant=0) x0, x1 = X[:, 0], X[:, 1] plt.scatter(x0, x1) Populating the interactive namespace from numpy and matplotlib &amp;lt;matplotlib.collections.PathCollection at 0x1ee78026278&amp;gt;  Each point has a corresponding True/False value.</description>
+    </item>
+    
+    <item>
+      <title>Visualizing decision boundaries</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/decision_boundaries/</link>
+      <pubDate>Mon, 20 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/decision_boundaries/</guid>
+      <description>For better intuitive understanding of what a Model is doing behind the scenes, you should reach for a graphical representation of the decision boundaries if it makes sense for your data. Consider a simple True/False classifier dataset.
+%pylab inline np.random.seed(0) from sklearn.datasets import make_classification from sklearn.linear_model import LogisticRegression X, y = make_classification(n_features=2, n_redundant=0) plt.scatter(X[:, 0], X[:, 1], c=y, cmap=&amp;#39;Spectral&amp;#39;) Populating the interactive namespace from numpy and matplotlib &amp;lt;matplotlib.collections.PathCollection at 0x1c3878333c8&amp;gt;  We&amp;rsquo;ll train a simple logistic regression on this data and visualize what it predicts</description>
+    </item>
+    
+    <item>
+      <title>Representing XNOR via a simple Net</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/xnor/</link>
+      <pubDate>Sun, 19 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/xnor/</guid>
+      <description>Imagine we want to build a simple classifier for the following datset, XNOR, that follows the truth table:
+  x1x2XNOR 001 010 100 111  
+When we plot this out visually, it&amp;rsquo;s clear that there&amp;rsquo;s no good way to do this in any sort of linear fashion. Where would you draw a straight line to get good separability?
+%pylab inline from IPython.display import Image from helpers.xnor import make_xnor_dataset, plot_xnor_dataset X, y = make_xnor_dataset(10) plot_xnor_dataset(X, y); Populating the interactive namespace from numpy and matplotlib  Deconstructing More specifically, if we want to represent the entirety of the truth table, we can do so with</description>
+    </item>
+    
+    <item>
+      <title>Forward and Back Prop in Deeper Networks</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/deeper_props/</link>
+      <pubDate>Mon, 13 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/deeper_props/</guid>
+      <description>The Dimensions As you add more and more layers into your Network, juggling all of the matrix dimensions becomes an increasingly tedious task, especially when working out all of the gradients.
+However, the following heuristics may prove useful:
+ The weights matrix, WN and its partial dWN must have the same dimensions Same goes for the activation layers, A, and intermediate linear combinations, Z Working out the dimensions in advance gives you a good sanity check before you find yourself wrist-deep in numpy, trying to debug with obj.</description>
+    </item>
+    
+    <item>
+      <title>Activation Functions</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/activation_fns/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/activation_fns/</guid>
+      <description>%pylab inline X = np.linspace(-10, 10, 1000) Populating the interactive namespace from numpy and matplotlib  Each time we study Neural Networks, there&amp;rsquo;s always this intermediate activation function that makes the dot product of our input X and our weights W more palatable.
+Sigmoid This is typically the first one that we learn and it is very convenient because it keeps our outputs bound between 0 and 1.
+fig, ax = plt.</description>
+    </item>
+    
+    <item>
+      <title>Back Propagation</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/back_prop/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/back_prop/</guid>
+      <description>Back Propagation is essentially a \$2 way of saying &amp;ldquo;make an incremental change to your weights and biases, relative to our error.&amp;rdquo; Like Gradient Descent, the main goal is doing a bunch of Chain Rule magic™ to find all of our partial derivatives. Then we calculate our error by taking a simple (actual - expected) and marching backwards through the Net using some small learning rate, and adjustments to each of the matricies.</description>
+    </item>
+    
+    <item>
+      <title>Forward Propagation</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/neural_nets/forward_prop/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/neural_nets/forward_prop/</guid>
+      <description>Forward propogation in a Neural Network is just an extrapolation of how we worked with Logistic Regression, where the caluculation chain just looked like
+from IPython.display import ImageImage(&amp;#39;images/logit.PNG&amp;#39;) Our equation before,
+$\hat{y} = w^{T} X + b$
+was much simpler in the sense that:
+ X was an n x m vector (n features, m training examples) This was matrix-multiplied by w an n x 1 vector of weights (n because we want a weight per feature) Then we broadcast-added b Until we wound up with an m x 1 vector of predictions  A Different Curse of Dimensionality Now when we get into Neural Networks, with multiple-dimension matrix-multiplication to go from layer to layer, things can get pretty hairy.</description>
+    </item>
+    
+    <item>
+      <title>Logistic Regression Basics</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/logistic_regression_basics/</link>
+      <pubDate>Tue, 07 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/logistic_regression_basics/</guid>
+      <description>Stated with variables Our goal is to find predictions that accurately predict the actual values
+We&amp;rsquo;ve got a bunch of input data
+$x \in \mathbb{R}^{n}$
+We&amp;rsquo;ve got our 0 or 1 target
+$y$
+Our predictions between 0 and 1
+$\hat{y}$
+We&amp;rsquo;ll arrive at our predictions using our weights
+$w \in \mathbb{R}^{n}$
+And our bias unit
+$b \in \mathbb{R}$
+Both of which will be a result of our computation
+But we need to coerce our prediction values to be between 0 and 1, therefore we need a sigmoid function.</description>
+    </item>
+    
+    <item>
+      <title>Logistic Regression Gradient Descent</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/regression/logit_grad_descent/</link>
+      <pubDate>Tue, 07 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/regression/logit_grad_descent/</guid>
+      <description>The Building Blocks Recall our equation for the Cost Function of a Logistic Regression
+$\mathcal{L}(\hat{y}, y) = -\big(y\log\hat{y} + (1-y)\log(1-\hat{y})\big)$
+We use the weights, w, our inputs, x, and a bias term, b to get a vector z.
+$z = w^{T} x + b$
+And we want this vector to be between 0 and 1, so we pipe it through a sigmoid function, to get our predictions.
+$\hat{y} = \sigma(z)$</description>
+    </item>
+    
+    <item>
+      <title>Interpretability: Visualizing Intermediate Activations</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_activations/</link>
+      <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/computer_vision/interpretable_activations/</guid>
+      <description>Per Chapter 5 of Chollet&amp;rsquo;s Deep Learning with Python, we&amp;rsquo;ve trained a simple dog/cat CNN classifier.
+%pylab inline import helpers from keras.models import load_model from keras import models from keras.utils import plot_model model = load_model(&amp;#39;cats_and_dogs_small_2.h5&amp;#39;) Populating the interactive namespace from numpy and matplotlib Using TensorFlow backend.  Now, we want to understand why this &amp;ldquo;black box algorithm&amp;rdquo; makes the determinations that it does.
+We&amp;rsquo;ll do this by loading up a sample image, show it to the Network, then inspect how the different components react to the data it sees.</description>
+    </item>
+    
+    <item>
+      <title>Adding More, Less, or Removing Ticks</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/tick_locating/</link>
+      <pubDate>Thu, 19 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/tick_locating/</guid>
+      <description>Using all defaults, matplotlib will plot a straight line from 0-10 on both axes and return a tick for every even number.
+This notebook explores changing that.
+%pylab inline x = y = np.linspace(0, 10) fig, ax = plt.subplots() ax.plot(x, y) Populating the interactive namespace from numpy and matplotlib [&amp;lt;matplotlib.lines.Line2D at 0x5bae0f0&amp;gt;]  Adding Ticks Most of the solutions you find when Googling &amp;ldquo;How to add more ticks?&amp;rdquo; will either do some messy list comprehension or something that looks like.</description>
+    </item>
+    
+    <item>
+      <title>Customizing Tick and Label Style</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/tick_styling/</link>
+      <pubDate>Thu, 19 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/tick_styling/</guid>
+      <description>Once you&amp;rsquo;ve got the correct strings printing along the axes, with as many (or few) ticks as you want, and at the right spacing, there are a lot of options for the way you can adjust the style of the rendering.
+Let&amp;rsquo;s start with a simple graph.
+%pylab inline x = y = np.linspace(0, 10) fig, ax = plt.subplots() ax.plot(x, y) Populating the interactive namespace from numpy and matplotlib [&amp;lt;matplotlib.</description>
+    </item>
+    
+    <item>
+      <title>Manipulating Tick Labels</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/tick_string_formatting/</link>
+      <pubDate>Thu, 19 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/tick_string_formatting/</guid>
+      <description>Often, the data that we wind up plotting isn&amp;rsquo;t the in a very readable format&amp;ndash; whether it&amp;rsquo;s a matter of rounding numbers to a managable significance level or substituting &amp;ldquo;January &amp;hellip; December&amp;rdquo; for the numbers 1-12.
+Starting with a simple figure.
+%pylab inline x = y = np.linspace(0, 10) fig, ax = plt.subplots() ax.plot(x, y) Populating the interactive namespace from numpy and matplotlib [&amp;lt;matplotlib.lines.Line2D at 0x598e0f0&amp;gt;]  Reformatting Floats Often our axis won&amp;rsquo;t have numbers in a very clean/readable format.</description>
+    </item>
+    
+    <item>
+      <title>Subplots Tips and Tricks</title>
+      <link>https://napsterinblue.github.io/notes/python/viz/subplots/</link>
+      <pubDate>Thu, 19 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/viz/subplots/</guid>
+      <description>Typically, one of your first steps that when you&amp;rsquo;re doing data viz in matplotlib is to make a blank canvas to draw on.
+This of course returns a Figure object and an Axis object.
+%pylab inline fig, ax = plt.subplots() Populating the interactive namespace from numpy and matplotlib  And if you&amp;rsquo;re interested in making multiple plots together in the same figure, you pass in nRows and nCols arguments. To instead make the second return argument an array of Axis objects.</description>
+    </item>
+    
+    <item>
+      <title>Finding Acceptable Sample Sizes</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/sample_size/</link>
+      <pubDate>Sat, 14 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/sample_size/</guid>
+      <description>As described in the sampling distributions notebook, the larger your sample size, the less variability in your sampling distribution.
+Thus, in order to make statistically-sound assertions, we have to collect a sufficient amount of data to be able to generalize results from our sample to our population.
+Thankfully, there are some easy heuristics we can follow to ensure we&amp;rsquo;ve gathered enough data, and correctly.
+Randomness Sample needs to be selected randomly.</description>
+    </item>
+    
+    <item>
+      <title>Samples, Populations, and their Symbols</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/sample_vs_pop/</link>
+      <pubDate>Sat, 14 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/sample_vs_pop/</guid>
+      <description>Terminology Samples come from populations, and represent a smaller subset of all possible values.
+ e.g. If you email 100 clients at random from a list of 10,000 clients.  Statistics describe samples whereas parameters describe populations (alliteration, FTW)
+ e.g. The &amp;ldquo;average age of all clients&amp;rdquo; vs &amp;ldquo;average age of the 100 clients we selected&amp;rdquo;  Symbols Generaly, Greek tends to mean population, whereas things with hats tend to mean sample.</description>
+    </item>
+    
+    <item>
+      <title>Sampling Distributions</title>
+      <link>https://napsterinblue.github.io/notes/stats/basics/sampling_distributions/</link>
+      <pubDate>Sat, 14 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/stats/basics/sampling_distributions/</guid>
+      <description>Populations follow distributions, which are likelihoods of values we expect to see. Not to be confused with an individual sample, a sampling distribution is the distribution of a particular statistic (mean, median, etc) across multiple repeated samples of the same size from the same population.
+But what effect does sampling have on what you can infer that from your population?
+Does the ratio of &amp;ldquo;4 out of 5 dentists&amp;rdquo; that recommend something extrapolate to all dentists or would it be more accurate to say &amp;ldquo;4 out of the 5 dentists that we asked&amp;rdquo;?</description>
+    </item>
+    
+    <item>
+      <title>Simulating stdin Inputs from User</title>
+      <link>https://napsterinblue.github.io/notes/python/development/sim_stdin/</link>
+      <pubDate>Tue, 03 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/sim_stdin/</guid>
+      <description>I recently ran into a problem where I was trying to automate unit testing for a function that paused, mid-execution, and waited for a user to input some value.
+For example
+def dummy_fn(): name = input() return(&amp;#39;Hello, &amp;#39;, name)dummy_fn() Nick (&#39;Hello, &#39;, &#39;Nick&#39;)  Simulating a user input wound up being a non-trivial thing to figure out, so I figured it beared writing a note involving:
+ The StringIO class Temporarily overwriting sys.</description>
+    </item>
+    
+    <item>
+      <title>Column Value Counts</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/value_counts/</link>
+      <pubDate>Wed, 27 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/value_counts/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() spark = pyspark.sql.SparkSession(sc)from sklearn.datasets import load_iris import pandas as pddata = load_iris()[&amp;#39;data&amp;#39;] df = pd.DataFrame(data, columns=[&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;c&amp;#39;, &amp;#39;d&amp;#39;]) df.head()   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    a b c d     0 5.1 3.5 1.4 0.2   1 4.</description>
+    </item>
+    
+    <item>
+      <title>Simple Spam Classfication in MLlib</title>
+      <link>https://napsterinblue.github.io/notes/spark/machine_learning/spam_classifier_mllib/</link>
+      <pubDate>Tue, 12 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/machine_learning/spam_classifier_mllib/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Borrowed, wholesale, from Learning Spark, we&amp;rsquo;re going to do a simple spam classifier to determine if an email is authentic or not. This post is less about the approach, and more about examining the building blocks of the MLlib pipeline. But first&amp;hellip;
+The Data Each line represents a separate email. The dataset came pre-sorted by spam/not-spam, we&amp;rsquo;re going split over words then do some fancy Spark pre-processing.</description>
+    </item>
+    
+    <item>
+      <title>Anatomy of SparkSQL</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/overview/</link>
+      <pubDate>Fri, 08 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/overview/</guid>
+      <description>In addition to the ability to write, transform, and aggregate our data all over the place, manually, Spark also has a useful SQL-like API that we can leverage to interface with our data.
+Not only does this provide a familiar logical-clarity to those with SQL, but like the language it&amp;rsquo;s based on, we get a lot of bang for our buck by describing what we want our final dataset to look like and let the optimizer figure out the rest.</description>
+    </item>
+    
+    <item>
+      <title>Column Objects</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/columns/</link>
+      <pubDate>Fri, 08 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/columns/</guid>
+      <description>As mentioned at the end of the Anatomy of SparkSQL notebook, working with Column objects in SparkSQL is tricky enough to merit its own discussion
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Here, we&amp;rsquo;re going to use the Iris Dataset with a bunch of NULL values peppered in.
+spark = pyspark.sql.SparkSession(sc) df = spark.read.csv(&amp;#39;../data/somenulls.csv&amp;#39;, header=True)df.show(5) +----+----+---+---+----+ | a| b| c| d| e| +----+----+---+---+----+ | 5.1| 3.5|1.4|0.2|null| | 4.9| 3|1.</description>
+    </item>
+    
+    <item>
+      <title>Conditionally Dropping Columns</title>
+      <link>https://napsterinblue.github.io/notes/spark/intermediate/dropping_columns/</link>
+      <pubDate>Thu, 07 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/intermediate/dropping_columns/</guid>
+      <description>filepath = &amp;#39;../data/movieData.csv&amp;#39; What We&amp;rsquo;re Used To Dropping columns of data in pandas is a pretty trivial task.
+import pandas as pd df = pd.read_csv(filepath) df.head()   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    Rank WeeklyGross PctChangeWkGross Theaters DeltaTheaters AvgRev GrossToDate Week Thursday name year Winner     0 17.</description>
+    </item>
+    
+    <item>
+      <title>Working with NULL Data</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/null_data/</link>
+      <pubDate>Thu, 07 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/null_data/</guid>
+      <description>Missing data is a routine part of any Data Scientist&amp;rsquo;s day-to-day. It&amp;rsquo;s so fundamental, in fact, that moving over to PySpark can feel a bit jarring because it&amp;rsquo;s not quite as immediately intuitive as other tools.
+However, if you can keep in mind that because of the way everything&amp;rsquo;s stored/partitioned, PySpark only handles NULL values at the Row-level, things click a bit easier.
+Some Spotty Data I went through the iris dataset and randomly injected a bunch of NULL values.</description>
+    </item>
+    
+    <item>
+      <title>Doing Basic SQL Things</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/sql_basics/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/sql_basics/</guid>
+      <description>It&amp;rsquo;s called Spark SQL for a reason, right? How can we utilize Spark to do similar actions to things we&amp;rsquo;re familiar when working in SQL?
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() If we want to interface with the Spark SQL API, we have to spin up a SparkSession object in our current SparkContext
+spark = pyspark.sql.SparkSession(sc) Our Data Say we have some simple structured data representing calls within the UK (curated by the authors of Learning Apache Spark)</description>
+    </item>
+    
+    <item>
+      <title>Loading JSON</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/load_json/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/load_json/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() One of the examples in repository accompanying the Learning Spark book I&amp;rsquo;m working through is a JSON payload of a tweet by the author.
+It&amp;rsquo;s pretty data-rich&amp;ndash; this is one result from whatever API generated the example.
+open(&amp;#39;../data/testweet.json&amp;#39;).read() &#39;{&amp;quot;createdAt&amp;quot;:&amp;quot;Nov 4, 2014 4:56:59 PM&amp;quot;,&amp;quot;id&amp;quot;:529799371026485248,&amp;quot;text&amp;quot;:&amp;quot;Adventures With Coffee, Code, and Writing.&amp;quot;,&amp;quot;source&amp;quot;:&amp;quot;\\u003ca href\\u003d\\&amp;quot;http://twitter.com\\&amp;quot; rel\\u003d\\&amp;quot;nofollow\\&amp;quot;\\u003eTwitter Web Client\\u003c/a\\u003e&amp;quot;,&amp;quot;isTruncated&amp;quot;:false,&amp;quot;inReplyToStatusId&amp;quot;:-1,&amp;quot;inReplyToUserId&amp;quot;:-1,&amp;quot;isFavorited&amp;quot;:false,&amp;quot;retweetCount&amp;quot;:0,&amp;quot;isPossiblySensitive&amp;quot;:false,&amp;quot;contributorsIDs&amp;quot;:[],&amp;quot;userMentionEntities&amp;quot;:[],&amp;quot;urlEntities&amp;quot;:[],&amp;quot;hashtagEntities&amp;quot;:[],&amp;quot;mediaEntities&amp;quot;:[],&amp;quot;currentUserRetweetId&amp;quot;:-1,&amp;quot;user&amp;quot;:{&amp;quot;id&amp;quot;:15594928,&amp;quot;name&amp;quot;:&amp;quot;Holden Karau&amp;quot;,&amp;quot;screenName&amp;quot;:&amp;quot;holdenkarau&amp;quot;,&amp;quot;location&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;description&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;descriptionURLEntities&amp;quot;:[],&amp;quot;isContributorsEnabled&amp;quot;:false,&amp;quot;profileImageUrl&amp;quot;:&amp;quot;http://pbs.twimg.com/profile_images/3005696115/2036374bbadbed85249cdd50aac6e170_normal.jpeg&amp;quot;,&amp;quot;profileImageUrlHttps&amp;quot;:&amp;quot;https://pbs.twimg.com/profile_images/3005696115/2036374bbadbed85249cdd50aac6e170_normal.jpeg&amp;quot;,&amp;quot;isProtected&amp;quot;:false,&amp;quot;followersCount&amp;quot;:1231,&amp;quot;profileBackgroundColor&amp;quot;:&amp;quot;C0DEED&amp;quot;,&amp;quot;profileTextColor&amp;quot;:&amp;quot;333333&amp;quot;,&amp;quot;profileLinkColor&amp;quot;:&amp;quot;0084B4&amp;quot;,&amp;quot;profileSidebarFillColor&amp;quot;:&amp;quot;DDEEF6&amp;quot;,&amp;quot;profileSidebarBorderColor&amp;quot;:&amp;quot;FFFFFF&amp;quot;,&amp;quot;profileUseBackgroundImage&amp;quot;:true,&amp;quot;showAllInlineMedia&amp;quot;:false,&amp;quot;friendsCount&amp;quot;:600,&amp;quot;createdAt&amp;quot;:&amp;quot;Aug 5, 2011 9:42:44 AM&amp;quot;,&amp;quot;favouritesCount&amp;quot;:1095,&amp;quot;utcOffset&amp;quot;:-3,&amp;quot;profileBackgroundImageUrl&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;profileBackgroundImageUrlHttps&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;profileBannerImageUrl&amp;quot;:&amp;quot;&amp;quot;,&amp;quot;profileBackgroundTiled&amp;quot;:true,&amp;quot;lang&amp;quot;:&amp;quot;en&amp;quot;,&amp;quot;statusesCount&amp;quot;:6234,&amp;quot;isGeoEnabled&amp;quot;:true,&amp;quot;isVerified&amp;quot;:false,&amp;quot;translator&amp;quot;:false,&amp;quot;listedCount&amp;quot;:0,&amp;quot;isFollowRequestSent&amp;quot;:false}}\n&#39;  In PySpark If we wanted to work with this data in PySpark, we&amp;rsquo;d first have to set up a SparkSession object.</description>
+    </item>
+    
+    <item>
+      <title>Loading a csv</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/load_csv/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/load_csv/</guid>
+      <description>The good majority of the data you work with when starting out with PySpark is saved in csv format. Getting it all under your fingers, however, is a bit tricker than you might expect if you, like me, find yourself coming from pandas.
+Prelims import findspark findspark.init() import pyspark sc = pyspark.SparkContext() spark = pyspark.sql.SparkSession(sc) Dataset is recycled from the Academy Award blogpost I did earlier this year.
+fpath = &amp;#39;.</description>
+    </item>
+    
+    <item>
+      <title>Rolling DataFrame Window</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/rolling_df_window/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/rolling_df_window/</guid>
+      <description>I wanted to train some sort of sequence model on some mental health data I&amp;rsquo;d been capturing.
+The data was stored as a flat .csv with a bunch of columns (omitted) representing various things I track per-entry, a couple columns (date, timestamp_id) to determine when the entry was, and finally, the mood_id, my target variable.
+However, going from that table to something ingestible by a model took some creativity.</description>
+    </item>
+    
+    <item>
+      <title>Rolling DataFrame Window (Distributed)</title>
+      <link>https://napsterinblue.github.io/notes/spark/intermediate/rolling_df_window_spark/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/intermediate/rolling_df_window_spark/</guid>
+      <description>Awhile back, I found myself wanting to do some preprocessing for a sequence model using pandas. I was pretty pleased with the solution that I came up with. However, when I took the plunge and started tooling up in PySpark, it quickly occurred to me that my neat, pandas.DataFrame.iloc solution wasn&amp;rsquo;t going to be making the transition with me.
+Unless of course, I was eager to toPandas() the whole thing right out of the gate, but that defeats the purpose of PySpark.</description>
+    </item>
+    
+    <item>
+      <title>Simple Stats Functions</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/stats/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/stats/</guid>
+      <description>One of the first things I found myself missing after going from Pandas to PySpark was the ability to quickly hop in and get acclimated with my data.
+And while the suite of functionality doesn&amp;rsquo;t perfectly carry over, it&amp;rsquo;s worth noting that some of the more useful light-EDA methods have PySpark equivalents.
+Data Revisiting the dataset from SQL Basics
+import findspark findspark.init() import pyspark sc = pyspark.SparkContext() spark = pyspark.</description>
+    </item>
+    
+    <item>
+      <title>toPandas Datetime Error</title>
+      <link>https://napsterinblue.github.io/notes/spark/sparksql/topandas_datetime_error/</link>
+      <pubDate>Wed, 06 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/sparksql/topandas_datetime_error/</guid>
+      <description>I tried and failed to convert a PySpark DataFrame that I was working in to one in pandas for the better part of an hour tonight.
+Ultimately figured out a naive workaround and wanted to leave a solution behind for anybody googling the error message
+TypeError: Cannot convert tz-naive Timestamp, use tz_localize to localize  This poor soul was running into the same issue a few months ago, and it&amp;rsquo;s, hilariously, the only hit you get when looking up this issue on the whole, wide Internet.</description>
+    </item>
+    
+    <item>
+      <title>Basic Pair Operations</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/basic_pair_operations/</link>
+      <pubDate>Mon, 04 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/basic_pair_operations/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Pairs The idea of key/value pairs appears all over the place in Python. It&amp;rsquo;s the cornerstone of the map/reduce paradigm, so it should come as no surprise that understanding how to program with it is a crucial element in learning Spark.
+Trivial Example Borrowing the example from Chapter 4 of Learning Spark, we&amp;rsquo;ve got a simple RDD of pairs that looks like</description>
+    </item>
+    
+    <item>
+      <title>Creating Pair RDDs</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/creating_pair_rdds/</link>
+      <pubDate>Mon, 04 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/creating_pair_rdds/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() You&amp;rsquo;re not always going to get your data with a nice, tidy key/value schema. In fact, figuring out how to go from flat data to something that you can mine for insight usually involves some creativity in expressing your data in pairs.
+Another Damn Wordcount Example Imagine some wacky hypothetical that I&amp;rsquo;ve been listening to a song with the following lyrics on repeat.</description>
+    </item>
+    
+    <item>
+      <title>Cross Validation</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/cross_validation/</link>
+      <pubDate>Fri, 01 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/cross_validation/</guid>
+      <description>Occasionally, our measures for model accuracy can be misleading. This typically occurs when our model fitting overly-generalizes to whatever data it was trained on, and the way we split out train/test sets don&amp;rsquo;t do a very good job of exposing the oversight.
+To this end, we employ Validation Sets&amp;ndash; data held out of our Training Sets&amp;ndash; to approximate our Test Error.
+Sample Model Before we get started, let&amp;rsquo;s make our work reproducible.</description>
+    </item>
+    
+    <item>
+      <title>Grid Search</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/model_selection/grid_search/</link>
+      <pubDate>Fri, 01 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/model_selection/grid_search/</guid>
+      <description>Once you&amp;rsquo;ve got the modeling basics down, you should have a reasonable grasp on what tool to use in what instance.
+But after that step, the difference between a good model and a great model lies in the way you implement that solution. How many splits can your Decision Tree do? How do we normalize our Linear Regression (if at all!)?
+To answer these types of questions, we might turn to the GridSearchCV object in sklearn.</description>
+    </item>
+    
+    <item>
+      <title>Custom Transformers</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/custom_transformers/</link>
+      <pubDate>Thu, 31 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/custom_transformers/</guid>
+      <description>As we&amp;rsquo;ve seen in other notebooks, we can use built-in Imputer, StandardScaler, LabelEncoder, and LabelBinarizer classes in sklearn to do a good deal of the data-preprocessing heavy lifting.
+However, under the hood, these all fit the same form:
+Each class has inherits from the BastEstimator object and has a
+ fit() method to fit the data transform() method that transforms the data fit_transform() that does the last two steps in sequence  Additionally, by inheriting from the TransformerMixin object, we get the fit_transform() method for free.</description>
+    </item>
+    
+    <item>
+      <title>Root Mean Squared Error</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/validation/rmse/</link>
+      <pubDate>Thu, 31 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/validation/rmse/</guid>
+      <description>Overview One of the more standard measures of model accuracy when predicting numeric values is the Root Mean Squared Error.
+Basically, for every predicted value, you:
+ Find the difference between your prediction and the actual result Square each value Add each value together Take the square root of that Divide by the number of observations  This allows us to get an absolute-value measure of how far off from correct each prediction was, over or under.</description>
+    </item>
+    
+    <item>
+      <title>Sklearn Pipelines</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/sklearn_pipelines/</link>
+      <pubDate>Thu, 31 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/sklearn_pipelines/</guid>
+      <description>If you&amp;rsquo;ve read the other notebooks under this header, you know how to do all kinds of data preprocessing using sklearn objects. And if you&amp;rsquo;ve been reading closely, you&amp;rsquo;ll notice that they all generally fit the same form. That&amp;rsquo;s no accident.
+We can chain together successive preprocessing steps into one cohesive object. But doing so requires a bit of planning.
+Tired of iris yet? from sklearn.datasets import load_iris import numpy as np import pandas as pddata = load_iris() cols = list(data[&amp;#39;feature_names&amp;#39;]) + [&amp;#39;flower_name&amp;#39;] df = pd.</description>
+    </item>
+    
+    <item>
+      <title>Encoding Categorical Data</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/encoding_categorical/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/encoding_categorical/</guid>
+      <description>Perhaps not surprisingly, when we want to do some sort of prediction in sklearn using data that comes to us in text format, the library doesn&amp;rsquo;t know how to stuff the word &amp;ldquo;Michigan&amp;rdquo; into a regression.
+Thus, we have to transform our categorical data into a numerical representation.
+The Data Let&amp;rsquo;s load the iris dataset
+from sklearn.datasets import load_iris data = load_iris() And, for the sake of example, do a bit of manipulation to it to get it into a format relevant to this notebook.</description>
+    </item>
+    
+    <item>
+      <title>Handling Missing Numeric Data</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/imputation/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/imputation/</guid>
+      <description>You always need to keep track of where you&amp;rsquo;ve got missing data and what to do about it.
+Not only is it the right thing to do from a &amp;ldquo;build a scalable model&amp;rdquo; approach, but sklearn will often throw its hands up in frustration if you don&amp;rsquo;t tell it what to do when it encounters the dreaded np.nan value.
+The Data Let&amp;rsquo;s load the iris dataset
+import numpy as np from sklearn.</description>
+    </item>
+    
+    <item>
+      <title>Standardization</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/standardization/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/standardization/</guid>
+      <description>Standardizing your data before starting in on machine learning routines is paramount. Not only does it allow your algorithms to converge faster (by delta&amp;rsquo;ing over a much narrower scope of data), but it also prevents any features scaled arbitrarily larger from having an inflated weight on whatever your model winds up learning.
+E.g. a &amp;ldquo;0, 1, 2 car garage&amp;rdquo; probably has more predictive power on a home value than &amp;ldquo;0-10,000&amp;rdquo; jelly beans could fit in the master bathtub.</description>
+    </item>
+    
+    <item>
+      <title>Boston Housing (Regression)</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/datasets/boston/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/datasets/boston/</guid>
+      <description>A good dataset to practice Regression techniques, we can load the Boston Housing Dataset saved directly to Scikitlearn using the dataset submodule.
+Loading the Data from sklearn.datasets import load_boston data = load_boston() Doing so gives us a Bunch object
+type(data) sklearn.utils.Bunch  Which is basically a dictionary, but with some other stuff
+data.__class__.__bases__ (dict,)  Inspecting the Data Let&amp;rsquo;s look at the keys
+data.keys() dict_keys([&#39;data&#39;, &#39;target&#39;, &#39;feature_names&#39;, &#39;DESCR&#39;])  The data and target keys are just numpy arrays</description>
+    </item>
+    
+    <item>
+      <title>Iris (Classification)</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/datasets/iris/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/datasets/iris/</guid>
+      <description>One of the more famous classification problems, we can load the classic Iris Dataset saved directly to Scikitlearn using the dataset submodule.
+Loading the Data from sklearn.datasets import load_iris data = load_iris() Doing so gives us a Bunch object
+type(data) sklearn.utils.Bunch  Which is basically a dictionary, but with some other stuff
+data.__class__.__bases__ (dict,)  Inspecting the Data Let&amp;rsquo;s look at the keys
+data.keys() dict_keys([&#39;data&#39;, &#39;target&#39;, &#39;target_names&#39;, &#39;DESCR&#39;, &#39;feature_names&#39;])  The data and target keys are just numpy arrays</description>
+    </item>
+    
+    <item>
+      <title>Splitting Your Data</title>
+      <link>https://napsterinblue.github.io/notes/machine_learning/preprocessing/splitting_data/</link>
+      <pubDate>Mon, 28 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/machine_learning/preprocessing/splitting_data/</guid>
+      <description>It&amp;rsquo;s some Data Science 101 stuff to split your data out in order to validate the performance of your model. Thankfully, sklearn comes with some pretty robust batteries-included approaches do doing that.
+Load a Dataset Here we&amp;rsquo;ll use the Iris Dataset
+from sklearn.datasets import load_iris data = load_iris() data.keys() dict_keys([&#39;data&#39;, &#39;target&#39;, &#39;frame&#39;, &#39;target_names&#39;, &#39;DESCR&#39;, &#39;feature_names&#39;, &#39;filename&#39;])  X = data[&amp;#39;data&amp;#39;] y = data[&amp;#39;target&amp;#39;]X.shape, y.shape ((150, 4), (150,))  Vanilla Split from sklearn.</description>
+    </item>
+    
+    <item>
+      <title>Attributes and Subclasses</title>
+      <link>https://napsterinblue.github.io/notes/python/oop/attributes_and_subclasses/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/oop/attributes_and_subclasses/</guid>
+      <description>Namespaces in Classes In much the same way that modules and packages create namespaces and hold objects inside for use in scripts, classes hold attributes within each class definition for use in instances.
+Motivation By using the the &amp;lsquo;__dict__&amp;rsquo; hidden method, we can interrogate the attributes of a class.
+Vanilla case class Klass(object): def __init__(self): self.a = 1 ex = Klass()ex.__dict__ {&#39;a&#39;: 1}  Nested class Now if we make a class that inherits from our last class.</description>
+    </item>
+    
+    <item>
+      <title>Basic Functional Programming Functions</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/basic_functional_programming_fns/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/basic_functional_programming_fns/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Basic Functional Programming Functions Spark has plenty of analogues to the native Python fucntional programming methods. However, as discussed in Transformations and Actions, nothing gets evaluated, merely strung together into RDDs. Only when we call some sort of Action do we get any actual computation.
+Let&amp;rsquo;s consider a simple dataset
+rdd = sc.parallelize([1, 2, 3, 4, 5]) Familiar fns Map mapped = rdd.</description>
+    </item>
+    
+    <item>
+      <title>GroupBy (as best I understand it)</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/groupby/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/groupby/</guid>
+      <description>Table of Contents Data - Our Dummy Data
+Overview - The Basics - Grain - GroupBy Object
+Using It - Apply - Transform - Filter
+Misc - Grouper Object - Matplotlib - Gotchas - Resources
+Our Dummy Data  For the purposes of demonstration, we&amp;rsquo;re going to borrow the dataset used in this post. It&amp;rsquo;s basically some generic sales record data with account numbers, client names, prices, and timestamps.</description>
+    </item>
+    
+    <item>
+      <title>How Imports Cache</title>
+      <link>https://napsterinblue.github.io/notes/python/development/how_imports_cache/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/how_imports_cache/</guid>
+      <description>Caching Imports Whenever Python encounters an import or &amp;quot;from _ import _&amp;quot; statement, it:
+1) Looks for that module in the Module Import Path
+2) Compiles the file into byte code (maybe)
+3) Runs the compiled byte code
+Steps 1 and 2 can be pretty taxing, so to ease on computation it will
+ Leave behind a __pycache__ file to skip out on step 2
+ Make it easier to look up the module file next time</description>
+    </item>
+    
+    <item>
+      <title>Method Decorators</title>
+      <link>https://napsterinblue.github.io/notes/python/oop/method_decorators/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/oop/method_decorators/</guid>
+      <description>There are various decorators that are useful when working with OOP. The three I want to highlight are
+ @property @classmethod @staticmethod  @property While many other languages have getter and setter methods, Python does away with this by adopting a &amp;ldquo;responsibility lies with the user&amp;rdquo; approach and has all of its class/object nuts and bolts more or less accessible.
+This provides a tough challenge when designing the class attributes, especially when you have multiple data fields that depend on a single object.</description>
+    </item>
+    
+    <item>
+      <title>Modules</title>
+      <link>https://napsterinblue.github.io/notes/python/development/modules/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/modules/</guid>
+      <description>Modules modules are .py files that contain variables and functions for use in other files.
+Consider a simple file that lives in this directory.
+!type localscript.py def test_fn(): print(&amp;quot;Sup&amp;quot;)  Importing it gives you access to the underlying functions using the &#39;.&#39; operator
+import localscript localscript.test_fn() Sup  You can see what&amp;rsquo;s available to you by using the dir command
+dir(localscript) [&#39;__builtins__&#39;, &#39;__cached__&#39;, &#39;__doc__&#39;, &#39;__file__&#39;, &#39;__loader__&#39;, &#39;__name__&#39;, &#39;__package__&#39;, &#39;__spec__&#39;, &#39;test_fn&#39;]  module object The import statement is actually a Python expression.</description>
+    </item>
+    
+    <item>
+      <title>Packages</title>
+      <link>https://napsterinblue.github.io/notes/python/development/packages/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/packages/</guid>
+      <description>Packages When regular ol&amp;rsquo; modules aren&amp;rsquo;t cutting it, you want to turn to packages. They allow you to, among other things:
+ Better organize your code with explicit names  e.g. from email.message import Message  Only import what you need  __init__ files These files, tucked into subdirectories, establish a subdirectory as a namespace under the umbrella that is the package.
+Consider a path that looks like this</description>
+    </item>
+    
+    <item>
+      <title>Pathing</title>
+      <link>https://napsterinblue.github.io/notes/python/development/pathing/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/development/pathing/</guid>
+      <description>Default search path At startup, the Python module search path checks, in this order, for files in:
+1) The home directory of the program
+2) PYTHONPATH directories
+3) Standard library directories
+import sys sys.path [&#39;&#39;, &#39;C:\\Users\\nhounshell\\Documents\\Projects&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\python36.zip&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\DLLs&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Roaming\\Python\\Python36\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Babel-2.5.0-py3.6.egg&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\win32\\lib&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\Pythonwin&#39;, &#39;C:\\Users\\nhounshell\\AppData\\Local\\Continuum\\Anaconda3\\lib\\site-packages\\IPython\\extensions&#39;, &#39;C:\\Users\\nhounshell\\Documents\\.ipython&#39;]  Home directory If you&amp;rsquo;re running a top-level file as a program, Home is that file&amp;rsquo;s directory location.
+If you&amp;rsquo;re working interactively, it&amp;rsquo;s whatever directory you&amp;rsquo;re working in.</description>
+    </item>
+    
+    <item>
+      <title>RDDs</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/rdds/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/rdds/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() zenPath = &amp;#39;../data/zen.txt&amp;#39; Resiliant Distributed Datasets Spark operates using Resiliant Distributed Datasets that copy and spread data over your computing platform.
+In addition to the obvious &amp;ldquo;Distributed Datasets&amp;rdquo; properties in the name, there&amp;rsquo;s also this notion of &amp;ldquo;Resiliancy&amp;rdquo; which essentially means that the data cannot be modified directly.
+Generally, there are two ways to go about making an RDD:
+From Files Say we have a file that reads line this</description>
+    </item>
+    
+    <item>
+      <title>Set Operations</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/set_operations/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/set_operations/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() Set Operations Spark also provides functionality similar to the native Python set operations.
+Union everyThree = [chr(x+65) for x in range(26)][::3] everyThree = sc.parallelize(everyThree) everyThree.collect() [&#39;A&#39;, &#39;D&#39;, &#39;G&#39;, &#39;J&#39;, &#39;M&#39;, &#39;P&#39;, &#39;S&#39;, &#39;V&#39;, &#39;Y&#39;]  everyFour = [chr(x+65) for x in range(26)][::4] everyFour = sc.parallelize(everyFour) everyFour.collect() [&#39;A&#39;, &#39;E&#39;, &#39;I&#39;, &#39;M&#39;, &#39;Q&#39;, &#39;U&#39;, &#39;Y&#39;]  Note that the unioning removes duplicate entries</description>
+    </item>
+    
+    <item>
+      <title>The Aggregate Function</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/aggregate_fn/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/aggregate_fn/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() aggregate Let&amp;rsquo;s assume an arbirtrary sequence of integers.
+import numpy as np vals = [np.random.randint(0, 10) for _ in range(20)] vals [5, 8, 9, 3, 0, 6, 3, 9, 8, 3, 4, 9, 5, 0, 8, 4, 2, 3, 2, 8]  rdd = sc.parallelize(vals) Finding the mean Assume further that we can&amp;rsquo;t just call the handy mean method attached to our rdd object.</description>
+    </item>
+    
+    <item>
+      <title>The csv module</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/csv/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/csv/</guid>
+      <description>Overview The csv standard library is used for interfacting with&amp;ndash; strangely enough&amp;ndash; csv files.
+Mechanically, working with csv files involves breaking up by lines, then by delimiter, and using the values.
+However, these files aren&amp;rsquo;t beholden to a consistent format. Different rules regarding quotes, delimiters, and line separation can arise, kneecapping your ability to generalize how to work with the files.
+The csv standard library can be handily leveraged as a translation layer in your data pipeline to resolve inconsistencies between these formats.</description>
+    </item>
+    
+    <item>
+      <title>Transformers and Actions</title>
+      <link>https://napsterinblue.github.io/notes/spark/basics/transformations_and_actions/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/spark/basics/transformations_and_actions/</guid>
+      <description>import findspark findspark.init() import pyspark sc = pyspark.SparkContext() zenPath = &amp;#39;../data/zen.txt&amp;#39; Put on your functional programing pants.
+Because Spark is more often than not used in the context of huge amounts of data, it only does expensive computation when absolutely needed. Before we get into the specifics, let&amp;rsquo;s review the notion of Lazy Evaluation
+Lazy Evaluation Recall in vanilla Python (post 3.X) that the map function returns a cryptic map-object when thrown up against some data.</description>
+    </item>
+    
+    <item>
+      <title>Yield From</title>
+      <link>https://napsterinblue.github.io/notes/python/internals/yield_from/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/yield_from/</guid>
+      <description>Chain iterable using yield from No argument that generators are crazy useful.
+However, writing generator functions can get messy beyond yielding one sequence.
+Consider this function:
+def range_then_exp(N): for i in range(N): yield i for i in (x**2 for x in range(N)): yield i For a given N, this yields the numbers 0 to N, then their squares.
+list(range_then_exp(5)) [0, 1, 2, 3, 4, 0, 1, 4, 9, 16]  However, a much cleaner way to write that is using yield from.</description>
+    </item>
+    
+    <item>
+      <title>csv 1: Overview</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_1_overview/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_1_overview/</guid>
+      <description>Intro All of the pandas csv and text file parsing are done through the read_csv() and read_table() functions. These, in turn, inherit most of their behavior from the csv module in the Python standard library.
+Because the end result of &amp;ldquo;parse data to get to a Dataframe&amp;rdquo; looks so tabular, it&amp;rsquo;s worth having a good understanding of how these two function calls work, even in higher-order data, as those methods will leverage these on the backend.</description>
+    </item>
+    
+    <item>
+      <title>csv 2: Indexing</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_2_indexing/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_2_indexing/</guid>
+      <description>Indexing Getting the data from the file involves first telling it the rules it needs to follow when parsing, as well as how to label it in the finished DataFrame.
+Here&amp;rsquo;s our simple csv.
+import pandas as pd csvPath = &amp;#39;data/ex1.csv&amp;#39; open(csvPath, &amp;#39;r&amp;#39;).read() &#39;a,b,c,d,message\n1,2,3,4,hello\n5,6,7,8,world\n9,10,11,12,foo&#39;  Dialect This should be immediately familar to anyone comfortable working in the csv standard library. Each of these can be passed in as individual arguments or as part of a dialect argument.</description>
+    </item>
+    
+    <item>
+      <title>csv 3: Type Handling</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_3_type_handling/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_3_type_handling/</guid>
+      <description>Type Handling The default read-in behavior is pretty good, but sometimes it&amp;rsquo;s worth being a bit more explicit.
+Consider this file that has all of its data wrapped in quotes.
+import pandas as pd dataPath = &amp;#39;data/ex8.csv&amp;#39; open(dataPath).read() &#39;&amp;quot;a&amp;quot;,&amp;quot;b&amp;quot;,&amp;quot;c&amp;quot;\n&amp;quot;1&amp;quot;,&amp;quot;2&amp;quot;,&amp;quot;3&amp;quot;\n&amp;quot;1&amp;quot;,&amp;quot;2&amp;quot;,&amp;quot;3&amp;quot;\n&#39;  pd.read_csv(dataPath)   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    a b c     0 1 2 3   1 1 2 3     General dtype  Getting the data in float format is easy with the dtype argument.</description>
+    </item>
+    
+    <item>
+      <title>csv 4: Datetime Handling</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_4_datetime_handling/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_4_datetime_handling/</guid>
+      <description>from IPython.display import Imageimport pandas as pd Datetime Handling This one is so messy that it gets its own notebook.
+Let&amp;rsquo;s start with a csv that has a simple date column:
+dateCsvPath = &amp;#39;data/tseries.csv&amp;#39; print(open(dateCsvPath).read()) 2000-01-01,0 2000-01-02,1 2000-01-03,2 2000-01-04,3 2000-01-05,4 2000-01-06,5 2000-01-07,6  Reading Datetimes as Datetimes parse_dates  By default, the parser won&amp;rsquo;t acknowledge the fact that the first column is of type datetime.
+pd.read_csv(dateCsvPath).dtypes 2000-01-01 object 0 int64 dtype: object  However, you can tell the parser to use the parse engine in dateutil.</description>
+    </item>
+    
+    <item>
+      <title>csv 5: Cleaning</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_5_cleaning/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_5_cleaning/</guid>
+      <description>import pandas as pd Handling Unclean Data How much should Python freak out given bad data? error_bad_lines warn_bad_lines  Given a table that has a random data element jutting out, pd.read_csv loses its mind.
+badTableCsvPath = &amp;#39;data/ex7.csv&amp;#39; print(open(badTableCsvPath).read()) &amp;quot;a&amp;quot;,&amp;quot;b&amp;quot;,&amp;quot;c&amp;quot; &amp;quot;1&amp;quot;,&amp;quot;2&amp;quot;,&amp;quot;3&amp;quot; &amp;quot;1&amp;quot;,&amp;quot;2&amp;quot;,&amp;quot;3&amp;quot;,&amp;quot;4&amp;quot;  try: pd.read_csv(badTableCsvPath) except Exception as e: print(e) Error tokenizing data. C error: Expected 3 fields in line 3, saw 4  Thankfully, you can provide instructions on what to do when it goes into crisis mode.</description>
+    </item>
+    
+    <item>
+      <title>csv 6: Iterating</title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/csv_6_iterating/</link>
+      <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/csv_6_iterating/</guid>
+      <description>Iterating After you&amp;rsquo;ve handled all of the &amp;ldquo;how&amp;rdquo; to parse a csv, you can also specify &amp;ldquo;what&amp;rdquo; you get.
+Trimming down rows and columns at the time of read spares you needing to stage intermediate datasets pre-read or drop data after you&amp;rsquo;ve already built your DataFrame.
+There are also a number of arguments that instruct how to handle/iterate through very large files.
+First, let&amp;rsquo;s start with a simple dataset.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://napsterinblue.github.io/notes/python/internals/data/fdic_failed_bank_list/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/internals/data/fdic_failed_bank_list/</guid>
+      <description>FDIC: Failed Bank List   FDIC Header Test    function findValue(li) { if( li == null ) return alert(&#34;No match!&#34;); // if coming from an AJAX call, let&#39;s use the Id as the value if( !!li.extra ) var sValue = li.extra[0]; // otherwise, let&#39;s just display the value in the text box else var sValue = li.selectValue; $(&#39;#googlesearch&#39;).submit(); } function findValue2(li) { if( li == null ) return alert(&#34;</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://napsterinblue.github.io/notes/python/pandas/data/fdic_failed_bank_list/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://napsterinblue.github.io/notes/python/pandas/data/fdic_failed_bank_list/</guid>
+      <description>FDIC: Failed Bank List   FDIC Header Test    function findValue(li) { if( li == null ) return alert(&#34;No match!&#34;); // if coming from an AJAX call, let&#39;s use the Id as the value if( !!li.extra ) var sValue = li.extra[0]; // otherwise, let&#39;s just display the value in the text box else var sValue = li.selectValue; $(&#39;#googlesearch&#39;).submit(); } function findValue2(li) { if( li == null ) return alert(&#34;</description>
+    </item>
+    
+  </channel>
+</rss>

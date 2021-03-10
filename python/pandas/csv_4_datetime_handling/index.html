@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="csv 4: Datetime Handling" />
+<meta property="og:description" content="from IPython.display import Imageimport pandas as pd Datetime Handling This one is so messy that it gets its own notebook.
+Let&rsquo;s start with a csv that has a simple date column:
+dateCsvPath = &#39;data/tseries.csv&#39; print(open(dateCsvPath).read()) 2000-01-01,0 2000-01-02,1 2000-01-03,2 2000-01-04,3 2000-01-05,4 2000-01-06,5 2000-01-07,6  Reading Datetimes as Datetimes parse_dates  By default, the parser won&rsquo;t acknowledge the fact that the first column is of type datetime.
+pd.read_csv(dateCsvPath).dtypes 2000-01-01 object 0 int64 dtype: object  However, you can tell the parser to use the parse engine in dateutil." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/pandas/csv_4_datetime_handling/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="csv 4: Datetime Handling"/>
+<meta name="twitter:description" content="from IPython.display import Imageimport pandas as pd Datetime Handling This one is so messy that it gets its own notebook.
+Let&rsquo;s start with a csv that has a simple date column:
+dateCsvPath = &#39;data/tseries.csv&#39; print(open(dateCsvPath).read()) 2000-01-01,0 2000-01-02,1 2000-01-03,2 2000-01-04,3 2000-01-05,4 2000-01-06,5 2000-01-07,6  Reading Datetimes as Datetimes parse_dates  By default, the parser won&rsquo;t acknowledge the fact that the first column is of type datetime.
+pd.read_csv(dateCsvPath).dtypes 2000-01-01 object 0 int64 dtype: object  However, you can tell the parser to use the parse engine in dateutil."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "csv 4: Datetime Handling",
+  "url": "https://napsterinblue.github.io/notes/python/pandas/csv_4_datetime_handling/",
+  "wordCount": "710",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": "Nick Hounshell"
+  }
+}
+</script> 
+
+    <title>csv 4: Datetime Handling</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">csv 4: Datetime Handling</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span></code></pre></div>
+<h1 id="datetime-handling">Datetime Handling</h1>
+
+<p>This one is so messy that it gets its own notebook.</p>
+
+<p>Let&rsquo;s start with a csv that has a simple <code>date</code> column:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dateCsvPath</span> <span class="o">=</span> <span class="s1">&#39;data/tseries.csv&#39;</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">dateCsvPath</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></code></pre></div>
+<pre><code>2000-01-01,0
+2000-01-02,1
+2000-01-03,2
+2000-01-04,3
+2000-01-05,4
+2000-01-06,5
+2000-01-07,6
+</code></pre>
+
+<h3 id="reading-datetimes-as-datetimes">Reading Datetimes as Datetimes</h3>
+
+<pre><code>parse_dates
+</code></pre>
+
+<p>By default, the parser won&rsquo;t acknowledge the fact that the first column is of type <code>datetime</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateCsvPath</span><span class="p">)</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>2000-01-01    object
+0              int64
+dtype: object
+</code></pre>
+
+<p>However, you can tell the parser to use the <code>parse</code> engine in <code>dateutil.parser</code> with the <code>parse_dates</code> argument.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>0    datetime64[ns]
+1             int64
+dtype: object
+</code></pre>
+
+<p>Simply setting <code>parse_dates</code> to True doesn&rsquo;t work, because it only tries to read the index.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>0    object
+1     int64
+dtype: object
+</code></pre>
+
+<h2 id="building-datetimes-from-multiple-columns">Building Datetimes from multiple columns</h2>
+
+<pre><code>parse_dates
+keep_date_col
+</code></pre>
+
+<p>Maybe instead, our data csv has 3 columns that make up the same information, but split over month, day, year.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">splitDtCsvPath</span> <span class="o">=</span> <span class="s1">&#39;data/tseries3.csv&#39;</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">splitDtCsvPath</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></code></pre></div>
+<pre><code>1,1,2000,0
+1,2,2000,1
+1,3,2000,2
+1,4,2000,3
+1,5,2000,4
+1,6,2000,5
+1,7,2000,6
+</code></pre>
+
+<p>You can pass a nested list into the <code>parse_dates</code> argument to specify which columns make up the date.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">splitDtCsvPath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0_1_2</th>
+      <th>3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2000-01-01</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2000-01-02</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2000-01-03</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2000-01-04</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2000-01-05</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2000-01-06</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2000-01-07</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>And for clarity, you can pass it as a <code>dict</code>, and specify a new column name as the key.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">splitDtCsvPath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dateCol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dateCol</th>
+      <th>3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2000-01-01</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2000-01-02</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2000-01-03</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2000-01-04</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2000-01-05</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2000-01-06</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2000-01-07</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>And if you don&rsquo;t want to throw away the existing data, you can specify <code>keep_date_col=True</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">splitDtCsvPath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">parse_dates</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dateCol&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span>
+            <span class="n">keep_date_col</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dateCol</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2000-01-01</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2000</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2000-01-02</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2000</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2000-01-03</td>
+      <td>1</td>
+      <td>3</td>
+      <td>2000</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2000-01-04</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2000</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2000-01-05</td>
+      <td>1</td>
+      <td>5</td>
+      <td>2000</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2000-01-06</td>
+      <td>1</td>
+      <td>6</td>
+      <td>2000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2000-01-07</td>
+      <td>1</td>
+      <td>7</td>
+      <td>2000</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="tuning-datetime-reads">Tuning Datetime Reads</h2>
+
+<pre><code>date_parser
+infer_datetime_format
+</code></pre>
+
+<p>The <code>parser</code> engine is impressively expressive. However, because it&rsquo;s written to sniff out so many different test cases, it&rsquo;s pretty non-performant at scale in all but the most basic of cases.</p>
+
+<p>Consider a large file (10,000 rows) that looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dateTimeCsvPath</span> <span class="o">=</span> <span class="s1">&#39;data/tseries2.csv&#39;</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateTimeCsvPath</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>DT</th>
+      <th>ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>4/10/17 8:39</td>
+      <td>3376898277</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10/3/17 14:41</td>
+      <td>3390216125</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4/6/17 8:11</td>
+      <td>3376630233</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>11/7/17 12:06</td>
+      <td>3392651569</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>9/5/17 18:17</td>
+      <td>3388322876</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h4 id="base">Base</h4>
+
+<p>Calling <code>parse_dates</code> results in the correct typing of the first column.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateTimeCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">dtypes</span></code></pre></div>
+<pre><code>DT    datetime64[ns]
+ID             int64
+dtype: object
+</code></pre>
+
+<p>But it takes a couple seconds.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">timeit</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateTimeCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DT&#39;</span><span class="p">])</span></code></pre></div>
+<pre><code>1.47 s ± 158 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</code></pre>
+
+<h4 id="better">Better</h4>
+
+<p>However, if all of the data is going to be of the same format through the whole column, you can use the <code>infer_datetime_format</code> argument to run the parser <em>once</em> and use that same mapping for the rest of the data.</p>
+
+<p>Negligiblly faster here, but you&rsquo;d really see the benefits at scale.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">timeit</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateTimeCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DT&#39;</span><span class="p">],</span>
+            <span class="n">infer_datetime_format</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></code></pre></div>
+<pre><code>1.44 s ± 66.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+</code></pre>
+
+<h4 id="best">Best</h4>
+
+<p>So, if you&rsquo;re trying to parse in some non-intuitive, but consistent, format, you should instead remove the guesswork using the <code>date_parser</code> argument.</p>
+
+<p>You want to explicitly define the string mapping using <a href="http://strftime.org/">strftime syntax</a> and <code>pd.to_datetime</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">timeit</span> 
+<span class="n">ourFormat</span> <span class="o">=</span> <span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%y %H:%M&#39;</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dateTimeCsvPath</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DT&#39;</span><span class="p">],</span>
+            <span class="n">date_parser</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="n">ourFormat</span><span class="p">))</span></code></pre></div>
+<pre><code>44.5 ms ± 2.47 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+</code></pre>
+
+<p><strong>Much</strong> better</p>
+
+<h2 id="data-from-other-locales">Data from other locales</h2>
+
+<pre><code>dayfirst
+</code></pre>
+
+<p>In much the same way as decimals and commas in large numbers, other, less-enlightened parts of the world don&rsquo;t follow our superior date formatting</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;data/pyramid.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="csv_4_datetime_handling_44_0.png" alt="png" /></p>
+
+<p>So, you can handle for this backwards convention using the <code>dayfirst</code> argument.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

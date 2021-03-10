@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Minimal CLI construction with Click" />
+<meta property="og:description" content="Click is an excellent library that handles a lot of the minutate in setting up a robust Command-Line Interface.
+There&rsquo;s a TON of functionality built in, but I&rsquo;m writing this notebook so I can remember how to set up straight-forward implementations, such as the one found in my library kneejerk
+from IPython.display import Image Image(&#39;./images/kneejerk.PNG&#39;) A Minimal Example I whipped up a small script that provides an interace to either:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/minimal_cli/" />
+
+
+
+<meta property="article:published_time" content="2020-06-10T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-06-10T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Minimal CLI construction with Click"/>
+<meta name="twitter:description" content="Click is an excellent library that handles a lot of the minutate in setting up a robust Command-Line Interface.
+There&rsquo;s a TON of functionality built in, but I&rsquo;m writing this notebook so I can remember how to set up straight-forward implementations, such as the one found in my library kneejerk
+from IPython.display import Image Image(&#39;./images/kneejerk.PNG&#39;) A Minimal Example I whipped up a small script that provides an interace to either:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Minimal CLI construction with Click",
+  "url": "https://napsterinblue.github.io/notes/python/development/minimal_cli/",
+  "wordCount": "379",
+  "datePublished": "2020-06-10T00:00:00&#43;00:00",
+  "dateModified": "2020-06-10T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Minimal CLI construction with Click</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Minimal CLI construction with Click</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-06-10T00:00:00Z "> 10 Jun 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p><a href="https://click.palletsprojects.com/en/7.x/">Click</a> is an excellent library that handles a lot of the minutate in setting up a robust Command-Line Interface.</p>
+
+<p>There&rsquo;s a TON of functionality built in, but I&rsquo;m writing this notebook so I can remember how to set up straight-forward implementations, such as the one found in my library <a href="https://napsterinblue.github.io/kneejerk/">kneejerk</a></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;./images/kneejerk.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="minimal_cli_2_0.png" alt="png" /></p>
+
+<h3 id="a-minimal-example">A Minimal Example</h3>
+
+<p>I whipped up a small script that provides an interace to either:</p>
+
+<ul>
+<li>Convert an ASCII number to its corresponding character</li>
+<li>Convert a character to its corresponding ASCII number</li>
+</ul>
+
+<p>Here it is in its entirety</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="n">cat</span> <span class="n">dumb_cli</span><span class="o">.</span><span class="n">py</span></code></pre></div>
+<pre><code>import click
+
+
+@click.group()
+def main():
+    pass
+
+@main.command(help='Take a letter and print its corresponding ascii number')
+@click.argument('letter')
+def l2n(letter):
+    print(ord(letter))
+
+@main.command(help='Take an ascii number and print its corresponding letter')
+@click.option('--upper', '-u', help='Print upper-case letter', default=False)
+@click.argument('number')
+def n2l(number, upper):
+    number = int(number)
+    if upper:
+        print(chr(number).upper())
+    else:
+        print(chr(number).lower())
+
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+
+<h3 id="multiple-commands">Multiple Commands</h3>
+
+<p>Because we have two functions, we want to have two top-level commands: <code>l2n</code> and <code>n2l</code>.</p>
+
+<p>This is achieved by using the <code>@click.group()</code> decorator on top of a throwaway function, <code>main()</code>, which creates a <em>new</em> dectorator.</p>
+
+<p>We use the <code>@main.command()</code> decorator on top of our <code>l2n()</code> and <code>n2l()</code> functions.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="n">python</span> <span class="n">dumb_cli</span><span class="o">.</span><span class="n">py</span></code></pre></div>
+<pre><code>Usage: dumb_cli.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  l2n  Take a letter and print its corresponding ascii number
+  n2l  Take an ascii number and print its corresponding letter
+</code></pre>
+
+<h3 id="customizing-each-command">Customizing Each Command</h3>
+
+<p>Notice that in the <code>@main.command()</code> call, we provide a <code>help=</code> argument, which gives us the nice printout.</p>
+
+<p>From here, we supply the command line options and arguments for each command. Few things to point out:</p>
+
+<ul>
+<li>We can provide both the long-form <code>--</code> and short-form <code>-</code> flags</li>
+<li>We can set default values</li>
+<li>We can put help statements for each option</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="n">python</span> <span class="n">dumb_cli</span><span class="o">.</span><span class="n">py</span> <span class="n">n2l</span> <span class="o">--</span><span class="n">help</span></code></pre></div>
+<pre><code>Usage: dumb_cli.py n2l [OPTIONS] NUMBER
+
+  Take an ascii number and print its corresponding letter
+
+Options:
+  -u, --upper TEXT  Print upper-case letter
+  --help            Show this message and exit.
+</code></pre>
+
+<h3 id="decorator-organization">Decorator Organization</h3>
+
+<p>Finally, one last note on the execution order. Copy/pasting the decorator and defnition of <code>n2l()</code>:</p>
+
+<pre><code>@main.command(help='Take an ascii number and print its corresponding letter')
+@click.option('--upper', '-u', help='Print upper-case letter', default=False)
+@click.argument('number')
+def n2l(number, upper):
+</code></pre>
+
+<p>The decorators execute <em>from the bottom up</em>, supplying function arguments <em>from left to right</em>. Be very careful that these align!</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

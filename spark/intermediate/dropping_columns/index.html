@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Conditionally Dropping Columns" />
+<meta property="og:description" content="filepath = &#39;../data/movieData.csv&#39; What We&rsquo;re Used To Dropping columns of data in pandas is a pretty trivial task.
+import pandas as pd df = pd.read_csv(filepath) df.head()   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    Rank WeeklyGross PctChangeWkGross Theaters DeltaTheaters AvgRev GrossToDate Week Thursday name year Winner     0 17." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/intermediate/dropping_columns/" />
+
+
+
+<meta property="article:published_time" content="2018-06-07T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-06-07T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Conditionally Dropping Columns"/>
+<meta name="twitter:description" content="filepath = &#39;../data/movieData.csv&#39; What We&rsquo;re Used To Dropping columns of data in pandas is a pretty trivial task.
+import pandas as pd df = pd.read_csv(filepath) df.head()   .dataframe thead tr:only-child th { text-align: right; } .dataframe thead th { text-align: left; } .dataframe tbody tr th { vertical-align: top; }    Rank WeeklyGross PctChangeWkGross Theaters DeltaTheaters AvgRev GrossToDate Week Thursday name year Winner     0 17."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Conditionally Dropping Columns",
+  "url": "https://napsterinblue.github.io/notes/spark/intermediate/dropping_columns/",
+  "wordCount": "1326",
+  "datePublished": "2018-06-07T00:00:00&#43;00:00",
+  "dateModified": "2018-06-07T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Conditionally Dropping Columns</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Conditionally Dropping Columns</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-06-07T00:00:00Z "> 07 Jun 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">filepath</span> <span class="o">=</span> <span class="s1">&#39;../data/movieData.csv&#39;</span></code></pre></div>
+<h2 id="what-we-re-used-to">What We&rsquo;re Used To</h2>
+
+<p>Dropping columns of data in <code>pandas</code> is a pretty trivial task.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rank</th>
+      <th>WeeklyGross</th>
+      <th>PctChangeWkGross</th>
+      <th>Theaters</th>
+      <th>DeltaTheaters</th>
+      <th>AvgRev</th>
+      <th>GrossToDate</th>
+      <th>Week</th>
+      <th>Thursday</th>
+      <th>name</th>
+      <th>year</th>
+      <th>Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17.0</td>
+      <td>967378</td>
+      <td>NaN</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>69098.0</td>
+      <td>967378</td>
+      <td>1</td>
+      <td>1990-11-18</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9.0</td>
+      <td>3871641</td>
+      <td>300.0</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>276546.0</td>
+      <td>4839019</td>
+      <td>2</td>
+      <td>1990-11-25</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>12547813</td>
+      <td>224.0</td>
+      <td>1048.0</td>
+      <td>1034.0</td>
+      <td>11973.0</td>
+      <td>17386832</td>
+      <td>3</td>
+      <td>1990-12-02</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>9246632</td>
+      <td>-26.3</td>
+      <td>1053.0</td>
+      <td>5.0</td>
+      <td>8781.0</td>
+      <td>26633464</td>
+      <td>4</td>
+      <td>1990-12-09</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4.0</td>
+      <td>7272350</td>
+      <td>-21.4</td>
+      <td>1051.0</td>
+      <td>-2.0</td>
+      <td>6919.0</td>
+      <td>33905814</td>
+      <td>5</td>
+      <td>1990-12-16</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>We can either specify which columns we want to drop.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;Rank&#39;</span><span class="p">,</span> <span class="s1">&#39;WeeklyGross&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PctChangeWkGross</th>
+      <th>Theaters</th>
+      <th>DeltaTheaters</th>
+      <th>AvgRev</th>
+      <th>GrossToDate</th>
+      <th>Week</th>
+      <th>Thursday</th>
+      <th>name</th>
+      <th>year</th>
+      <th>Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>NaN</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>69098.0</td>
+      <td>967378</td>
+      <td>1</td>
+      <td>1990-11-18</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>300.0</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>276546.0</td>
+      <td>4839019</td>
+      <td>2</td>
+      <td>1990-11-25</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>224.0</td>
+      <td>1048.0</td>
+      <td>1034.0</td>
+      <td>11973.0</td>
+      <td>17386832</td>
+      <td>3</td>
+      <td>1990-12-02</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-26.3</td>
+      <td>1053.0</td>
+      <td>5.0</td>
+      <td>8781.0</td>
+      <td>26633464</td>
+      <td>4</td>
+      <td>1990-12-09</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-21.4</td>
+      <td>1051.0</td>
+      <td>-2.0</td>
+      <td>6919.0</td>
+      <td>33905814</td>
+      <td>5</td>
+      <td>1990-12-16</td>
+      <td>dances with wolves</td>
+      <td>1990</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Or write some condition to filter on and pipe it into the <code>DataFrame</code> selector.</p>
+
+<p>Let&rsquo;s imagine we only want columns that have a <code>'.'</code> in them.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dotCounts</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+                                <span class="o">.</span><span class="nb">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;\.&#39;</span><span class="p">))</span><span class="o">.</span><span class="nb">sum</span><span class="p">()</span>
+<span class="n">dotCounts</span></code></pre></div>
+<pre><code>Rank                3836
+WeeklyGross            0
+PctChangeWkGross    3625
+Theaters            3836
+DeltaTheaters       3389
+AvgRev              3836
+GrossToDate            0
+Week                   0
+Thursday               0
+name                  13
+year                   0
+Winner                 0
+dtype: int64
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">colsWithdots</span> <span class="o">=</span> <span class="n">dotCounts</span><span class="p">[</span><span class="n">dotCounts</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="k">print</span><span class="p">(</span><span class="n">colsWithdots</span><span class="p">)</span></code></pre></div>
+<pre><code>Index(['Rank', 'PctChangeWkGross', 'Theaters', 'DeltaTheaters', 'AvgRev',
+       'name'],
+      dtype='object')
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="n">colsWithdots</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rank</th>
+      <th>PctChangeWkGross</th>
+      <th>Theaters</th>
+      <th>DeltaTheaters</th>
+      <th>AvgRev</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17.0</td>
+      <td>NaN</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>69098.0</td>
+      <td>dances with wolves</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9.0</td>
+      <td>300.0</td>
+      <td>14.0</td>
+      <td>NaN</td>
+      <td>276546.0</td>
+      <td>dances with wolves</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>224.0</td>
+      <td>1048.0</td>
+      <td>1034.0</td>
+      <td>11973.0</td>
+      <td>dances with wolves</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>-26.3</td>
+      <td>1053.0</td>
+      <td>5.0</td>
+      <td>8781.0</td>
+      <td>dances with wolves</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4.0</td>
+      <td>-21.4</td>
+      <td>1051.0</td>
+      <td>-2.0</td>
+      <td>6919.0</td>
+      <td>dances with wolves</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Ez pz</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="nb">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;\.&#39;</span><span class="p">)]</span></code></pre></div>
+<pre><code>759    l.a. confidential
+760    l.a. confidential
+761    l.a. confidential
+762    l.a. confidential
+763    l.a. confidential
+764    l.a. confidential
+765    l.a. confidential
+766    l.a. confidential
+767    l.a. confidential
+768    l.a. confidential
+769    l.a. confidential
+770    l.a. confidential
+771    l.a. confidential
+Name: name, dtype: object
+</code></pre>
+
+<p>I was curious, too.</p>
+
+<h2 id="now-spark">Now Spark</h2>
+
+<p>Similarly, if we want to read this in as a <code>Spark DataFrame</code>, we&rsquo;d do the following.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">SparkSession</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+|Rank|WeeklyGross|PctChangeWkGross|Theaters|DeltaTheaters|  AvgRev|GrossToDate|Week|  Thursday|              name|year|Winner|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+|17.0|     967378|            null|    14.0|         null| 69098.0|     967378|   1|1990-11-18|dances with wolves|1990|  True|
+| 9.0|    3871641|           300.0|    14.0|         null|276546.0|    4839019|   2|1990-11-25|dances with wolves|1990|  True|
+| 3.0|   12547813|           224.0|  1048.0|       1034.0| 11973.0|   17386832|   3|1990-12-02|dances with wolves|1990|  True|
+| 4.0|    9246632|           -26.3|  1053.0|          5.0|  8781.0|   26633464|   4|1990-12-09|dances with wolves|1990|  True|
+| 4.0|    7272350|           -21.4|  1051.0|         -2.0|  6919.0|   33905814|   5|1990-12-16|dances with wolves|1990|  True|
++----+-----------+----------------+--------+-------------+--------+-----------+----+----------+------------------+----+------+
+only showing top 5 rows
+</code></pre>
+
+<p>But trying to drop columns is a little involved.</p>
+
+<p>We can specify which column names we want to keep.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;Rank&#39;</span><span class="p">,</span> <span class="s1">&#39;PctChangeWkGross&#39;</span><span class="p">,</span> <span class="s1">&#39;Theaters&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;DeltaTheaters&#39;</span><span class="p">,</span> <span class="s1">&#39;AvgRev&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+----------------+--------+-------------+--------+------------------+
+|Rank|PctChangeWkGross|Theaters|DeltaTheaters|  AvgRev|              name|
++----+----------------+--------+-------------+--------+------------------+
+|17.0|            null|    14.0|         null| 69098.0|dances with wolves|
+| 9.0|           300.0|    14.0|         null|276546.0|dances with wolves|
+| 3.0|           224.0|  1048.0|       1034.0| 11973.0|dances with wolves|
+| 4.0|           -26.3|  1053.0|          5.0|  8781.0|dances with wolves|
+| 4.0|           -21.4|  1051.0|         -2.0|  6919.0|dances with wolves|
++----+----------------+--------+-------------+--------+------------------+
+only showing top 5 rows
+</code></pre>
+
+<p>But we won&rsquo;t have the column names figured out, so we need to figure out how to get at them, procedurally.</p>
+
+<h2 id="building-column-conditions">Building Column Conditions</h2>
+
+<p>We&rsquo;re going to need some handy functions to facilitate this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql.functions</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">when</span></code></pre></div>
+<p>For simplicity, let&rsquo;s just focus on just the <code>PctChangeWkGross</code> column. We&rsquo;ll scale up after.</p>
+
+<p>So first, we&rsquo;ll use the <code>col</code> function on a string to make an instance of the <code>Col</code> class.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pcwg</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;PctChangeWkGross&#39;</span><span class="p">)</span></code></pre></div>
+<p>So let&rsquo;s check if each value contains a <code>'.'</code> character</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">pcwg</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>3845
+</code></pre>
+
+<p>Hmm, that doesn&rsquo;t seem right. That&rsquo;s the length of everything.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></code></pre></div>
+<pre><code>3845
+</code></pre>
+
+<p>So we need to additionally add the <code>count</code> column function</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">count</span><span class="p">(</span><span class="n">pcwg</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+------------------------------------+
+|count(contains(PctChangeWkGross, .))|
++------------------------------------+
+|                                3625|
++------------------------------------+
+</code></pre>
+
+<p>We shed like 200 records. That&rsquo;s more like it. Let&rsquo;s see what happens with column that we know doesn&rsquo;t have any.</p>
+
+<p><code>Thursday</code> is all <code>yyyy-mm-dd</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">count</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;Thursday&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+----------------------------+
+|count(contains(Thursday, .))|
++----------------------------+
+|                        3845|
++----------------------------+
+</code></pre>
+
+<p>Still wrong. It&rsquo;s <code>count</code>ing a bunch of <code>False</code> values. Last step, we need a way to make it not count these values.</p>
+
+<p>This is where we&rsquo;ll use the <code>when</code> function. The top 5 values of <code>Thursday</code> look like this.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;Thursday&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----------+
+|  Thursday|
++----------+
+|1990-11-18|
+|1990-11-25|
+|1990-12-02|
+|1990-12-09|
+|1990-12-16|
++----------+
+only showing top 5 rows
+</code></pre>
+
+<p><code>when</code> takes two arguments:
+- A <code>Column</code> of values with a broadcasted check
+- A value for &ldquo;if the check evaluates to <code>True</code>&ldquo;</p>
+
+<p>Anything that evaluates to <code>False</code> becomes NULL</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;Thursday&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;11&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-------------------------------------------+
+|CASE WHEN contains(Thursday, 11) THEN 0 END|
++-------------------------------------------+
+|                                          0|
+|                                          0|
+|                                       null|
+|                                       null|
+|                                       null|
++-------------------------------------------+
+only showing top 5 rows
+</code></pre>
+
+<p>And <code>count</code> will skip right over it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;Thursday&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;11&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+--------------------------------------------------+
+|count(CASE WHEN contains(Thursday, 11) THEN 0 END)|
++--------------------------------------------------+
+|                                               578|
++--------------------------------------------------+
+</code></pre>
+
+<h3 id="at-scale">At Scale</h3>
+
+<p>Now to do this for multiple columns, we need to do some clever list comprehension</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>[Row(count(CASE WHEN contains(Rank, .) THEN 0 END)=3836, count(CASE WHEN contains(WeeklyGross, .) THEN 0 END)=0, count(CASE WHEN contains(PctChangeWkGross, .) THEN 0 END)=3625, count(CASE WHEN contains(Theaters, .) THEN 0 END)=3836, count(CASE WHEN contains(DeltaTheaters, .) THEN 0 END)=3389, count(CASE WHEN contains(AvgRev, .) THEN 0 END)=3836, count(CASE WHEN contains(GrossToDate, .) THEN 0 END)=0, count(CASE WHEN contains(Week, .) THEN 0 END)=0, count(CASE WHEN contains(Thursday, .) THEN 0 END)=0, count(CASE WHEN contains(name, .) THEN 0 END)=13, count(CASE WHEN contains(year, .) THEN 0 END)=0, count(CASE WHEN contains(Winner, .) THEN 0 END)=0)]
+</code></pre>
+
+<p>But that looks crazy gross. <code>alias</code> to the rescue.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dotCounts</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+               <span class="p">[</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="p">)</span>
+<span class="n">dotCounts</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+|Rank|WeeklyGross|PctChangeWkGross|Theaters|DeltaTheaters|AvgRev|GrossToDate|Week|Thursday|name|year|Winner|
++----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+|3836|          0|            3625|    3836|         3389|  3836|          0|   0|       0|  13|   0|     0|
++----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+</code></pre>
+
+<p>Let&rsquo;s bring it home with some list comprehension</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">colsWithDots</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">dotCounts</span><span class="o">.</span><span class="n">columns</span>
+                <span class="k">if</span> <span class="n">dotCounts</span><span class="p">[[</span><span class="n">c</span><span class="p">]]</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">colsWithDots</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-----------+-----------+----+----------+----+------+
+|WeeklyGross|GrossToDate|Week|  Thursday|year|Winner|
++-----------+-----------+----+----------+----+------+
+|     967378|     967378|   1|1990-11-18|1990|  True|
+|    3871641|    4839019|   2|1990-11-25|1990|  True|
+|   12547813|   17386832|   3|1990-12-02|1990|  True|
+|    9246632|   26633464|   4|1990-12-09|1990|  True|
+|    7272350|   33905814|   5|1990-12-16|1990|  True|
++-----------+-----------+----+----------+----+------+
+only showing top 5 rows
+</code></pre>
+
+<h2 id="dropping-columns-with-null-data">Dropping Columns with NULL Data</h2>
+
+<p>Same general approach applies to a more practical application of dropping columns with NULL values</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pyspark.sql.functions</span> <span class="kn">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">isnull</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nullCounts</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">isnan</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">|</span><span class="n">isnull</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">c</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+
+<span class="n">nullCounts</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></div>
+<pre><code>+----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+|Rank|WeeklyGross|PctChangeWkGross|Theaters|DeltaTheaters|AvgRev|GrossToDate|Week|Thursday|name|year|Winner|
++----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+|   9|          0|             220|       9|          456|     9|          0|   0|       0|   0|   0|     0|
++----+-----------+----------------+--------+-------------+------+-----------+----+--------+----+----+------+
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">nonNull_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">nullCounts</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">nullCounts</span><span class="p">[[</span><span class="n">c</span><span class="p">]]</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">nonNull_cols</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+-----------+-----------+----+----------+------------------+----+------+
+|WeeklyGross|GrossToDate|Week|  Thursday|              name|year|Winner|
++-----------+-----------+----+----------+------------------+----+------+
+|     967378|     967378|   1|1990-11-18|dances with wolves|1990|  True|
+|    3871641|    4839019|   2|1990-11-25|dances with wolves|1990|  True|
+|   12547813|   17386832|   3|1990-12-02|dances with wolves|1990|  True|
+|    9246632|   26633464|   4|1990-12-09|dances with wolves|1990|  True|
+|    7272350|   33905814|   5|1990-12-16|dances with wolves|1990|  True|
++-----------+-----------+----+----------+------------------+----+------+
+only showing top 5 rows
+</code></pre>
+
+<p>This is probably handy enough to package into a function</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">drop_null_cols</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39;
+</span><span class="s1">    Drop columns from a `PySpark.DataFrame` that 
+</span><span class="s1">    have more than `threshold` NULL values
+</span><span class="s1">    &#39;&#39;&#39;</span>
+    <span class="n">nullCounts</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">isnan</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">|</span><span class="n">isnull</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">c</span><span class="p">))</span>
+                               <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+    <span class="n">nonNullCols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">nullCounts</span><span class="o">.</span><span class="n">columns</span>
+                   <span class="k">if</span> <span class="n">nullCounts</span><span class="p">[[</span><span class="n">c</span><span class="p">]]</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="n">c</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">nonNullCols</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">drop_null_cols</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre></div>
+<pre><code>+----+-----------+--------+--------+-----------+----+----------+------------------+----+------+
+|Rank|WeeklyGross|Theaters|  AvgRev|GrossToDate|Week|  Thursday|              name|year|Winner|
++----+-----------+--------+--------+-----------+----+----------+------------------+----+------+
+|17.0|     967378|    14.0| 69098.0|     967378|   1|1990-11-18|dances with wolves|1990|  True|
+| 9.0|    3871641|    14.0|276546.0|    4839019|   2|1990-11-25|dances with wolves|1990|  True|
+| 3.0|   12547813|  1048.0| 11973.0|   17386832|   3|1990-12-02|dances with wolves|1990|  True|
+| 4.0|    9246632|  1053.0|  8781.0|   26633464|   4|1990-12-09|dances with wolves|1990|  True|
+| 4.0|    7272350|  1051.0|  6919.0|   33905814|   5|1990-12-16|dances with wolves|1990|  True|
++----+-----------+--------+--------+-----------+----+----------+------------------+----+------+
+only showing top 5 rows
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

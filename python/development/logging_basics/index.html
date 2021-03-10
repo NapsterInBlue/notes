@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Logging: Basic Structure and Objects" />
+<meta property="og:description" content="Overview The logging module in Python is a very powerful tool that I&rsquo;ve summarily neglected learning until this week. However, as it&rsquo;s often utilized as part of a robust ML pipeline, I finally took the plunge. In this notebook, I&rsquo;m going to distill the basics I got from the docs, as well as show a simple project that highlights some of the behavior and configuration patterns.
+Levels logging operates using a concept of &ldquo;levels,&rdquo; which correspond to varying levels of message-severity." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/logging_basics/" />
+
+
+
+<meta property="article:published_time" content="2020-10-28T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-10-28T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Logging: Basic Structure and Objects"/>
+<meta name="twitter:description" content="Overview The logging module in Python is a very powerful tool that I&rsquo;ve summarily neglected learning until this week. However, as it&rsquo;s often utilized as part of a robust ML pipeline, I finally took the plunge. In this notebook, I&rsquo;m going to distill the basics I got from the docs, as well as show a simple project that highlights some of the behavior and configuration patterns.
+Levels logging operates using a concept of &ldquo;levels,&rdquo; which correspond to varying levels of message-severity."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Logging: Basic Structure and Objects",
+  "url": "https://napsterinblue.github.io/notes/python/development/logging_basics/",
+  "wordCount": "2359",
+  "datePublished": "2020-10-28T00:00:00&#43;00:00",
+  "dateModified": "2020-10-28T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Logging: Basic Structure and Objects</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Logging: Basic Structure and Objects</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-10-28T00:00:00Z "> 28 Oct 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>The <a href="https://docs.python.org/3/library/logging.html">logging module</a> in Python is a very powerful tool that I&rsquo;ve summarily neglected learning until this week. However, as it&rsquo;s often utilized as part of a robust ML pipeline, I finally took the plunge. In this notebook, I&rsquo;m going to distill the basics I got from the docs, as well as show a simple project that highlights some of the behavior and configuration patterns.</p>
+
+<h2 id="levels">Levels</h2>
+
+<p><code>logging</code> operates using a concept of &ldquo;levels,&rdquo; which correspond to varying levels of message-severity. Going from least-severe to most-severe, we have:</p>
+
+<ul>
+<li><code>DEBUG</code>: Super detailed information</li>
+<li><code>INFO</code>: Confirmation that thing are working correctly</li>
+<li><code>WARNING</code>: Indication that something unexpected happened, but things still work</li>
+<li><code>ERROR</code>: Something ran incorrectly in our program</li>
+<li><code>CRITICAL</code>: The most serious message. Things severely broken</li>
+</ul>
+
+<p>In general, once you set the &ldquo;level&rdquo; for a <code>logging</code> object, it operates at &ldquo;that level or more severe&rdquo; and ignores all activity lower than it&rsquo;s configured for.</p>
+
+<p>For example, if I&rsquo;ve got my logging set to <code>WARNING</code>, then any time I log with <code>level='INFO'</code>, nothing will happen. On the other hand, if I&rsquo;ve configured my level to <code>DEBUG</code>, then any log of any level will be served.</p>
+
+<h2 id="objects">Objects</h2>
+
+<p>Generally, there are four base classes that power the library.</p>
+
+<ul>
+<li><code>Logger</code>: Exposes the overall interface</li>
+<li><code>Handler</code>: Sends the records created by the <code>Logger</code> objects</li>
+<li><code>Filter</code>: Determines which logs to output</li>
+<li><code>Formatter</code>: Specifies the layout of the <code>Handler</code> output</li>
+</ul>
+
+<p>Going down the list:</p>
+
+<h3 id="logger"><code>Logger</code></h3>
+
+<p>The <code>Logger</code> object is the one that holds all the other <code>logging</code> objects and is the main interface that the client code taps into to leverage the library.</p>
+
+<p>You can literally skip all knowledge of intentional instantiation and just do the following</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;This hit&#39;</span><span class="p">)</span></code></pre></div>
+<p>But I don&rsquo;t think that&rsquo;s a very good decision, because then the lack of output for something like this is confusing.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;This also hit&#39;</span><span class="p">)</span></code></pre></div>
+<p>(More on this in a few)</p>
+
+<p>Additionally, you can broadly configure your <code>logging</code> instance with the following</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;example.log&#39;</span><span class="p">)</span></code></pre></div>
+<p>But this makes things difficult to trace/debug. For instance, <code>filename='example.log'</code> suggests that we&rsquo;ll be logging to some file. So why does the following print in standard out?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;This should have written do disk&#39;</span><span class="p">)</span></code></pre></div>
+<p>And no, it didn&rsquo;t both print and write.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="n">cat</span> <span class="n">example</span><span class="o">.</span><span class="n">log</span></code></pre></div>
+<pre><code>cat: example.log: No such file or directory
+</code></pre>
+
+<p>Instead, I like being more explicit in how I build this out with <code>getLogger()</code>. Note, that the docs explicitly say</p>
+
+<blockquote>
+<p>Note that Loggers should <em>NEVER</em> be instantiated directly, but always through the module-level function <code>logging.getLogger(name)</code></p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;This hit&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>WARNING:root:This hit
+</code></pre>
+
+<p>So, looking at the last few outputs, it should be clear that <code>WARNING</code> is the default level that we instantiate with.</p>
+
+<p>But what&rsquo;s going on with <code>root</code> in the print above?</p>
+
+<h4 id="namespaces">Namespaces</h4>
+
+<p>Like modules, <code>logging</code> is namespace-aware.</p>
+
+<p>When called with no arguments, as above, <code>getLogger()</code> looks to the root of the project and</p>
+
+<ol>
+<li>Creates a new <code>Logger</code> object under <code>root</code> if it doesn&rsquo;t exist</li>
+<li>Returns the <code>root</code> <code>Logger</code> if it does</li>
+</ol>
+
+<p>You can also do similar tricks to what you&rsquo;d do with the <code>os</code> or <code>pathlib</code> libraries, such as</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></code></pre></div>
+<pre><code>&lt;Logger __main__ (WARNING)&gt;
+</code></pre>
+
+<p>Or calling it with <code>__file__</code> (which doesn&rsquo;t work in Notebooks). But the preferred convention is <code>__name__</code>.</p>
+
+<p>This allows us to leverage clean hierarchical relationships between modules/submodules and their <code>Logger</code> objects. For instance, if I&rsquo;ve got the line <code>logging.getLogger(__name__)</code> in each of my files, then much like imports and modules, there&rsquo;s a clear relationship between the root level <code>foo</code>, and the <code>Logger</code> objects found in the child <code>foo.bar</code> and <code>foo.bar.baz</code> submodules. More on this at the end.</p>
+
+<h4 id="using-the-logger">Using the <code>Logger</code></h4>
+
+<p>We already did a bit of it earlier, but for the sake of completeness, when we log we can either do it generically, specifying the level explicitly:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">,</span> <span class="s2">&#34;This is srs bsns&#34;</span><span class="p">)</span></code></pre></div>
+<pre><code>CRITICAL:root:This is srs bsns
+</code></pre>
+
+<p>Or by using the utility functions that correspond to the same name as the level</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&#34;This is also srs. But simpler to write&#34;</span><span class="p">)</span></code></pre></div>
+<pre><code>CRITICAL:root:This is also srs. But simpler to write
+</code></pre>
+
+<h3 id="handler"><code>Handler</code></h3>
+
+<p>These, unlike the <code>Logger</code> are always instantiated directly. Sort of.</p>
+
+<p>More accurately, we&rsquo;ll always find ourselves instantiating some <em>subclass</em> of the <code>Handler</code> object. The two main examples of this are:</p>
+
+<ul>
+<li><code>StreamHandler</code>, which writes to the console/<code>std.out</code></li>
+<li><code>FileHandler</code>, which wraps the <code>open()</code> function and writes logs to a file</li>
+</ul>
+
+<p>There are <a href="https://docs.python.org/3/howto/logging.html#useful-handlers">a TON of other handlers</a> batteries-included, but for the sake of keeping it simple, these are the only two we&rsquo;ll concern ourselves with.</p>
+
+<h3 id="formatter"><code>Formatter</code></h3>
+
+<p>These provide string formatting for our writes and then some.</p>
+
+<p>It&rsquo;s got its own special syntax/keywords for handling, among other things:</p>
+
+<ul>
+<li>Time</li>
+<li>File the log was generated in</li>
+<li>Line number the long was generated on</li>
+<li>Arbitrary messages</li>
+</ul>
+
+<p>and <a href="https://docs.python.org/3/library/logging.html#logrecord-attributes">a lot more</a>. We&rsquo;ll see an example of this at the end.</p>
+
+<h3 id="filter">Filter</h3>
+
+<p>Looks too complicated for our purposes. Maybe another time.</p>
+
+<h2 id="putting-these-all-together">Putting these All Together</h2>
+
+<p>So now that we know the constituent parts to a logging system, how do we assemble them for use?</p>
+
+<h3 id="adding-handler-objects">Adding <code>Handler</code> objects</h3>
+
+<p>We&rsquo;ll start by making a brand new logger (with an arbitrary name)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;new_logger&#39;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">handlers</span></code></pre></div>
+<pre><code>[]
+</code></pre>
+
+<p>Inspecting, this totally bare at the start.</p>
+
+<p>Then, we&rsquo;ll instantiate a <code>StreamHandler</code> object to write to <code>sys.stdout</code> and then apply the <code>addHandler()</code> method of our <code>logger</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">stream_info_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">stream_info_handler</span><span class="p">)</span></code></pre></div>
+<p>Looking again, we can see that there&rsquo;s now a <code>StreamHandler</code> object that meets our definition. The <code>NOTSET</code> simply refers to the fact that we haven&rsquo;t specified a level for the <code>StreamHandler</code>, and thus, it will defer to however its parent operates&ndash; which again, is <code>WARNING</code> by default.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span></code></pre></div>
+<pre><code>[&lt;StreamHandler stdout (NOTSET)&gt;]
+</code></pre>
+
+<p>This is a little tricky&ndash; why are there two prints?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Boop&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Boop
+
+
+WARNING:new_logger:Boop
+</code></pre>
+
+<p>To investigate this, we&rsquo;ll change the level of our <code>Handler</code> object to its most restrictive state, and rerun the <code>.warning()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">stream_info_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span></code></pre></div>
+<p>Only one print.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Boop&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>WARNING:new_logger:Boop
+</code></pre>
+
+<p>This is because the <code>Handler</code> only fires on <code>level=50</code>. Which is code for <code>CRITICAL</code>, as specified</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">stream_info_handler</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLevelName</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span></code></pre></div>
+<pre><code>50
+
+
+
+
+
+'CRITICAL'
+</code></pre>
+
+<p>The <code>logger</code> itself, however, has an implicit (seemingly-hidden, IMO) writer to <code>stderr</code>, at the warning <code>WARNING</code> level and above.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">())</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLevelName</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span></code></pre></div>
+<pre><code>30
+
+
+
+
+
+'WARNING'
+</code></pre>
+
+<p>Still no new <code>Handler</code> objects in sight.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span></code></pre></div>
+<pre><code>[&lt;StreamHandler stdout (CRITICAL)&gt;]
+</code></pre>
+
+<p>But, if we overwrite the default behavior, you&rsquo;ll notice that it no longer shows up.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&#34;This shouldn&#39;t hit&#34;</span><span class="p">)</span></code></pre></div>
+<h3 id="adding-formatter-objects">Adding <code>Formatter</code> objects</h3>
+
+<p>The <code>setFormatter</code> behaves similarly to the <code>Logger.addHandler()</code> method except applies to the <code>Handler</code> objects, instead.</p>
+
+<p>So we start off by making another fresh <code>Logger</code> object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;even_newer_logger&#39;</span><span class="p">)</span></code></pre></div>
+<p>Then we&rsquo;ll make a simple <code>StreamHandler</code> that writes to standard out at a permissive <code>INTO</code> level</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">new_stream_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+<span class="n">new_stream_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span></code></pre></div>
+<p>Then we&rsquo;ll add the <code>Handler</code> to the <code>Logger</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">new_stream_handler</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;And we can see that this printed to standard out&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>And we can see that this printed to standard out
+
+
+WARNING:even_newer_logger:And we can see that this printed to standard out
+</code></pre>
+
+<p>However, if we wanted to go back and change the output format of the log generated by the <code>StreamHandler</code>, we&rsquo;d use</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">FMTR</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&#34;</span><span class="si">%(asctime)s</span><span class="s2"> — </span><span class="si">%(name)s</span><span class="s2"> — </span><span class="si">%(levelname)s</span><span class="s2"> —&#34;</span> <span class="s2">&#34; </span><span class="si">%(message)s</span><span class="s2">&#34;</span><span class="p">)</span>
+
+<span class="n">new_stream_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">FMTR</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Notice the difference?&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>2020-10-28 18:02:33,042 — even_newer_logger — WARNING — Notice the difference?
+
+
+WARNING:even_newer_logger:Notice the difference?
+</code></pre>
+
+<h3 id="a-final-note-on-inheritence">A Final Note on Inheritence</h3>
+
+<p><a href="https://docs.python.org/3/howto/logging.html#logging-flow">The docs have a great image to elucidate further</a>, but I wanted to illustrate how level-inheritence works in <code>logging</code>.</p>
+
+<p>Basically, there are two general rules that are followed:</p>
+
+<ol>
+<li><p>If a <code>Logger</code> is initialized in some submodule (e.g. <code>foo.bar</code>), if you don&rsquo;t specify the level, it will look to the parent (<code>foo</code>) to see if <em>it</em> has a declared level. If it doesn&rsquo;t find it there, then it will look higher and higher until it finds <code>root</code>, which will either be declared, or set to <code>WARNING</code>, by default.</p></li>
+
+<li><p>When calling <code>logger.log()</code> with any arbitrary level, if the call isn&rsquo;t more severe than the <code>logger</code> level, it won&rsquo;t get passed down to any of its <code>Handler</code> objects, even if <em>those</em> accept that severity.</p></li>
+</ol>
+
+<p>To illustrate that second point, we&rsquo;ll make a new <code>Logger</code> that only accepts <code>CRITICAL</code>, and give it a <code>StreamHandler</code> that will accept <code>DEBUG</code>, and therefore everything.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">firewall</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;firewall&#39;</span><span class="p">)</span>
+<span class="n">firewall</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+
+<span class="n">easygoing_stream_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+<span class="n">easygoing_stream_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="n">firewall</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">easygoing_stream_handler</span><span class="p">)</span></code></pre></div>
+<p>Finally, we&rsquo;ll make a simple <code>.info()</code> call that doesn&rsquo;t call the <code>StreamHandler</code>, whatsoever.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">firewall</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Alas, this was blocked.&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># cleaning up our environment for the next section</span>
+
+<span class="k">del</span> <span class="p">(</span><span class="n">FMTR</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">easygoing_stream_handler</span><span class="p">,</span>
+     <span class="n">stream_info_handler</span><span class="p">,</span> <span class="n">firewall</span><span class="p">,</span> <span class="n">new_stream_handler</span><span class="p">)</span></code></pre></div>
+<h2 id="example-project">Example Project</h2>
+
+<p>To tie these concepts together, I liked how <a href="https://github.com/trainindata/deploying-machine-learning-models">this repo</a> structured their logging and structured a dummy project that highlights the most essential aspects of their setup.</p>
+
+<p>Say we&rsquo;ve got some module, <code>app</code>, that we want to run via <code>main.py</code> to generate some logs into the <code>logs</code> directory.</p>
+
+<pre><code>simple_logging
+|   main.py
+|
++---app
+|   |   app_code.py
+|   |   __init__.py
+|   |
+|   \---config
+|           logging_config.py
+|
+\---logs
+</code></pre>
+
+<h3 id="files">Files</h3>
+
+<p><code>main.py</code> is super straight-forward.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">app.app_code</span> <span class="kn">import</span> <span class="n">run_app</span>
+
+<span class="n">run_app</span><span class="p">()</span></code></pre></div>
+<p><code>app/app_code.py</code> contains our app. The goal here is to log each <code>App ran for X</code> to a log file, but <em>print</em> the <code>i=6</code> case to the console.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s1">&#39;printed from&#39;</span><span class="p">,</span> <span class="vm">__file__</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">run_app</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;App ran for {i}&#34;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&#34;We saw the number 6!&#34;</span><span class="p">)</span></code></pre></div>
+<p>The fact that we want to have two different log outputs should be a dead giveaway that we want to leverage both a <code>StreamHandler</code> and a <code>FileHandler</code>. Which is precisely what we specify in <code>app/config/logging_config.py</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">FORMATTER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+    <span class="s2">&#34;</span><span class="si">%(asctime)s</span><span class="s2"> — </span><span class="si">%(name)s</span><span class="s2"> — </span><span class="si">%(levelname)s</span><span class="s2"> —&#34;</span> <span class="s2">&#34;</span><span class="si">%(funcName)s</span><span class="s2">:</span><span class="si">%(lineno)d</span><span class="s2"> — </span><span class="si">%(message)s</span><span class="s2">&#34;</span>
+<span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_console_handler</span><span class="p">():</span>
+    <span class="n">console_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="n">console_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">FORMATTER</span><span class="p">)</span>
+    <span class="n">console_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">console_handler</span>
+
+
+<span class="k">def</span> <span class="nf">get_file_handler</span><span class="p">():</span>
+    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s2">&#34;logs/app.log&#34;</span><span class="p">)</span>
+    <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">FORMATTER</span><span class="p">)</span>
+    <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">file_handler</span></code></pre></div>
+<p>I&rsquo;m not sure if the <code>get___()</code> functions above are convention or not, but I really liked how clean it looked in the implementation, so I&rsquo;m copying it here.</p>
+
+<p>These functions are imported to <code>app/__init__.py</code>, where we define the <code>app</code>-level <code>Logger</code> object.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">app.config</span> <span class="kn">import</span> <span class="n">logging_config</span>
+
+<span class="k">print</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="s1">&#39;printed from&#39;</span><span class="p">,</span> <span class="vm">__file__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging_config</span><span class="o">.</span><span class="n">get_console_handler</span><span class="p">())</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging_config</span><span class="o">.</span><span class="n">get_file_handler</span><span class="p">())</span></code></pre></div>
+<h3 id="in-action">In Action</h3>
+
+<p>So when you consider the call stack of running <code>main.py</code>, the first thing to execute is <code>from app.app_code import run_app</code>. Recall from <a href="https://napsterinblue.github.io/notes/python/development/packages/">our notebook on Packages</a> that the <code>__init__.py</code> in the root of the module is the first thing that gets executed. Here, that&rsquo;s <code>app/__init__.py</code>.</p>
+
+<p>In <em>that</em> file, we <code>import logging</code>. Easy enough. Then on line 3 we execute <code>from app.config import logging config</code>, which means we jump into <code>app/config/logging_config.py</code>. This file executes top to bottom, defining our <code>logging.Formatter</code>, <code>FORMATTER</code>, and stuffing it into the two <code>get____</code> functions.</p>
+
+<p>Once that&rsquo;s done running, the functions get passed back to <code>app/__init__.py</code>, and are both executed. This creates both <code>Handler</code> subclasses, which are added to the <code>Logger</code>.</p>
+
+<p>So let me stop with this wall of text and ask: What gets passed back after <code>app/__init__.py</code> runs?</p>
+
+<p><br></br>
+<br></br>
+<br></br>
+Nothing&hellip; Sort of.
+<br></br>
+<br></br>
+<br></br>
+Before we run the whole thing, let&rsquo;s just see what happens when we import <code>simple_logging.app</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;simple_logging/logs/app.log&#39;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">FileNotFoundError</span><span class="p">:</span>
+    <span class="k">pass</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># change into the same directory as `main.py` for</span>
+<span class="c1"># same behavior</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;simple_logging&#39;</span><span class="p">)</span></code></pre></div>
+<p>As you can see, the <code>Logger</code> instantiated in <code>app/__init__.py</code> comes before the one in <code>app/app_code.py</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">app.app_code</span> <span class="kn">import</span> <span class="n">run_app</span></code></pre></div>
+<pre><code>[&lt;StreamHandler stderr (NOTSET)&gt;]
+__name__ app.app_code    printed from app/app_code.py
+__name__ app             printed from app/__init__.py
+</code></pre>
+
+<p>But there don&rsquo;t appear to be any artifacts created from their run.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">whos</span></code></pre></div>
+<pre><code>Variable   Type        Data/Info
+--------------------------------
+logging    module      &lt;module 'logging' from 'C&lt;...&gt;b\\logging\\__init__.py'&gt;
+os         module      &lt;module 'os' from 'C:\\Us&lt;...&gt;\\anaconda3\\lib\\os.py'&gt;
+run_app    function    &lt;function run_app at 0x0000023BB8EDA8B8&gt;
+sys        module      &lt;module 'sys' (built-in)&gt;
+</code></pre>
+
+<p>But if you know where to look, you can find them. For this, we&rsquo;ll dig into the <code>logging</code> namespace and find the dictionary of all active loggers.</p>
+
+<p>There are a lot of them. A lot of which are a product of writing this post in a Jupyter Notebook.</p>
+
+<p>But you&rsquo;ll also notice that the <code>Logger</code> objects that we blew away, up above, are still here (<code>new_logger</code>, <code>firewall</code>, etc).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></code></pre></div>
+<pre><code>dict_keys(['concurrent.futures', 'concurrent', 'asyncio', 'prompt_toolkit', 'parso.python.diff', 'parso.python', 'parso', 'parso.cache', 'tornado.access', 'tornado', 'tornado.application', 'tornado.general', 'IPKernelApp', '__main__', 'new_logger', 'even_newer_logger', 'firewall', 'app.app_code', 'app'])
+</code></pre>
+
+<p>This is because, critically, <strong>the <code>logging</code> module hangs onto every object created&ndash; unless forced otherwise&ndash; for the duration of the program being run</strong>. So nothing is <em>returned</em> when we walked through all of the <code>__init__</code> code, but we added our user-defined <code>Logger</code> instances to the <code>logging</code> module itself.</p>
+
+<p>Let&rsquo;s go ahead and clean these up&hellip;
+hidden_loggers = list(logging.Logger.manager.loggerDict.keys())</p>
+
+<p>for logger_key in hidden_loggers:
+    if logger_key not in [&lsquo;app&rsquo;, &lsquo;app.app_code&rsquo;]:
+        del logging.Logger.manager.loggerDict[logger_key]</p>
+
+<p>logging.Logger.manager.loggerDict
+This allows us to cherry-pick the objects that got created from the <code>import</code> statement</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">app_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="s1">&#39;app&#39;</span><span class="p">]</span>
+<span class="n">app__app_code_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="p">[</span><span class="s1">&#39;app.app_code&#39;</span><span class="p">]</span></code></pre></div>
+<p>And as you can see, because we created the <code>app</code> <code>Logger</code> first, and because <code>app.app_code</code> inherits from its parent class (unless specified) both <code>Logger</code> objects are of <code>level='DEBUG'</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">app_logger</span></code></pre></div>
+<pre><code>&lt;Logger app (DEBUG)&gt;
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">app__app_code_logger</span></code></pre></div>
+<pre><code>&lt;Logger app.app_code (DEBUG)&gt;
+</code></pre>
+
+<h3 id="actually-running-the-code">Actually Running the Code</h3>
+
+<p>However, if you look our <code>app/config/logging_config.py</code> you&rsquo;ll notice that the <code>get_console_handler()</code> and <code>get_file_handler()</code> functions both explicitly overwrite the loose strictness of the <code>Logger</code> they&rsquo;re assigned to.</p>
+
+<ul>
+<li>The <code>StreamHandler</code> is set to <code>WARNING</code></li>
+<li>The <code>FileHandler</code> is set to <code>INFO</code></li>
+</ul>
+
+<p>In practice, it means that when we execute <code>run_app()</code>, we expect to see 10 <code>INFO</code> logs written to our logfile location, and 1 <code>WARNING</code> message, printed to the terminal.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># clearing the fallback Logger for the logging module.</span>
+<span class="c1"># the un-instantiated stuff we did up top made a </span>
+<span class="c1"># tricky, hidden logger that wrote to standard out, in</span>
+<span class="c1"># addition to the loggers we actually want. Made for gross</span>
+<span class="c1"># notebook output. Signed, I&#39;ve been debugging this for 3 hrs.</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="p">[]</span></code></pre></div>
+<p>Here&rsquo;s our one <code>WARNING</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">run</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span></code></pre></div>
+<pre><code>2020-10-28 18:02:33,117 — app.app_code — WARNING —run_app:13 — We saw the number 6!
+</code></pre>
+
+<p>and here&rsquo;s 10 logged records</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;logs/app.log&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></code></pre></div>
+<pre><code>2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 0
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 1
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 2
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 3
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 4
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 5
+2020-10-28 18:02:33,116 — app.app_code — INFO —run_app:10 — App ran for 6
+2020-10-28 18:02:33,117 — app.app_code — WARNING —run_app:13 — We saw the number 6!
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 7
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 8
+2020-10-28 18:02:33,117 — app.app_code — INFO —run_app:10 — App ran for 9
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

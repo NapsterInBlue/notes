@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Cox Modeling Using Lifelines" />
+<meta property="og:description" content="Extending from our notebook on the math and intuition behind the Cox Model let&rsquo;s do a practical example using real data.
+The Data We&rsquo;ll use the Telco Customer Churn dataset on Kaggle, which is basically a bunch of client records for a telecom company, where the goal is to predict churn (Churn) and the duration it takes for churn to happen (tenure).
+%pylab inline import pandas as pd Populating the interactive namespace from numpy and matplotlib  Lot of potentially-useful information here, this notebook does a particularly good job exploring the data." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/survival_analysis/cox_lifelines/" />
+
+
+
+<meta property="article:published_time" content="2020-04-05T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-05T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cox Modeling Using Lifelines"/>
+<meta name="twitter:description" content="Extending from our notebook on the math and intuition behind the Cox Model let&rsquo;s do a practical example using real data.
+The Data We&rsquo;ll use the Telco Customer Churn dataset on Kaggle, which is basically a bunch of client records for a telecom company, where the goal is to predict churn (Churn) and the duration it takes for churn to happen (tenure).
+%pylab inline import pandas as pd Populating the interactive namespace from numpy and matplotlib  Lot of potentially-useful information here, this notebook does a particularly good job exploring the data."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cox Modeling Using Lifelines",
+  "url": "https://napsterinblue.github.io/notes/stats/survival_analysis/cox_lifelines/",
+  "wordCount": "3012",
+  "datePublished": "2020-04-05T00:00:00&#43;00:00",
+  "dateModified": "2020-04-05T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Cox Modeling Using Lifelines</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Cox Modeling Using Lifelines</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-05T00:00:00Z "> 05 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Extending from our <a href="https://napsterinblue.github.io/notes/stats/survival_analysis/cox_math/">notebook on the math and intuition behind the Cox Model</a> let&rsquo;s do a practical example using real data.</p>
+
+<h3 id="the-data">The Data</h3>
+
+<p>We&rsquo;ll use the <a href="https://www.kaggle.com/blastchar/telco-customer-churn">Telco Customer Churn dataset on Kaggle</a>, which is basically a bunch of client records for a telecom company, where the goal is to predict churn (<code>Churn</code>) and the duration it takes for churn to happen (<code>tenure</code>).</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>Lot of potentially-useful information here, <a href="https://www.kaggle.com/jsaguiar/exploratory-analysis-with-seaborn">this notebook</a> does a particularly good job exploring the data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/&#39;</span>
+                 <span class="s1">&#39;treselle-systems/customer_churn_analysis/&#39;</span>
+                 <span class="s1">&#39;master/WA_Fn-UseC_-Telco-Customer-Churn.csv&#39;</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">T</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>customerID</th>
+      <td>7590-VHVEG</td>
+      <td>5575-GNVDE</td>
+      <td>3668-QPYBK</td>
+      <td>7795-CFOCW</td>
+      <td>9237-HQITU</td>
+    </tr>
+    <tr>
+      <th>gender</th>
+      <td>Female</td>
+      <td>Male</td>
+      <td>Male</td>
+      <td>Male</td>
+      <td>Female</td>
+    </tr>
+    <tr>
+      <th>SeniorCitizen</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Partner</th>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>Dependents</th>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>tenure</th>
+      <td>1</td>
+      <td>34</td>
+      <td>2</td>
+      <td>45</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>PhoneService</th>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>MultipleLines</th>
+      <td>No phone service</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No phone service</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>InternetService</th>
+      <td>DSL</td>
+      <td>DSL</td>
+      <td>DSL</td>
+      <td>DSL</td>
+      <td>Fiber optic</td>
+    </tr>
+    <tr>
+      <th>OnlineSecurity</th>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>OnlineBackup</th>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>DeviceProtection</th>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>TechSupport</th>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>StreamingTV</th>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>StreamingMovies</th>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <th>Contract</th>
+      <td>Month-to-month</td>
+      <td>One year</td>
+      <td>Month-to-month</td>
+      <td>One year</td>
+      <td>Month-to-month</td>
+    </tr>
+    <tr>
+      <th>PaperlessBilling</th>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod</th>
+      <td>Electronic check</td>
+      <td>Mailed check</td>
+      <td>Mailed check</td>
+      <td>Bank transfer (automatic)</td>
+      <td>Electronic check</td>
+    </tr>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>29.85</td>
+      <td>56.95</td>
+      <td>53.85</td>
+      <td>42.3</td>
+      <td>70.7</td>
+    </tr>
+    <tr>
+      <th>TotalCharges</th>
+      <td>29.85</td>
+      <td>1889.5</td>
+      <td>108.15</td>
+      <td>1840.75</td>
+      <td>151.65</td>
+    </tr>
+    <tr>
+      <th>Churn</th>
+      <td>No</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>There&rsquo;s about a 3-1 split between churn and not churn</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Churn&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code></pre></div>
+<pre><code>No     0.73463
+Yes    0.26537
+Name: Churn, dtype: float64
+</code></pre>
+
+<p>And the difference in <code>tenure</code> distribution between the two is pretty stark&ndash; lot of right-censored data in our <code>No</code> group.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Churn&#39;</span><span class="p">):</span>
+    <span class="n">group</span><span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span></code></pre></div>
+<p><img src="cox_lifelines_8_0.png" alt="png" /></p>
+
+<p>There&rsquo;s a lot more here than is illustrative to use, so let&rsquo;s pare down this dataset a bit.</p>
+
+<p>First, we&rsquo;ll move <code>customerID</code> into the index as well as drop the <code>TotalCharges</code> variables, as there&rsquo;s an obvious, uninformative, colinearity between that and <code>tenure</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">simple</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;customerID&#39;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">simple</span> <span class="o">=</span> <span class="n">simple</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;TotalCharges&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code></pre></div>
+<p>We&rsquo;ll keep the numeric <code>tenure</code> and <code>MonthlyCharges</code> columns, but here, I&rsquo;m narrowing down to categorical features that I think might be useful, then dummy-ing them for model consumption.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">simple</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">simple</span><span class="p">,</span>
+                        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;gender&#39;</span><span class="p">,</span> <span class="s1">&#39;SeniorCitizen&#39;</span><span class="p">,</span> <span class="s1">&#39;InternetService&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;Contract&#39;</span><span class="p">,</span> <span class="s1">&#39;PaymentMethod&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn&#39;</span><span class="p">],</span>
+                        <span class="n">drop_first</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
+
+<span class="n">simple</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">T</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>customerID</th>
+      <th>7590-VHVEG</th>
+      <th>5575-GNVDE</th>
+      <th>3668-QPYBK</th>
+      <th>7795-CFOCW</th>
+      <th>9237-HQITU</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>tenure</th>
+      <td>1.00</td>
+      <td>34.00</td>
+      <td>2.00</td>
+      <td>45.0</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>29.85</td>
+      <td>56.95</td>
+      <td>53.85</td>
+      <td>42.3</td>
+      <td>70.7</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>SeniorCitizen_1</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>InternetService_Fiber optic</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>InternetService_No</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Contract_One year</th>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>0.00</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Contract_Two year</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Credit card (automatic)</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>1.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Mailed check</th>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>Churn_Yes</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Printing some simple statistics, a few things stand out:</p>
+
+<ul>
+<li>The gender breakup is about <sup>50</sup>&frasl;<sub>50</sub></li>
+<li>About a third of the pop has DSL internet</li>
+<li>Over half of the userbase is going month-to-month</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">simple</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>tenure</th>
+      <td>7043.0</td>
+      <td>32.371149</td>
+      <td>24.559481</td>
+      <td>0.00</td>
+      <td>9.0</td>
+      <td>29.00</td>
+      <td>55.00</td>
+      <td>72.00</td>
+    </tr>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>7043.0</td>
+      <td>64.761692</td>
+      <td>30.090047</td>
+      <td>18.25</td>
+      <td>35.5</td>
+      <td>70.35</td>
+      <td>89.85</td>
+      <td>118.75</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>7043.0</td>
+      <td>0.504756</td>
+      <td>0.500013</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>1.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>SeniorCitizen_1</th>
+      <td>7043.0</td>
+      <td>0.162147</td>
+      <td>0.368612</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>InternetService_Fiber optic</th>
+      <td>7043.0</td>
+      <td>0.439585</td>
+      <td>0.496372</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>InternetService_No</th>
+      <td>7043.0</td>
+      <td>0.216669</td>
+      <td>0.412004</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>Contract_One year</th>
+      <td>7043.0</td>
+      <td>0.209144</td>
+      <td>0.406726</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>Contract_Two year</th>
+      <td>7043.0</td>
+      <td>0.240664</td>
+      <td>0.427517</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Credit card (automatic)</th>
+      <td>7043.0</td>
+      <td>0.216101</td>
+      <td>0.411613</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>7043.0</td>
+      <td>0.335794</td>
+      <td>0.472301</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Mailed check</th>
+      <td>7043.0</td>
+      <td>0.228880</td>
+      <td>0.420141</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>Churn_Yes</th>
+      <td>7043.0</td>
+      <td>0.265370</td>
+      <td>0.441561</td>
+      <td>0.00</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>1.00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="fitting-a-model">Fitting a Model</h3>
+
+<p>So if we take what we&rsquo;ve got and fit a simple model to it, we can get an easy glimpse at the significance of our features in the <code>p</code> column.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">lifelines</span> <span class="kn">import</span> <span class="n">CoxPHFitter</span>
+
+<span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">simple</span><span class="p">,</span> <span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">)</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>7043</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1869</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-14102.86</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:49 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>-0.03</td>
+      <td>0.97</td>
+      <td>0.00</td>
+      <td>-0.04</td>
+      <td>-0.03</td>
+      <td>0.96</td>
+      <td>0.97</td>
+      <td>-15.20</td>
+      <td>&lt;0.005</td>
+      <td>170.86</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.09</td>
+      <td>0.91</td>
+      <td>0.05</td>
+      <td>-0.18</td>
+      <td>0.00</td>
+      <td>0.84</td>
+      <td>1.00</td>
+      <td>-1.92</td>
+      <td>0.05</td>
+      <td>4.19</td>
+    </tr>
+    <tr>
+      <th>SeniorCitizen_1</th>
+      <td>-0.09</td>
+      <td>0.92</td>
+      <td>0.05</td>
+      <td>-0.19</td>
+      <td>0.02</td>
+      <td>0.82</td>
+      <td>1.02</td>
+      <td>-1.57</td>
+      <td>0.12</td>
+      <td>3.11</td>
+    </tr>
+    <tr>
+      <th>InternetService_Fiber optic</th>
+      <td>1.54</td>
+      <td>4.66</td>
+      <td>0.10</td>
+      <td>1.34</td>
+      <td>1.74</td>
+      <td>3.82</td>
+      <td>5.68</td>
+      <td>15.22</td>
+      <td>&lt;0.005</td>
+      <td>171.46</td>
+    </tr>
+    <tr>
+      <th>InternetService_No</th>
+      <td>-1.35</td>
+      <td>0.26</td>
+      <td>0.12</td>
+      <td>-1.59</td>
+      <td>-1.11</td>
+      <td>0.20</td>
+      <td>0.33</td>
+      <td>-10.91</td>
+      <td>&lt;0.005</td>
+      <td>89.58</td>
+    </tr>
+    <tr>
+      <th>Contract_One year</th>
+      <td>-1.78</td>
+      <td>0.17</td>
+      <td>0.09</td>
+      <td>-1.95</td>
+      <td>-1.61</td>
+      <td>0.14</td>
+      <td>0.20</td>
+      <td>-20.50</td>
+      <td>&lt;0.005</td>
+      <td>307.77</td>
+    </tr>
+    <tr>
+      <th>Contract_Two year</th>
+      <td>-3.52</td>
+      <td>0.03</td>
+      <td>0.16</td>
+      <td>-3.84</td>
+      <td>-3.20</td>
+      <td>0.02</td>
+      <td>0.04</td>
+      <td>-21.71</td>
+      <td>&lt;0.005</td>
+      <td>344.74</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Credit card (automatic)</th>
+      <td>-0.02</td>
+      <td>0.98</td>
+      <td>0.09</td>
+      <td>-0.20</td>
+      <td>0.16</td>
+      <td>0.82</td>
+      <td>1.17</td>
+      <td>-0.22</td>
+      <td>0.82</td>
+      <td>0.28</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>0.71</td>
+      <td>2.03</td>
+      <td>0.07</td>
+      <td>0.57</td>
+      <td>0.84</td>
+      <td>1.76</td>
+      <td>2.33</td>
+      <td>9.99</td>
+      <td>&lt;0.005</td>
+      <td>75.70</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Mailed check</th>
+      <td>0.69</td>
+      <td>2.00</td>
+      <td>0.09</td>
+      <td>0.52</td>
+      <td>0.87</td>
+      <td>1.69</td>
+      <td>2.38</td>
+      <td>7.91</td>
+      <td>&lt;0.005</td>
+      <td>48.48</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.84</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>3100.35 on 10 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>inf</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>I was negative-surprised to see that the <code>Electronic Check</code> and <code>Mailed Check</code> payment methods led to a significant dip in the Surival Curve&ndash; me and my Planet Fitness membership are all too familiar with the &ldquo;out of sight, out of mind&rdquo; business model. <code>Credit card (automatic)</code>, on the other hand, is <em>not</em> significant, because the 4th payment method is <code>Bank transfer (automatic)</code>, which basically achieves the same thing</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="s1">&#39;PaymentMethod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span></code></pre></div>
+<pre><code>Electronic check             2365
+Mailed check                 1612
+Bank transfer (automatic)    1544
+Credit card (automatic)      1522
+Name: PaymentMethod, dtype: int64
+</code></pre>
+
+<h3 id="plotting">Plotting</h3>
+
+<p>Of course, we can use the model and records from our dataset to predict the Survival Curve</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sample</span> <span class="o">=</span> <span class="n">simple</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">predict_survival_function</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                                           <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span></code></pre></div>
+<p><img src="cox_lifelines_20_0.png" alt="png" /></p>
+
+<p>Additionally, we can use <code>plot_covariate_groups()</code> to hold everything equal, save for one attribute, then examine the relative effects of different values on the population.</p>
+
+<p>Here, we can see that having fiber internet tends to make users churn faster.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span><span class="o">.</span><span class="n">plot_covariate_groups</span><span class="p">(</span><span class="s1">&#39;InternetService_Fiber optic&#39;</span><span class="p">,</span>
+                          <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                          <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">));</span></code></pre></div>
+<p><img src="cox_lifelines_22_0.png" alt="png" /></p>
+
+<p>But why do you suppose that is?</p>
+
+<h3 id="comparing-two-populations">Comparing Two Populations</h3>
+
+<p>My immediate hypothesis is that it&rsquo;s got something to do with how the client has to pay. Indeed, at all levels of contract, someone with fiber internet pays more. So it could be a fiber thing, or could be a money thing.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">simple</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Contract_Two year&#39;</span><span class="p">,</span> <span class="s1">&#39;Contract_One year&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;InternetService_Fiber optic&#39;</span><span class="p">])[</span><span class="s1">&#39;MonthlyCharges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">])</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+    <tr>
+      <th>Contract_Two year</th>
+      <th>Contract_One year</th>
+      <th>InternetService_Fiber optic</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="4" valign="top">0</th>
+      <th rowspan="2" valign="top">0</th>
+      <th>0</th>
+      <td>41.278220</td>
+      <td>17.499133</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>87.021194</td>
+      <td>11.198021</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">1</th>
+      <th>0</th>
+      <td>45.582923</td>
+      <td>22.638256</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>98.779499</td>
+      <td>9.349157</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">1</th>
+      <th rowspan="2" valign="top">0</th>
+      <th>0</th>
+      <td>45.927883</td>
+      <td>26.633123</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>104.571445</td>
+      <td>9.422629</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Let&rsquo;s pare down to just Fiber users to do some investigation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fiber</span> <span class="o">=</span> <span class="n">simple</span><span class="p">[</span><span class="n">simple</span><span class="p">[</span><span class="s1">&#39;InternetService_Fiber optic&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">fiber</span> <span class="o">=</span> <span class="n">fiber</span><span class="p">[[</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Contract_One year&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;Contract_Two year&#39;</span><span class="p">,</span> <span class="s1">&#39;MonthlyCharges&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;gender_Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">]]</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fiber</span><span class="p">,</span> <span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">)</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>3096</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1297</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-9055.07</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:49 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Contract_One year</th>
+      <td>-1.76</td>
+      <td>0.17</td>
+      <td>0.11</td>
+      <td>-1.97</td>
+      <td>-1.54</td>
+      <td>0.14</td>
+      <td>0.21</td>
+      <td>-16.26</td>
+      <td>&lt;0.005</td>
+      <td>195.06</td>
+    </tr>
+    <tr>
+      <th>Contract_Two year</th>
+      <td>-3.21</td>
+      <td>0.04</td>
+      <td>0.20</td>
+      <td>-3.59</td>
+      <td>-2.82</td>
+      <td>0.03</td>
+      <td>0.06</td>
+      <td>-16.22</td>
+      <td>&lt;0.005</td>
+      <td>194.20</td>
+    </tr>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>-0.04</td>
+      <td>0.96</td>
+      <td>0.00</td>
+      <td>-0.04</td>
+      <td>-0.03</td>
+      <td>0.96</td>
+      <td>0.97</td>
+      <td>-13.61</td>
+      <td>&lt;0.005</td>
+      <td>137.72</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.14</td>
+      <td>0.87</td>
+      <td>0.06</td>
+      <td>-0.25</td>
+      <td>-0.03</td>
+      <td>0.78</td>
+      <td>0.97</td>
+      <td>-2.50</td>
+      <td>0.01</td>
+      <td>6.33</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.79</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>1361.51 on 4 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>972.71</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Actually, it looks like having a higher monthly charge means you&rsquo;re <em>more</em> likely to stick around.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>
+
+<span class="n">low</span> <span class="o">=</span> <span class="n">fiber</span><span class="p">[</span><span class="n">fiber</span><span class="p">[</span><span class="s1">&#39;MonthlyCharges&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">80</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="n">hi</span> <span class="o">=</span> <span class="n">fiber</span><span class="p">[</span><span class="n">fiber</span><span class="p">[</span><span class="s1">&#39;MonthlyCharges&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span></code></pre></div>
+<p>Well that&rsquo;s odd.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">predict_survival_function</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">cph</span><span class="o">.</span><span class="n">predict_survival_function</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
+
+<span class="kn">from</span> <span class="nn">matplotlib.lines</span> <span class="kn">import</span> <span class="n">Line2D</span>
+<span class="n">custom_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">),</span>
+                <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)]</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">custom_lines</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">]);</span></code></pre></div>
+<p><img src="cox_lifelines_31_0.png" alt="png" /></p>
+
+<p>It&rsquo;s obvious visually, but if we wanted to say with statistical confidence that the high and low paying populations had different survival curve distributions, we could do so via the built-in <code>logrank_test()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">lifelines.statistics</span> <span class="kn">import</span> <span class="n">logrank_test</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">logrank_test</span><span class="p">(</span><span class="n">low</span><span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">],</span> <span class="n">hi</span><span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">],</span>
+                       <span class="n">event_observed_A</span><span class="o">=</span><span class="n">low</span><span class="p">[</span><span class="s1">&#39;Churn_Yes&#39;</span><span class="p">],</span>
+                       <span class="n">event_observed_B</span><span class="o">=</span><span class="n">hi</span><span class="p">[</span><span class="s1">&#39;Churn_Yes&#39;</span><span class="p">])</span>
+<span class="n">results</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>t_0</th>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <th>null_distribution</th>
+      <td>chi squared</td>
+    </tr>
+    <tr>
+      <th>degrees_of_freedom</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>test_name</th>
+      <td>logrank_test</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>test_statistic</th>
+      <th>p</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>21.90</td>
+      <td>&lt;0.005</td>
+    </tr>
+  </tbody>
+</table>
+
+
+A-ha! Maybe it's the contracts that are holding people locked in. Let's just look at the half of people paying month-to-month
+
+
+```python
+from IPython.display import Image
+
+not_one = (fiber['Contract_One year'] == 0)
+not_two = (fiber['Contract_Two year'] == 0)
+m2m_idx = (not_one & not_two)
+
+m2m = fiber[m2m_idx].drop(['Contract_One year', 'Contract_Two year'], axis=1)
+
+m2m.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>tenure</th>
+      <th>MonthlyCharges</th>
+      <th>gender_Male</th>
+      <th>Churn_Yes</th>
+    </tr>
+    <tr>
+      <th>customerID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>9237-HQITU</th>
+      <td>2</td>
+      <td>70.70</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9305-CDSKC</th>
+      <td>8</td>
+      <td>99.65</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1452-KIOVK</th>
+      <td>22</td>
+      <td>89.10</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7892-POOKP</th>
+      <td>28</td>
+      <td>104.80</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>0280-XJGEX</th>
+      <td>49</td>
+      <td>103.70</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Here&rsquo;s a screengrab of the code. I&rsquo;m tired of fighting with LaTex.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/i_hate_latex.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="cox_lifelines_37_0.png" alt="png" /></p>
+
+<p>Re-fit and&hellip;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">m2m</span><span class="p">,</span> <span class="n">duration_col</span><span class="o">=</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="n">event_col</span><span class="o">=</span><span class="s1">&#39;Churn_Yes&#39;</span><span class="p">)</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>2128</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1162</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-7955.78</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:50 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>-0.04</td>
+      <td>0.96</td>
+      <td>0.00</td>
+      <td>-0.04</td>
+      <td>-0.03</td>
+      <td>0.96</td>
+      <td>0.97</td>
+      <td>-13.63</td>
+      <td>&lt;0.005</td>
+      <td>138.14</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.15</td>
+      <td>0.86</td>
+      <td>0.06</td>
+      <td>-0.26</td>
+      <td>-0.03</td>
+      <td>0.77</td>
+      <td>0.97</td>
+      <td>-2.50</td>
+      <td>0.01</td>
+      <td>6.33</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.65</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>195.83 on 2 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>141.26</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Damn it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span><span class="o">.</span><span class="n">plot_covariate_groups</span><span class="p">(</span><span class="s1">&#39;MonthlyCharges&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span></code></pre></div>
+<pre><code>&lt;matplotlib.axes._subplots.AxesSubplot at 0x1d3611169b0&gt;
+</code></pre>
+
+<p><img src="cox_lifelines_41_1.png" alt="png" /></p>
+
+<h3 id="starting-over">Starting Over</h3>
+
+<p>So there&rsquo;s obviously more at play here than just <code>MonthlyCharges</code>.</p>
+
+<p>Let&rsquo;s re-pull our original dataset with all of the features, but only for records that are going month-to-month on Fiber internet</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">m2m_index</span> <span class="o">=</span> <span class="n">m2m</span><span class="o">.</span><span class="n">index</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;customerID&#39;</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">m2m_index</span><span class="p">]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;TotalCharges&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">drop_first</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">m2m_wide</span> <span class="o">=</span> <span class="n">c</span></code></pre></div>
+<p>Of course, fitting the model with everything but the kitchen sink yields us more than we need.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span>
+<span class="n">cph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">m2m_wide</span><span class="p">,</span> <span class="n">duration_col</span><span class="o">=</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="n">event_col</span><span class="o">=</span><span class="s1">&#39;Churn_Yes&#39;</span><span class="p">)</span>
+<span class="n">cph</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>2128</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1162</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-7757.37</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:50 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>SeniorCitizen</th>
+      <td>-0.11</td>
+      <td>0.90</td>
+      <td>0.07</td>
+      <td>-0.24</td>
+      <td>0.02</td>
+      <td>0.79</td>
+      <td>1.02</td>
+      <td>-1.64</td>
+      <td>0.10</td>
+      <td>3.32</td>
+    </tr>
+    <tr>
+      <th>MonthlyCharges</th>
+      <td>-0.00</td>
+      <td>1.00</td>
+      <td>0.03</td>
+      <td>-0.06</td>
+      <td>0.05</td>
+      <td>0.95</td>
+      <td>1.06</td>
+      <td>-0.02</td>
+      <td>0.98</td>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.17</td>
+      <td>0.85</td>
+      <td>0.06</td>
+      <td>-0.28</td>
+      <td>-0.05</td>
+      <td>0.75</td>
+      <td>0.95</td>
+      <td>-2.79</td>
+      <td>0.01</td>
+      <td>7.57</td>
+    </tr>
+    <tr>
+      <th>Partner_Yes</th>
+      <td>-0.50</td>
+      <td>0.61</td>
+      <td>0.07</td>
+      <td>-0.64</td>
+      <td>-0.37</td>
+      <td>0.53</td>
+      <td>0.69</td>
+      <td>-7.25</td>
+      <td>&lt;0.005</td>
+      <td>41.09</td>
+    </tr>
+    <tr>
+      <th>Dependents_Yes</th>
+      <td>-0.04</td>
+      <td>0.96</td>
+      <td>0.09</td>
+      <td>-0.22</td>
+      <td>0.15</td>
+      <td>0.80</td>
+      <td>1.16</td>
+      <td>-0.40</td>
+      <td>0.69</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <th>MultipleLines_Yes</th>
+      <td>-0.46</td>
+      <td>0.63</td>
+      <td>0.15</td>
+      <td>-0.76</td>
+      <td>-0.16</td>
+      <td>0.47</td>
+      <td>0.85</td>
+      <td>-3.03</td>
+      <td>&lt;0.005</td>
+      <td>8.67</td>
+    </tr>
+    <tr>
+      <th>OnlineSecurity_Yes</th>
+      <td>-0.74</td>
+      <td>0.48</td>
+      <td>0.17</td>
+      <td>-1.07</td>
+      <td>-0.41</td>
+      <td>0.34</td>
+      <td>0.67</td>
+      <td>-4.37</td>
+      <td>&lt;0.005</td>
+      <td>16.31</td>
+    </tr>
+    <tr>
+      <th>OnlineBackup_Yes</th>
+      <td>-0.66</td>
+      <td>0.52</td>
+      <td>0.15</td>
+      <td>-0.96</td>
+      <td>-0.36</td>
+      <td>0.38</td>
+      <td>0.70</td>
+      <td>-4.26</td>
+      <td>&lt;0.005</td>
+      <td>15.55</td>
+    </tr>
+    <tr>
+      <th>DeviceProtection_Yes</th>
+      <td>-0.32</td>
+      <td>0.73</td>
+      <td>0.15</td>
+      <td>-0.62</td>
+      <td>-0.02</td>
+      <td>0.54</td>
+      <td>0.98</td>
+      <td>-2.09</td>
+      <td>0.04</td>
+      <td>4.76</td>
+    </tr>
+    <tr>
+      <th>TechSupport_Yes</th>
+      <td>-0.59</td>
+      <td>0.56</td>
+      <td>0.17</td>
+      <td>-0.92</td>
+      <td>-0.25</td>
+      <td>0.40</td>
+      <td>0.78</td>
+      <td>-3.45</td>
+      <td>&lt;0.005</td>
+      <td>10.81</td>
+    </tr>
+    <tr>
+      <th>StreamingTV_Yes</th>
+      <td>-0.02</td>
+      <td>0.98</td>
+      <td>0.29</td>
+      <td>-0.58</td>
+      <td>0.55</td>
+      <td>0.56</td>
+      <td>1.73</td>
+      <td>-0.06</td>
+      <td>0.95</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>StreamingMovies_Yes</th>
+      <td>-0.19</td>
+      <td>0.83</td>
+      <td>0.29</td>
+      <td>-0.75</td>
+      <td>0.37</td>
+      <td>0.47</td>
+      <td>1.45</td>
+      <td>-0.66</td>
+      <td>0.51</td>
+      <td>0.98</td>
+    </tr>
+    <tr>
+      <th>PaperlessBilling_Yes</th>
+      <td>0.27</td>
+      <td>1.30</td>
+      <td>0.08</td>
+      <td>0.11</td>
+      <td>0.42</td>
+      <td>1.12</td>
+      <td>1.52</td>
+      <td>3.35</td>
+      <td>&lt;0.005</td>
+      <td>10.25</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Credit card (automatic)</th>
+      <td>-0.15</td>
+      <td>0.86</td>
+      <td>0.12</td>
+      <td>-0.39</td>
+      <td>0.09</td>
+      <td>0.67</td>
+      <td>1.09</td>
+      <td>-1.24</td>
+      <td>0.21</td>
+      <td>2.23</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>0.57</td>
+      <td>1.76</td>
+      <td>0.09</td>
+      <td>0.39</td>
+      <td>0.74</td>
+      <td>1.47</td>
+      <td>2.10</td>
+      <td>6.22</td>
+      <td>&lt;0.005</td>
+      <td>30.95</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Mailed check</th>
+      <td>0.47</td>
+      <td>1.60</td>
+      <td>0.13</td>
+      <td>0.21</td>
+      <td>0.73</td>
+      <td>1.24</td>
+      <td>2.07</td>
+      <td>3.58</td>
+      <td>&lt;0.005</td>
+      <td>11.53</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.73</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>592.65 on 16 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>382.30</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Okay, so it looks like it&rsquo;s less to do with contracts and money, and more to do with additional features. Perhaps a convincing-enough interpretation here is &ldquo;if the user gets upsold on everything, they&rsquo;re not probably not shopping around.&rdquo;</p>
+
+<p>Visually inspecting that <code>p</code> column again, let&rsquo;s hold out all of the features that look significant and re-fit.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">sig_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gender_Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Partner_Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;MultipleLines_Yes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;OnlineSecurity_Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;OnlineBackup_Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;DeviceProtection_Yes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;TechSupport_Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;PaperlessBilling_Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;PaymentMethod_Electronic check&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;PaymentMethod_Mailed check&#39;</span><span class="p">]</span>
+
+<span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span>
+<span class="n">cph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">m2m_wide</span><span class="p">[</span><span class="n">sig_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">]],</span> <span class="n">duration_col</span><span class="o">=</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="n">event_col</span><span class="o">=</span><span class="s1">&#39;Churn_Yes&#39;</span><span class="p">)</span>
+<span class="n">cph</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>2128</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1162</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-7765.40</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:50 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.17</td>
+      <td>0.84</td>
+      <td>0.06</td>
+      <td>-0.29</td>
+      <td>-0.06</td>
+      <td>0.75</td>
+      <td>0.94</td>
+      <td>-2.92</td>
+      <td>&lt;0.005</td>
+      <td>8.18</td>
+    </tr>
+    <tr>
+      <th>Partner_Yes</th>
+      <td>-0.52</td>
+      <td>0.60</td>
+      <td>0.06</td>
+      <td>-0.64</td>
+      <td>-0.39</td>
+      <td>0.53</td>
+      <td>0.67</td>
+      <td>-8.20</td>
+      <td>&lt;0.005</td>
+      <td>51.88</td>
+    </tr>
+    <tr>
+      <th>MultipleLines_Yes</th>
+      <td>-0.49</td>
+      <td>0.61</td>
+      <td>0.06</td>
+      <td>-0.61</td>
+      <td>-0.37</td>
+      <td>0.54</td>
+      <td>0.69</td>
+      <td>-7.93</td>
+      <td>&lt;0.005</td>
+      <td>48.74</td>
+    </tr>
+    <tr>
+      <th>OnlineSecurity_Yes</th>
+      <td>-0.73</td>
+      <td>0.48</td>
+      <td>0.09</td>
+      <td>-0.92</td>
+      <td>-0.55</td>
+      <td>0.40</td>
+      <td>0.58</td>
+      <td>-7.79</td>
+      <td>&lt;0.005</td>
+      <td>47.08</td>
+    </tr>
+    <tr>
+      <th>OnlineBackup_Yes</th>
+      <td>-0.66</td>
+      <td>0.52</td>
+      <td>0.07</td>
+      <td>-0.80</td>
+      <td>-0.53</td>
+      <td>0.45</td>
+      <td>0.59</td>
+      <td>-9.68</td>
+      <td>&lt;0.005</td>
+      <td>71.18</td>
+    </tr>
+    <tr>
+      <th>DeviceProtection_Yes</th>
+      <td>-0.36</td>
+      <td>0.70</td>
+      <td>0.07</td>
+      <td>-0.49</td>
+      <td>-0.23</td>
+      <td>0.61</td>
+      <td>0.80</td>
+      <td>-5.38</td>
+      <td>&lt;0.005</td>
+      <td>23.66</td>
+    </tr>
+    <tr>
+      <th>TechSupport_Yes</th>
+      <td>-0.59</td>
+      <td>0.55</td>
+      <td>0.09</td>
+      <td>-0.78</td>
+      <td>-0.41</td>
+      <td>0.46</td>
+      <td>0.66</td>
+      <td>-6.31</td>
+      <td>&lt;0.005</td>
+      <td>31.70</td>
+    </tr>
+    <tr>
+      <th>PaperlessBilling_Yes</th>
+      <td>0.24</td>
+      <td>1.27</td>
+      <td>0.08</td>
+      <td>0.08</td>
+      <td>0.39</td>
+      <td>1.09</td>
+      <td>1.48</td>
+      <td>3.01</td>
+      <td>&lt;0.005</td>
+      <td>8.60</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>0.60</td>
+      <td>1.83</td>
+      <td>0.07</td>
+      <td>0.46</td>
+      <td>0.74</td>
+      <td>1.59</td>
+      <td>2.10</td>
+      <td>8.49</td>
+      <td>&lt;0.005</td>
+      <td>55.47</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Mailed check</th>
+      <td>0.56</td>
+      <td>1.75</td>
+      <td>0.12</td>
+      <td>0.33</td>
+      <td>0.79</td>
+      <td>1.39</td>
+      <td>2.21</td>
+      <td>4.75</td>
+      <td>&lt;0.005</td>
+      <td>18.88</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.73</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>576.60 on 10 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>387.81</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="check-assumptions">Check Assumptions</h3>
+
+<p>This looks promising. But did we make a procedural blunder in all of our data transformation?</p>
+
+<p><code>lifelines</code> gives us an awesome tool that we can use to simply check the Cox Model assumptions</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span><span class="o">.</span><span class="n">check_assumptions</span><span class="p">(</span><span class="n">training_df</span><span class="o">=</span><span class="n">m2m_wide</span><span class="p">[</span><span class="n">sig_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">]])</span></code></pre></div>
+<pre><code>The ``p_value_threshold`` is set at 0.01. Even under the null hypothesis of no violations, some
+covariates will be below the threshold by chance. This is compounded when there are many covariates.
+Similarly, when there are lots of observations, even minor deviances from the proportional hazard
+assumption will be flagged.
+
+With that in mind, it's best to use a combination of statistical tests and visual tests to determine
+the most serious violations. Produce visual plots using ``check_assumptions(..., show_plots=True)``
+and looking for non-constant lines. See link [A] below for a full example.
+</code></pre>
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>null_distribution</th>
+      <td>chi squared</td>
+    </tr>
+    <tr>
+      <th>degrees_of_freedom</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>test_name</th>
+      <td>proportional_hazard_test</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>test_statistic</th>
+      <th>p</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="2" valign="top">DeviceProtection_Yes</th>
+      <th>km</th>
+      <td>4.88</td>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>6.18</td>
+      <td>0.01</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">MultipleLines_Yes</th>
+      <th>km</th>
+      <td>17.91</td>
+      <td>&lt;0.005</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>19.76</td>
+      <td>&lt;0.005</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">OnlineBackup_Yes</th>
+      <th>km</th>
+      <td>3.40</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>4.08</td>
+      <td>0.04</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">OnlineSecurity_Yes</th>
+      <th>km</th>
+      <td>4.71</td>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>5.83</td>
+      <td>0.02</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">PaperlessBilling_Yes</th>
+      <th>km</th>
+      <td>0.17</td>
+      <td>0.68</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>0.74</td>
+      <td>0.39</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">Partner_Yes</th>
+      <th>km</th>
+      <td>4.38</td>
+      <td>0.04</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>4.55</td>
+      <td>0.03</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">PaymentMethod_Electronic check</th>
+      <th>km</th>
+      <td>2.65</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>3.54</td>
+      <td>0.06</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">PaymentMethod_Mailed check</th>
+      <th>km</th>
+      <td>9.96</td>
+      <td>&lt;0.005</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>11.07</td>
+      <td>&lt;0.005</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">TechSupport_Yes</th>
+      <th>km</th>
+      <td>3.45</td>
+      <td>0.06</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>4.42</td>
+      <td>0.04</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">gender_Male</th>
+      <th>km</th>
+      <td>0.69</td>
+      <td>0.41</td>
+    </tr>
+    <tr>
+      <th>rank</th>
+      <td>0.71</td>
+      <td>0.40</td>
+    </tr>
+  </tbody>
+</table>
+
+
+    
+    
+    1. Variable 'MultipleLines_Yes' failed the non-proportional test: p-value is <5e-05.
+    
+       Advice: with so few unique values (only 2), you can include `strata=['MultipleLines_Yes', ...]`
+    in the call in `.fit`. See documentation in link [E] below.
+    
+    2. Variable 'DeviceProtection_Yes' failed the non-proportional test: p-value is 0.0129.
+    
+       Advice: with so few unique values (only 2), you can include `strata=['DeviceProtection_Yes',
+    ...]` in the call in `.fit`. See documentation in link [E] below.
+    
+    3. Variable 'PaymentMethod_Mailed check' failed the non-proportional test: p-value is 0.0009.
+    
+       Advice: with so few unique values (only 2), you can include `strata=['PaymentMethod_Mailed
+    check', ...]` in the call in `.fit`. See documentation in link [E] below.
+    
+    ---
+    [A]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html
+    [B]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Bin-variable-and-stratify-on-it
+    [C]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Introduce-time-varying-covariates
+    [D]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Modify-the-functional-form
+    [E]  https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Proportional%20hazard%20assumption.html#Stratification
+    
+
+
+Those last 3 points -- `1., 2., 3.` all suggest we try stratifying. But what is that?
+
+### Stratifying
+
+Recall the fundamental structure of our Proportional Hazard Model. Everything that we've been working with until now has been centered around finding the right fit for our partial hazard function.
+
+However, we can additionally *stratify* our model to allow for *multiple* baseline hazard functions. This should track, intuitively, as we'd generally expect the *overall shape* of survival curves to vary between populations-- the linear scaling can only achieve so much, after all.
+
+
+```python
+from IPython.display import Image
+Image('images/lifelines_cox_eq.PNG')
+```
+
+
+
+
+    
+![png](cox_lifelines_51_0.png)
+    
+
+
+
+And implementing it is as wasy as populating the `strata` argument
+
+
+```python
+cph = CoxPHFitter()
+cph.fit(m2m_wide[sig_cols + ['tenure', 'Churn_Yes']],
+        duration_col='tenure', event_col='Churn_Yes',
+        strata=['MultipleLines_Yes', 'DeviceProtection_Yes', 'PaymentMethod_Mailed check'])
+cph.print_summary()
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>model</th>
+      <td>lifelines.CoxPHFitter</td>
+    </tr>
+    <tr>
+      <th>duration col</th>
+      <td>'tenure'</td>
+    </tr>
+    <tr>
+      <th>event col</th>
+      <td>'Churn_Yes'</td>
+    </tr>
+    <tr>
+      <th>strata</th>
+      <td>[MultipleLines_Yes, DeviceProtection_Yes, Paym...</td>
+    </tr>
+    <tr>
+      <th>baseline estimation</th>
+      <td>breslow</td>
+    </tr>
+    <tr>
+      <th>number of observations</th>
+      <td>2128</td>
+    </tr>
+    <tr>
+      <th>number of events observed</th>
+      <td>1162</td>
+    </tr>
+    <tr>
+      <th>partial log-likelihood</th>
+      <td>-6049.24</td>
+    </tr>
+    <tr>
+      <th>time fit was run</th>
+      <td>2020-04-06 19:34:50 UTC</td>
+    </tr>
+  </tbody>
+</table>
+</div><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>exp(coef)</th>
+      <th>se(coef)</th>
+      <th>coef lower 95%</th>
+      <th>coef upper 95%</th>
+      <th>exp(coef) lower 95%</th>
+      <th>exp(coef) upper 95%</th>
+      <th>z</th>
+      <th>p</th>
+      <th>-log2(p)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>gender_Male</th>
+      <td>-0.17</td>
+      <td>0.85</td>
+      <td>0.06</td>
+      <td>-0.28</td>
+      <td>-0.05</td>
+      <td>0.75</td>
+      <td>0.95</td>
+      <td>-2.81</td>
+      <td>&lt;0.005</td>
+      <td>7.67</td>
+    </tr>
+    <tr>
+      <th>Partner_Yes</th>
+      <td>-0.52</td>
+      <td>0.59</td>
+      <td>0.06</td>
+      <td>-0.65</td>
+      <td>-0.40</td>
+      <td>0.52</td>
+      <td>0.67</td>
+      <td>-8.17</td>
+      <td>&lt;0.005</td>
+      <td>51.53</td>
+    </tr>
+    <tr>
+      <th>OnlineSecurity_Yes</th>
+      <td>-0.73</td>
+      <td>0.48</td>
+      <td>0.09</td>
+      <td>-0.92</td>
+      <td>-0.55</td>
+      <td>0.40</td>
+      <td>0.58</td>
+      <td>-7.80</td>
+      <td>&lt;0.005</td>
+      <td>47.18</td>
+    </tr>
+    <tr>
+      <th>OnlineBackup_Yes</th>
+      <td>-0.67</td>
+      <td>0.51</td>
+      <td>0.07</td>
+      <td>-0.81</td>
+      <td>-0.54</td>
+      <td>0.45</td>
+      <td>0.58</td>
+      <td>-9.71</td>
+      <td>&lt;0.005</td>
+      <td>71.63</td>
+    </tr>
+    <tr>
+      <th>TechSupport_Yes</th>
+      <td>-0.60</td>
+      <td>0.55</td>
+      <td>0.09</td>
+      <td>-0.79</td>
+      <td>-0.42</td>
+      <td>0.46</td>
+      <td>0.66</td>
+      <td>-6.35</td>
+      <td>&lt;0.005</td>
+      <td>32.07</td>
+    </tr>
+    <tr>
+      <th>PaperlessBilling_Yes</th>
+      <td>0.24</td>
+      <td>1.27</td>
+      <td>0.08</td>
+      <td>0.08</td>
+      <td>0.39</td>
+      <td>1.08</td>
+      <td>1.48</td>
+      <td>2.98</td>
+      <td>&lt;0.005</td>
+      <td>8.46</td>
+    </tr>
+    <tr>
+      <th>PaymentMethod_Electronic check</th>
+      <td>0.60</td>
+      <td>1.83</td>
+      <td>0.07</td>
+      <td>0.46</td>
+      <td>0.74</td>
+      <td>1.59</td>
+      <td>2.10</td>
+      <td>8.43</td>
+      <td>&lt;0.005</td>
+      <td>54.74</td>
+    </tr>
+  </tbody>
+</table><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <tbody>
+    <tr>
+      <th>Concordance</th>
+      <td>0.69</td>
+    </tr>
+    <tr>
+      <th>Log-likelihood ratio test</th>
+      <td>416.12 on 7 df</td>
+    </tr>
+    <tr>
+      <th>-log2(p) of ll-ratio test</th>
+      <td>282.63</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Re-checking, we can see that <code>lifelines</code> doesn&rsquo;t hate the work we did, this time~</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span><span class="o">.</span><span class="n">check_assumptions</span><span class="p">(</span><span class="n">m2m_wide</span><span class="p">[</span><span class="n">sig_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">]])</span></code></pre></div>
+<pre><code>Proportional hazard assumption looks okay.
+</code></pre>
+
+<p>Of course, this now means that our visual interpretability goes down</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">m2m_sample</span> <span class="o">=</span> <span class="n">m2m_wide</span><span class="p">[</span><span class="n">sig_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;tenure&#39;</span><span class="p">,</span> <span class="s1">&#39;Churn_Yes&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+
+<span class="n">cph</span><span class="o">.</span><span class="n">predict_cumulative_hazard</span><span class="p">(</span><span class="n">m2m_sample</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                               <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">));</span></code></pre></div>
+<p><img src="cox_lifelines_57_0.png" alt="png" /></p>
+
+<p>and while <code>lifelines</code> allows us to inspect the <em>baseline</em> survival curves, for the various strata</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cph</span><span class="o">.</span><span class="n">baseline_survival_</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cph</span><span class="o">.</span><span class="n">strata</span><span class="p">));</span></code></pre></div>
+<p><img src="cox_lifelines_59_0.png" alt="png" /></p>
+
+<p>This gets us to the fundamental tension of &ldquo;model accuracy&rdquo; and &ldquo;model interpretability&rdquo; and is one of the many corners of &ldquo;Data Science is more of an art than a science&rdquo;</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

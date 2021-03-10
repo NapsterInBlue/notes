@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Method Decorators" />
+<meta property="og:description" content="There are various decorators that are useful when working with OOP. The three I want to highlight are
+ @property @classmethod @staticmethod  @property While many other languages have getter and setter methods, Python does away with this by adopting a &ldquo;responsibility lies with the user&rdquo; approach and has all of its class/object nuts and bolts more or less accessible.
+This provides a tough challenge when designing the class attributes, especially when you have multiple data fields that depend on a single object." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/oop/method_decorators/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Method Decorators"/>
+<meta name="twitter:description" content="There are various decorators that are useful when working with OOP. The three I want to highlight are
+ @property @classmethod @staticmethod  @property While many other languages have getter and setter methods, Python does away with this by adopting a &ldquo;responsibility lies with the user&rdquo; approach and has all of its class/object nuts and bolts more or less accessible.
+This provides a tough challenge when designing the class attributes, especially when you have multiple data fields that depend on a single object."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Method Decorators",
+  "url": "https://napsterinblue.github.io/notes/python/oop/method_decorators/",
+  "wordCount": "886",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Method Decorators</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Method Decorators</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>There are various decorators that are useful when working with OOP. The three I want to highlight are</p>
+
+<ul>
+<li><code>@property</code></li>
+<li><code>@classmethod</code></li>
+<li><code>@staticmethod</code></li>
+</ul>
+
+<h2 id="property">@property</h2>
+
+<p>While many other languages have getter and setter methods, Python does away with this by adopting a &ldquo;responsibility lies with the user&rdquo; approach and has all of its class/object nuts and bolts more or less accessible.</p>
+
+<p>This provides a tough challenge when designing the class attributes, especially when you have multiple data fields that depend on a single object. <code>DateTime</code> variables are a good example of this.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">DateTime</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39; Takes in a yyyy-mm-dd string and gives datetime functionality&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span></code></pre></div>
+<p>Which saves the data to memory as a <code>str</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span> <span class="o">=</span> <span class="n">DateTime</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
+<span class="n">dt</span></code></pre></div>
+<pre><code>&lt;__main__.DateTime at 0x5904128&gt;
+</code></pre>
+
+<p>We can naively use this <code>str</code> to get at all kinds of things</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="s1">&#39;month&#39;</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;day&#39;</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span></code></pre></div>
+<pre><code>month 01
+day 01
+year 2018
+</code></pre>
+
+<p>arbitrarily stringing them together to get something like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="s1">&#39;slash-format&#39;</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
+      <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span></code></pre></div>
+<pre><code>slash-format 01/01/2018
+</code></pre>
+
+<p>Which is cumbersome to type every time, so you might re-write <code>__init__()</code> to take care of this.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">DateTime2</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39; Takes in a yyyy-mm-dd string and gives datetime functionality&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span>
+        
+        <span class="c1"># derived attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">slashFormat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span> <span class="o">=</span> <span class="n">DateTime2</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">slashFormat</span></code></pre></div>
+<pre><code>'01/01/2018'
+</code></pre>
+
+<p>But this clutters up your <code>__init__</code> implementation. Furthermore, users won&rsquo;t always need these attributes, so building them all at the time of initialization might not be your best option. So you might be inclined to put them into class methods</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">DateTime3</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39; Takes in a yyyy-mm-dd string and gives datetime functionality&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span>
+        
+    <span class="k">def</span> <span class="nf">month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+        
+    <span class="k">def</span> <span class="nf">day</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+        
+    <span class="k">def</span> <span class="nf">year</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+        
+    <span class="k">def</span> <span class="nf">slashFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">()</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span> <span class="o">=</span> <span class="n">DateTime3</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">slashFormat</span><span class="p">()</span></code></pre></div>
+<pre><code>'01/01/2018'
+</code></pre>
+
+<p>But this is really more of an attribute than a function call. And <code>@property</code> lets you call it as such.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">DateTime4</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39; Takes in a yyyy-mm-dd string and gives datetime functionality&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">day</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">year</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">slashFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span> <span class="o">=</span> <span class="n">DateTime4</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">slashFormat</span></code></pre></div>
+<pre><code>'01/01/2018'
+</code></pre>
+
+<h2 id="classmethod"><code>@classmethod</code></h2>
+
+<p>Class methods act directly on the underlying <code>class</code>, not their instances. But this is a little tricky to follow along.</p>
+
+<p>For starters, the last instance of the <code>dt</code> variable was a <code>DateTime4</code> object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span><span class="o">.</span><span class="vm">__class__</span></code></pre></div>
+<pre><code>__main__.DateTime4
+</code></pre>
+
+<p>Which means that given an existing <code>DateTime4</code> object, we can determine which <code>class</code> it was, and call it like we did when instantiated <code>dt</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="s1">&#39;2222-22-22&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>&lt;__main__.DateTime4 at 0x58e3630&gt;
+</code></pre>
+
+<p>therefore producing a <em>different object altogether</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">dt</span></code></pre></div>
+<pre><code>&lt;__main__.DateTime4 at 0x58e35c0&gt;
+</code></pre>
+
+<p>So in a hacky manner, we can write some toy function that will use this functionality to build a new <code>DateTime4</code> object when passed a number instead of the <code>yyyy-mm-dd</code> string we&rsquo;ve been using.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">build_DateTime4_with_same_number</span><span class="p">(</span><span class="n">dtObj</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="n">dumbString</span> <span class="o">=</span> <span class="n">num</span><span class="o">*</span><span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">num</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">num</span><span class="o">*</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">dtObj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">dumbString</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test</span> <span class="o">=</span> <span class="n">build_DateTime4_with_same_number</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">test</span><span class="o">.</span><span class="n">slashFormat</span></code></pre></div>
+<pre><code>'33/33/3333'
+</code></pre>
+
+<p>However, when we package our code, we don&rsquo;t want our user to have to know every function like this that exists. Instead, we can nest it as a class method as follows.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">DateTime5</span><span class="p">(</span><span class="n">DateTime4</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39; Takes in a yyyy-mm-dd string and gives datetime functionality&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span>
+    
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">build_with_same_number</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+        <span class="n">dumbString</span> <span class="o">=</span> <span class="n">num</span><span class="o">*</span><span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">num</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">num</span><span class="o">*</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dumbString</span><span class="p">)</span>
+    
+    <span class="c1"># omiting @property implementations</span>
+    <span class="c1"># we get those with inheritence</span></code></pre></div>
+<p>Particular emphasis on the use of <code>cls</code>. This acts very similar to <code>self</code> when doing regular class-work, but instead returns the actual memory reference to the class definition.</p>
+
+<p>Which is why the last line looks so much like a regular class instantiation&ndash; that&rsquo;s because it is. And it works just as you&rsquo;d expect.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">test</span> <span class="o">=</span> <span class="n">DateTime5</span><span class="o">.</span><span class="n">build_with_same_number</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">test</span><span class="o">.</span><span class="n">slashFormat</span></code></pre></div>
+<pre><code>'99/99/9999'
+</code></pre>
+
+<p>This is a dumb example, but is used all over the place when you&rsquo;ve got multiple ways to instantiate an object. Off the cuff, the <code>pandas.DataFrame</code> comes to mind with the ability to build it from <code>.csv</code>, <code>.json</code>, <code>dict</code>, <code>tuple</code>, and many others. All of those implementations utilize <code>@classmethod</code> in one capacity or another.</p>
+
+<h2 id="staticmethod"><code>@staticmethod</code></h2>
+
+<p>Much easier, a static method is used when you want to be able use a class method without having to first instantiate the class. Or to borrow from my good friend <a href="https://github.com/jtzupan">jtzupan</a>:</p>
+
+<blockquote>
+<p>It is not bound to the method or class and therefore cannot modify the class</p>
+
+<p>i.e. it&rsquo;s a loosely-related function not dependent on the class or instance variables.</p>
+</blockquote>
+
+<p>Consider the following class that breaks on instantiation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">StaticMethodTest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;fileThatDoesntExist.lol&#39;</span><span class="p">)</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">print_</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Hey, it worked!&#39;</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">StaticMethodTest</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">FileNotFoundError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Well, that broke.&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Well, that broke.
+</code></pre>
+
+<p>However, this works fine if we go right to the method call.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">StaticMethodTest</span><span class="o">.</span><span class="n">print_</span><span class="p">()</span></code></pre></div>
+<pre><code>Hey, it worked!
+</code></pre>
+
+<p>A good practical use of this would be a format-checker for our existing <code>DateTime</code> class</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">class</span> <span class="nc">DateTime6</span><span class="p">(</span><span class="n">DateTime5</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_dt_format</span><span class="p">(</span><span class="n">datetimeStr</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datetimeStr</span> <span class="o">=</span> <span class="n">datetimeStr</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_dt_format</span><span class="p">(</span><span class="n">datetimeStr</span><span class="p">):</span>
+        <span class="n">dtFormat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span><span class="s1">&#39;\d{4}\-\d{2}\-\d{2}&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">dtFormat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">datetimeStr</span><span class="p">))</span></code></pre></div>
+<p>That either does some up-front assertion at the time of instantiation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">DateTime6</span><span class="p">(</span><span class="s1">&#39;2018-01-0&#39;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;This failed&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>This failed
+</code></pre>
+
+<p>Or can be used without first building an instance of the class</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">DateTime6</span><span class="o">.</span><span class="n">is_dt_format</span><span class="p">(</span><span class="s1">&#39;20180101&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>False
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Object Detection Rough Intuition" />
+<meta property="og:description" content="Don&rsquo;t yet understand how this works in practice, but wanted to get some thoughts down about the theory of how this all works.
+Overview So for a given image, our model&rsquo;s prediction will have the following scheme:
+ Generate a box around an object, defined by  bx, by: coordinates of the center of the box bw, bh: width and height of the boxes  Note: these values are scaled as percentages between (0, 0) and (1, 1), as we assume unit length of the image  from IPython." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/yolo_intuition/" />
+
+
+
+<meta property="article:published_time" content="2018-10-09T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-09T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Object Detection Rough Intuition"/>
+<meta name="twitter:description" content="Don&rsquo;t yet understand how this works in practice, but wanted to get some thoughts down about the theory of how this all works.
+Overview So for a given image, our model&rsquo;s prediction will have the following scheme:
+ Generate a box around an object, defined by  bx, by: coordinates of the center of the box bw, bh: width and height of the boxes  Note: these values are scaled as percentages between (0, 0) and (1, 1), as we assume unit length of the image  from IPython."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Object Detection Rough Intuition",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/yolo_intuition/",
+  "wordCount": "462",
+  "datePublished": "2018-10-09T00:00:00&#43;00:00",
+  "dateModified": "2018-10-09T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Object Detection Rough Intuition</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Object Detection Rough Intuition</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-09T00:00:00Z "> 09 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Don&rsquo;t yet understand how this works in practice, but wanted to get some thoughts down about the theory of how this all works.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>So for a given image, our model&rsquo;s prediction will have the following scheme:</p>
+
+<ul>
+<li>Generate a box around an object, defined by
+
+<ul>
+<li><code>bx</code>, <code>by</code>: coordinates of the center of the box</li>
+<li><code>bw</code>, <code>bh</code>: width and height of the boxes</li>
+</ul></li>
+<li>Note: these values are scaled <em>as percentages</em> between <code>(0, 0)</code> and <code>(1, 1)</code>, as we assume unit length of the image</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bounding_box.png&#39;</span><span class="p">)</span></code></pre></div>
+<p>Then (in this example, a 3-class detection problem) we provide the following vector for our prediction:</p>
+
+<ul>
+<li>Probability that there&rsquo;s any object</li>
+<li>The 4 parameters listed above</li>
+<li>Probability that we&rsquo;re looking at each of the objects</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/bounding_box_labels.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_6_0.png" alt="png" /></p>
+
+<h3 id="loss-function">Loss Function</h3>
+
+<p>Our loss function is dependent on whether or not we predict that an object is there</p>
+
+<p>(Intuitively, though, I figured we&rsquo;d implement some sort of log-loss cross/entropy function here&hellip;)</p>
+
+<p>If <code>y = 1</code></p>
+
+<p>$((\hat{y_1} - y_1)^2 + &hellip; + (\hat{y_8} - y_8)^2)$</p>
+
+<p>If <code>y = 0</code></p>
+
+<p>$(\hat{y_1} - y_1)^2$</p>
+
+<h2 id="generating-boxes">Generating Boxes</h2>
+
+<p>So assuming that we&rsquo;ve got labelled data (by class, location, and bounding box size&ndash; which the course didn&rsquo;t cover generating), we know how to score our prediction. But how do we generate our boxes.</p>
+
+<h3 id="via-convolution">Via Convolution</h3>
+
+<p>We could slide over our dataset and get a bunch of boxes via convolution.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sliding_windows.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_15_0.png" alt="png" /></p>
+
+<h3 id="yolo">YOLO</h3>
+
+<p>This is the first the course uses when it dives into the YOLO algorithm, with out any suggestion of how those red boxes are generated. Idk.</p>
+
+<p>They also suggest using something closer to a <code>19x19</code> grid, but leave it as 3s for illustration.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/yolo_basic.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_18_0.png" alt="png" /></p>
+
+<p>For a 3-class problem apply the same <code>1x8</code> vector as above, giving you a final matrix representation of <code>3x3x8</code>. So if your image starts off <code>100x100x3</code>, make sure whatever Convoluation/Pooling steps along the way get you to an output of this size.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/yolo_bounding_boxes.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_20_0.png" alt="png" /></p>
+
+<p>Then, once you&rsquo;ve got all of your boxes, you want to trim down the redundant ones.</p>
+
+<h3 id="non-maximum-suppression">Non-Maximum Suppression</h3>
+
+<p>So when you&rsquo;ve got two boxes that overlap, like the ones below, you can define a metric <em>Intersection Over Union</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/iou1.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_24_0.png" alt="png" /></p>
+
+<p>Here we represent intersection with the yellow, union with the green.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/iou2.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_26_0.png" alt="png" /></p>
+
+<p>We can apply it to images that returned more boxes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/non_max_1.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_28_0.png" alt="png" /></p>
+
+<p>To simply our representation of where we think the objects are.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/non_max_2.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_30_0.png" alt="png" /></p>
+
+<p>More generally, the idea is that we use the following algorithm</p>
+
+<pre><code>For each individual class
+
+    Discard all boxes with p_c &lt; .6
+
+    While remaining boxes:
+        Pick box w largest p_c
+
+        Discard any remaining box w IoU &gt;= 0.5 w this box
+</code></pre>
+
+<p>To go from busy pictures like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/yolo_multiclass_1.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_34_0.png" alt="png" /></p>
+
+<p>to incrementally-less busy pictures</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/yolo_multiclass_2.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_36_0.png" alt="png" /></p>
+
+<p>Until we have a box per object</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/yolo_multiclass_3.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="yolo_intuition_38_0.png" alt="png" /></p>
+
+<p>(Omitted, the blue, yellow, and green reductions, for some reason.)</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Getting JSON Handling Right" />
+<meta property="og:description" content="Motivation I&rsquo;m currently going through the Deployment of ML Models course on Udemy and in the sixth module, they start implementing a testing suite to ensure stability in a package comprised of pandas, sklearn, and numpy.
+I almost glossed over this section until I realized that I wasn&rsquo;t totally up to speed what they were doing as far as formatting goes. I&rsquo;ve written a ton about pd.read_csv() and felt pretty comfortable about that." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/pandas/to_json/" />
+
+
+
+<meta property="article:published_time" content="2020-10-26T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-10-26T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Getting JSON Handling Right"/>
+<meta name="twitter:description" content="Motivation I&rsquo;m currently going through the Deployment of ML Models course on Udemy and in the sixth module, they start implementing a testing suite to ensure stability in a package comprised of pandas, sklearn, and numpy.
+I almost glossed over this section until I realized that I wasn&rsquo;t totally up to speed what they were doing as far as formatting goes. I&rsquo;ve written a ton about pd.read_csv() and felt pretty comfortable about that."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Getting JSON Handling Right",
+  "url": "https://napsterinblue.github.io/notes/python/pandas/to_json/",
+  "wordCount": "3299",
+  "datePublished": "2020-10-26T00:00:00&#43;00:00",
+  "dateModified": "2020-10-26T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Getting JSON Handling Right</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Getting JSON Handling Right</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-10-26T00:00:00Z "> 26 Oct 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="motivation">Motivation</h2>
+
+<p>I&rsquo;m currently going through the <a href="https://www.udemy.com/course/deployment-of-machine-learning-models/">Deployment of ML Models course on Udemy</a> and in the sixth module, they start implementing a testing suite to ensure stability in a package comprised of <code>pandas</code>, <code>sklearn</code>, and <code>numpy</code>.</p>
+
+<p>I almost glossed over this section until I realized that I wasn&rsquo;t totally up to speed what they were doing as far as formatting goes. I&rsquo;ve written a ton about <code>pd.read_csv()</code> and felt pretty comfortable about that.</p>
+
+<p>However, what about <code>.predict()</code> methods of my models? Specifically, what about the code that gets passed to them?</p>
+
+<p>My <code>Pipeline</code> object had a bunch of <code>Transformer</code> objects chained together, spilling into a simple <code>Linear_model</code>.</p>
+
+<pre><code>Pipeline(steps=[('categorical_imputer', CategoricalImputer()),
+                 ...
+                ('Linear_model', Lasso(alpha=0.005, random_state=0))])
+</code></pre>
+
+<p>So in order for my pipeline to execute correctly, I needed my input data to be able to serve column values by key (e.g. impute <em>these</em> columns). Hence, I needed it to be a <code>DataFrame</code>.</p>
+
+<p>However, the prediction function that they used didn&rsquo;t take a <code>DataFrame</code>, but instead a stringed-JSON, which was converted into a <code>DataFrame</code> within the function.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">make_prediction</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">input_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;Make a prediction using the saved model pipeline.&#34;&#34;&#34;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+    <span class="n">prediction</span> <span class="o">=</span> <span class="n">_price_pipe</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">config</span><span class="o">.</span><span class="n">FEATURES</span><span class="p">])</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prediction</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;predictions&#34;</span><span class="p">:</span> <span class="n">output</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">response</span></code></pre></div>
+<p>This made enough sense&ndash; some serialized data stream wasn&rsquo;t going to come to me in a <code>DataFrame</code> format. I should expect JSON.</p>
+
+<p>So the trick was going from old, reliable <code>pd.read_csv()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/housing.csv&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Id</th>
+      <th>MSSubClass</th>
+      <th>MSZoning</th>
+      <th>LotFrontage</th>
+      <th>LotArea</th>
+      <th>Street</th>
+      <th>Alley</th>
+      <th>LotShape</th>
+      <th>LandContour</th>
+      <th>Utilities</th>
+      <th>...</th>
+      <th>ScreenPorch</th>
+      <th>PoolArea</th>
+      <th>PoolQC</th>
+      <th>Fence</th>
+      <th>MiscFeature</th>
+      <th>MiscVal</th>
+      <th>MoSold</th>
+      <th>YrSold</th>
+      <th>SaleType</th>
+      <th>SaleCondition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1461</td>
+      <td>20</td>
+      <td>RH</td>
+      <td>80.0</td>
+      <td>11622</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>120</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1462</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>81.0</td>
+      <td>14267</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Gar2</td>
+      <td>12500</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1463</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>74.0</td>
+      <td>13830</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1464</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>78.0</td>
+      <td>9978</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1465</td>
+      <td>120</td>
+      <td>RL</td>
+      <td>43.0</td>
+      <td>5005</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>HLS</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 80 columns</p>
+</div>
+
+<p>&hellip;into a JSON format that would unpack correctly into a <code>DataFrame</code> once <code>make_prediction()</code> got ahold of it.</p>
+
+<h2 id="lots-of-json-formats">Lots of JSON formats</h2>
+
+<p>So at this point, I needed to figure out how to de-serialize my <code>DataFrame</code> into JSON, such that <code>pd.read_json()</code> didn&rsquo;t choke on it.</p>
+
+<p>Little did I know, there were a bunch of different ways that this function will JSON-ify your data</p>
+
+<pre><code>        orient : string
+            Indication of expected JSON string format.
+
+            * The format of the JSON string
+
+              - 'split' : dict like {'index' -&gt; [index],
+                'columns' -&gt; [columns], 'data' -&gt; [values]}
+              - 'records' : list like
+                [{column -&gt; value}, ... , {column -&gt; value}]
+              - 'index' : dict like {index -&gt; {column -&gt; value}}
+              - 'columns' : dict like {column -&gt; {index -&gt; value}}
+              - 'values' : just the values array
+              - 'table' : dict like {'schema': {schema}, 'data': {data}}
+                describing the data, and the data component is
+                like ``orient='records'``.
+</code></pre>
+
+<p>The docs were very dense, so I figured it was worth enumerating the different options here.</p>
+
+<h3 id="split">split</h3>
+
+<p><code>orient='split'</code> basically de-constructs the dataset by its indexes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">loads</span>
+
+<span class="n">split</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;split&#39;</span><span class="p">)</span>
+<span class="n">split</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'{&quot;columns&quot;:[&quot;Id&quot;,&quot;MSSubClass&quot;,&quot;MSZoning&quot;,&quot;LotFrontage&quot;,&quot;LotArea&quot;,&quot;Street&quot;,&quot;Alley&quot;,&quot;LotShape&quot;,&quot;LandContour&quot;,&quot;Utilities&quot;,&quot;LotConfig&quot;,&quot;LandSlope&quot;,&quot;Neighborhood&quot;,&quot;Condition1&quot;,&quot;Condition2&quot;,&quot;BldgType&quot;,&quot;HouseStyle&quot;,&quot;OverallQual&quot;,&quot;OverallCond&quot;,&quot;YearBuilt&quot;,&quot;YearRemodAdd&quot;,&quot;RoofStyle&quot;,&quot;RoofMatl&quot;,&quot;Exterior1st&quot;,&quot;Exterior2nd&quot;,&quot;MasVnrType&quot;,&quot;MasVnrArea&quot;,&quot;ExterQual&quot;,&quot;ExterCond&quot;,&quot;Foundation&quot;,&quot;BsmtQual&quot;,&quot;BsmtCond&quot;,&quot;BsmtExposure&quot;,&quot;BsmtFinType1&quot;,&quot;BsmtFinSF1&quot;,&quot;BsmtFinType2&quot;,&quot;BsmtFinSF2&quot;,&quot;BsmtUnfSF&quot;,&quot;TotalBsmtSF&quot;,&quot;Hea'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['columns', 'index', 'data'])
+</code></pre>
+
+<p>You get the row and column indexes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;columns&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">])</span>
+<span class="n">display</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">])</span></code></pre></div>
+<pre><code>['Id', 'MSSubClass', 'MSZoning', 'LotFrontage', 'LotArea']
+
+
+
+[0, 1, 2, 3, 4]
+</code></pre>
+
+<p>As well as the data itself.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span></code></pre></div>
+<pre><code>[[1461, 20, 'RH', 80.0, 11622, 'Pave', None, 'Reg', 'Lvl', 'AllPub', 'Inside', 'Gtl', 'NAmes', 'Feedr', 'Norm', '1Fam', '1Story', 5, 6, 1961, 1961, 'Gable', 'CompShg', 'VinylSd', 'VinylSd', 'None', 0, 'TA', 'TA', 'CBlock', 'TA', 'TA', 'No', 'Rec', 468, 'LwQ', 144, 270, 882, 'GasA', 'TA', 'Y', 'SBrkr', 896, 0, 0, 896, 0, 0, 1, 0, 2, 1, 'TA', 5, 'Typ', 0, None, 'Attchd', 1961, 'Unf', 1, 730, 'TA', 'TA', 'Y', 140, 0, 0, 0, 120, 0, None, 'MnPrv', None, 0, 6, 2010, 'WD', 'Normal'], [1462, 20, 'RL', 81.0, 14267, 'Pave', None, 'IR1', 'Lvl', 'AllPub', 'Corner', 'Gtl', 'NAmes', 'Norm', 'Norm', '1Fam', '1Story', 6, 6, 1958, 1958, 'Hip', 'CompShg', 'Wd Sdng', 'Wd Sdng', 'BrkFace', 108, 'TA', 'TA', 'CBlock', 'TA', 'TA', 'No', 'ALQ', 923, 'Unf', 0, 406, 1329, 'GasA', 'TA', 'Y', 'SBrkr', 1329, 0, 0, 1329, 0, 0, 1, 1, 3, 1, 'Gd', 6, 'Typ', 0, None, 'Attchd', 1958, 'Unf', 1, 312, 'TA', 'TA', 'Y', 393, 36, 0, 0, 0, 0, None, None, 'Gar2', 12500, 6, 2010, 'WD', 'Normal']]
+</code></pre>
+
+<p>Which has the same shape as the original dataset</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Columns</span>
+<span class="n">display</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+
+<span class="c1"># by row</span>
+<span class="n">display</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span></code></pre></div>
+<pre><code>9
+
+
+
+80
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(9, 80)
+</code></pre>
+
+<p>And is easy enough to reconstruct the original</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span>
+             <span class="n">columns</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;columns&#39;</span><span class="p">],</span>
+             <span class="n">index</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">])</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Id</th>
+      <th>MSSubClass</th>
+      <th>MSZoning</th>
+      <th>LotFrontage</th>
+      <th>LotArea</th>
+      <th>Street</th>
+      <th>Alley</th>
+      <th>LotShape</th>
+      <th>LandContour</th>
+      <th>Utilities</th>
+      <th>...</th>
+      <th>ScreenPorch</th>
+      <th>PoolArea</th>
+      <th>PoolQC</th>
+      <th>Fence</th>
+      <th>MiscFeature</th>
+      <th>MiscVal</th>
+      <th>MoSold</th>
+      <th>YrSold</th>
+      <th>SaleType</th>
+      <th>SaleCondition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1461</td>
+      <td>20</td>
+      <td>RH</td>
+      <td>80.0</td>
+      <td>11622</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>120</td>
+      <td>0</td>
+      <td>None</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1462</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>81.0</td>
+      <td>14267</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>Gar2</td>
+      <td>12500</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1463</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>74.0</td>
+      <td>13830</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1464</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>78.0</td>
+      <td>9978</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1465</td>
+      <td>120</td>
+      <td>RL</td>
+      <td>43.0</td>
+      <td>5005</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>HLS</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1466</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>75.0</td>
+      <td>10000</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1467</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>NaN</td>
+      <td>7980</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>GdPrv</td>
+      <td>Shed</td>
+      <td>500</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1468</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>63.0</td>
+      <td>8402</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>5</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1469</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>85.0</td>
+      <td>10176</td>
+      <td>Pave</td>
+      <td>None</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<p>However, it fails because <code>pandas</code> can&rsquo;t find a uniform key length in <code>split</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></code></pre></div>
+<pre><code>arrays must all be same length
+</code></pre>
+
+<p>For obvious reasons</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span></code></pre></div>
+<pre><code>columns 80
+index 9
+data 9
+</code></pre>
+
+<h3 id="index">index</h3>
+
+<p><code>index</code> creates a simple dictionary of indexes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">idx</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+<span class="n">idx</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'{&quot;0&quot;:{&quot;Id&quot;:1461,&quot;MSSubClass&quot;:20,&quot;MSZoning&quot;:&quot;RH&quot;,&quot;LotFrontage&quot;:80.0,&quot;LotArea&quot;:11622,&quot;Street&quot;:&quot;Pave&quot;,&quot;Alley&quot;:null,&quot;LotShape&quot;:&quot;Reg&quot;,&quot;LandContour&quot;:&quot;Lvl&quot;,&quot;Utilities&quot;:&quot;AllPub&quot;,&quot;LotConfig&quot;:&quot;Inside&quot;,&quot;LandSlope&quot;:&quot;Gtl&quot;,&quot;Neighborhood&quot;:&quot;NAmes&quot;,&quot;Condition1&quot;:&quot;Feedr&quot;,&quot;Condition2&quot;:&quot;Norm&quot;,&quot;BldgType&quot;:&quot;1Fam&quot;,&quot;HouseStyle&quot;:&quot;1Story&quot;,&quot;OverallQual&quot;:5,&quot;OverallCond&quot;:6,&quot;YearBuilt&quot;:1961,&quot;YearRemodAdd&quot;:1961,&quot;RoofStyle&quot;:&quot;Gable&quot;,&quot;RoofMatl&quot;:&quot;CompShg&quot;,&quot;Exterior1st&quot;:&quot;VinylSd&quot;,&quot;Exterior2nd&quot;:&quot;VinylSd&quot;,&quot;MasVnrType&quot;:&quot;None&quot;,&quot;MasVnrAr'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['0', '1', '2', '3', '4', '5', '6', '7', '8'])
+</code></pre>
+
+<p>And nested underneath that is each column of data, per row.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">25</span><span class="p">),</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">])</span>
+    
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;...&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Id                        1461
+MSSubClass                20
+MSZoning                  RH
+LotFrontage               80.0
+LotArea                   11622
+...
+</code></pre>
+
+<p>This is almost right&ndash; just lopsided</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1stFlrSF</th>
+      <th>2ndFlrSF</th>
+      <th>3SsnPorch</th>
+      <th>Alley</th>
+      <th>BedroomAbvGr</th>
+      <th>BldgType</th>
+      <th>BsmtCond</th>
+      <th>BsmtExposure</th>
+      <th>BsmtFinSF1</th>
+      <th>BsmtFinSF2</th>
+      <th>...</th>
+      <th>SaleType</th>
+      <th>ScreenPorch</th>
+      <th>Street</th>
+      <th>TotRmsAbvGrd</th>
+      <th>TotalBsmtSF</th>
+      <th>Utilities</th>
+      <th>WoodDeckSF</th>
+      <th>YearBuilt</th>
+      <th>YearRemodAdd</th>
+      <th>YrSold</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>896</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>2</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>468</td>
+      <td>144</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>120</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>882</td>
+      <td>AllPub</td>
+      <td>140</td>
+      <td>1961</td>
+      <td>1961</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1329</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>923</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>1329</td>
+      <td>AllPub</td>
+      <td>393</td>
+      <td>1958</td>
+      <td>1958</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>928</td>
+      <td>701</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>791</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>928</td>
+      <td>AllPub</td>
+      <td>212</td>
+      <td>1997</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>926</td>
+      <td>678</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>602</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>926</td>
+      <td>AllPub</td>
+      <td>360</td>
+      <td>1998</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1280</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>2</td>
+      <td>TwnhsE</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>263</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>144</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>1280</td>
+      <td>AllPub</td>
+      <td>0</td>
+      <td>1992</td>
+      <td>1992</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>763</td>
+      <td>892</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>763</td>
+      <td>AllPub</td>
+      <td>157</td>
+      <td>1993</td>
+      <td>1994</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1187</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>935</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>1168</td>
+      <td>AllPub</td>
+      <td>483</td>
+      <td>1992</td>
+      <td>2007</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>789</td>
+      <td>676</td>
+      <td>0</td>
+      <td>None</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>789</td>
+      <td>AllPub</td>
+      <td>0</td>
+      <td>1998</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1341</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>2</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>Gd</td>
+      <td>637</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>1300</td>
+      <td>AllPub</td>
+      <td>192</td>
+      <td>1990</td>
+      <td>1990</td>
+      <td>2010</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<h3 id="columns">columns</h3>
+
+<p>Columns is basically the same thing, but in reverse</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+<span class="n">cols</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'{&quot;Id&quot;:{&quot;0&quot;:1461,&quot;1&quot;:1462,&quot;2&quot;:1463,&quot;3&quot;:1464,&quot;4&quot;:1465,&quot;5&quot;:1466,&quot;6&quot;:1467,&quot;7&quot;:1468,&quot;8&quot;:1469},&quot;MSSubClass&quot;:{&quot;0&quot;:20,&quot;1&quot;:20,&quot;2&quot;:60,&quot;3&quot;:60,&quot;4&quot;:120,&quot;5&quot;:60,&quot;6&quot;:20,&quot;7&quot;:60,&quot;8&quot;:20},&quot;MSZoning&quot;:{&quot;0&quot;:&quot;RH&quot;,&quot;1&quot;:&quot;RL&quot;,&quot;2&quot;:&quot;RL&quot;,&quot;3&quot;:&quot;RL&quot;,&quot;4&quot;:&quot;RL&quot;,&quot;5&quot;:&quot;RL&quot;,&quot;6&quot;:&quot;RL&quot;,&quot;7&quot;:&quot;RL&quot;,&quot;8&quot;:&quot;RL&quot;},&quot;LotFrontage&quot;:{&quot;0&quot;:80.0,&quot;1&quot;:81.0,&quot;2&quot;:74.0,&quot;3&quot;:78.0,&quot;4&quot;:43.0,&quot;5&quot;:75.0,&quot;6&quot;:null,&quot;7&quot;:63.0,&quot;8&quot;:85.0},&quot;LotArea&quot;:{&quot;0&quot;:11622,&quot;1&quot;:14267,&quot;2&quot;:13830,&quot;3&quot;:9978,&quot;4&quot;:5005,&quot;5&quot;:10000,&quot;6&quot;:7980,&quot;7&quot;:8402,&quot;8&quot;:10176},&quot;Street&quot;:{&quot;0&quot;:&quot;Pave&quot;,&quot;1&quot;:&quot;Pave&quot;,&quot;2&quot;:&quot;Pave&quot;,'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['Id', 'MSSubClass', 'MSZoning', 'LotFrontage', 'LotArea', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig', 'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'MasVnrArea', 'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinSF1', 'BsmtFinType2', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea', 'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'KitchenQual', 'TotRmsAbvGrd', 'Functional', 'Fireplaces', 'FireplaceQu', 'GarageType', 'GarageYrBlt', 'GarageFinish', 'GarageCars', 'GarageArea', 'GarageQual', 'GarageCond', 'PavedDrive', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch', 'PoolArea', 'PoolQC', 'Fence', 'MiscFeature', 'MiscVal', 'MoSold', 'YrSold', 'SaleType', 'SaleCondition'])
+</code></pre>
+
+<p>Each column key houses <code>dicts</code> of the form <code>(index, data)</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">25</span><span class="p">),</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">])</span>
+    
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;...&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>0                         1461
+1                         1462
+2                         1463
+3                         1464
+4                         1465
+...
+</code></pre>
+
+<p>This would work fine</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Id</th>
+      <th>MSSubClass</th>
+      <th>MSZoning</th>
+      <th>LotFrontage</th>
+      <th>LotArea</th>
+      <th>Street</th>
+      <th>Alley</th>
+      <th>LotShape</th>
+      <th>LandContour</th>
+      <th>Utilities</th>
+      <th>...</th>
+      <th>ScreenPorch</th>
+      <th>PoolArea</th>
+      <th>PoolQC</th>
+      <th>Fence</th>
+      <th>MiscFeature</th>
+      <th>MiscVal</th>
+      <th>MoSold</th>
+      <th>YrSold</th>
+      <th>SaleType</th>
+      <th>SaleCondition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1461</td>
+      <td>20</td>
+      <td>RH</td>
+      <td>80.0</td>
+      <td>11622</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>120</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1462</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>81.0</td>
+      <td>14267</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>Gar2</td>
+      <td>12500</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1463</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>74.0</td>
+      <td>13830</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1464</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>78.0</td>
+      <td>9978</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1465</td>
+      <td>120</td>
+      <td>RL</td>
+      <td>43.0</td>
+      <td>5005</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>HLS</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1466</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>75.0</td>
+      <td>10000</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1467</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>NaN</td>
+      <td>7980</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>GdPrv</td>
+      <td>Shed</td>
+      <td>500</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1468</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>63.0</td>
+      <td>8402</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>5</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1469</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>85.0</td>
+      <td>10176</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<h3 id="values">values</h3>
+
+<p>Returns a simple nested <code>list</code> of the values&ndash; no columns or index</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">values</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;values&#39;</span><span class="p">)</span>
+<span class="n">values</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'[[1461,20,&quot;RH&quot;,80.0,11622,&quot;Pave&quot;,null,&quot;Reg&quot;,&quot;Lvl&quot;,&quot;AllPub&quot;,&quot;Inside&quot;,&quot;Gtl&quot;,&quot;NAmes&quot;,&quot;Feedr&quot;,&quot;Norm&quot;,&quot;1Fam&quot;,&quot;1Story&quot;,5,6,1961,1961,&quot;Gable&quot;,&quot;CompShg&quot;,&quot;VinylSd&quot;,&quot;VinylSd&quot;,&quot;None&quot;,0,&quot;TA&quot;,&quot;TA&quot;,&quot;CBlock&quot;,&quot;TA&quot;,&quot;TA&quot;,&quot;No&quot;,&quot;Rec&quot;,468,&quot;LwQ&quot;,144,270,882,&quot;GasA&quot;,&quot;TA&quot;,&quot;Y&quot;,&quot;SBrkr&quot;,896,0,0,896,0,0,1,0,2,1,&quot;TA&quot;,5,&quot;Typ&quot;,0,null,&quot;Attchd&quot;,1961,&quot;Unf&quot;,1,730,&quot;TA&quot;,&quot;TA&quot;,&quot;Y&quot;,140,0,0,0,120,0,null,&quot;MnPrv&quot;,null,0,6,2010,&quot;WD&quot;,&quot;Normal&quot;],[1462,20,&quot;RL&quot;,81.0,14267,&quot;Pave&quot;,null,&quot;IR1&quot;,&quot;Lvl&quot;,&quot;AllPub&quot;,&quot;Corner&quot;,&quot;Gtl&quot;,&quot;NAmes&quot;,&quot;Norm&quot;,&quot;Norm&quot;,&quot;1F'
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></code></pre></div>
+<pre><code>list
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">10</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">10</span><span class="p">])</span></code></pre></div>
+<pre><code>[1461, 20, 'RH', 80.0, 11622, 'Pave', None, 'Reg', 'Lvl', 'AllPub']
+[1462, 20, 'RL', 81.0, 14267, 'Pave', None, 'IR1', 'Lvl', 'AllPub']
+</code></pre>
+
+<p>Also works for creating a <code>DataFrame</code>, however, the <code>Pipeline</code> object can&rsquo;t select by column name.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>...</th>
+      <th>70</th>
+      <th>71</th>
+      <th>72</th>
+      <th>73</th>
+      <th>74</th>
+      <th>75</th>
+      <th>76</th>
+      <th>77</th>
+      <th>78</th>
+      <th>79</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1461</td>
+      <td>20</td>
+      <td>RH</td>
+      <td>80.0</td>
+      <td>11622</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>120</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1462</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>81.0</td>
+      <td>14267</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>Gar2</td>
+      <td>12500</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1463</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>74.0</td>
+      <td>13830</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1464</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>78.0</td>
+      <td>9978</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1465</td>
+      <td>120</td>
+      <td>RL</td>
+      <td>43.0</td>
+      <td>5005</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>HLS</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1466</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>75.0</td>
+      <td>10000</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1467</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>NaN</td>
+      <td>7980</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>GdPrv</td>
+      <td>Shed</td>
+      <td>500</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1468</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>63.0</td>
+      <td>8402</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>5</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1469</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>85.0</td>
+      <td>10176</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<h3 id="default-records">default / records</h3>
+
+<p>By default, the function turns each column into its own dict, which in turn has each row/index as a nested dict.</p>
+
+<p>This is what we want.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">loads</span>
+
+<span class="n">default</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<span class="n">default</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'{&quot;Id&quot;:{&quot;0&quot;:1461,&quot;1&quot;:1462,&quot;2&quot;:1463,&quot;3&quot;:1464,&quot;4&quot;:1465,&quot;5&quot;:1466,&quot;6&quot;:1467,&quot;7&quot;:1468,&quot;8&quot;:1469},&quot;MSSubClass&quot;:{&quot;0&quot;:20,&quot;1&quot;:20,&quot;2&quot;:60,&quot;3&quot;:60,&quot;4&quot;:120,&quot;5&quot;:60,&quot;6&quot;:20,&quot;7&quot;:60,&quot;8&quot;:20},&quot;MSZoning&quot;:{&quot;0&quot;:&quot;RH&quot;,&quot;1&quot;:&quot;RL&quot;,&quot;2&quot;:&quot;RL&quot;,&quot;3&quot;:&quot;RL&quot;,&quot;4&quot;:&quot;RL&quot;,&quot;5&quot;:&quot;RL&quot;,&quot;6&quot;:&quot;RL&quot;,&quot;7&quot;:&quot;RL&quot;,&quot;8&quot;:&quot;RL&quot;},&quot;LotFrontage&quot;:{&quot;0&quot;:80.0,&quot;1&quot;:81.0,&quot;2&quot;:74.0,&quot;3&quot;:78.0,&quot;4&quot;:43.0,&quot;5&quot;:75.0,&quot;6&quot;:null,&quot;7&quot;:63.0,&quot;8&quot;:85.0},&quot;LotArea&quot;:{&quot;0&quot;:11622,&quot;1&quot;:14267,&quot;2&quot;:13830,&quot;3&quot;:9978,&quot;4&quot;:5005,&quot;5&quot;:10000,&quot;6&quot;:7980,&quot;7&quot;:8402,&quot;8&quot;:10176},&quot;Street&quot;:{&quot;0&quot;:&quot;Pave&quot;,&quot;1&quot;:&quot;Pave&quot;,&quot;2&quot;:&quot;Pave&quot;,'
+</code></pre>
+
+<p>Columns</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">loads</span><span class="p">(</span><span class="n">default</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['Id', 'MSSubClass', 'MSZoning', 'LotFrontage', 'LotArea', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig', 'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 'MasVnrArea', 'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinSF1', 'BsmtFinType2', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea', 'BsmtFullBath', 'BsmtHalfBath', 'FullBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'KitchenQual', 'TotRmsAbvGrd', 'Functional', 'Fireplaces', 'FireplaceQu', 'GarageType', 'GarageYrBlt', 'GarageFinish', 'GarageCars', 'GarageArea', 'GarageQual', 'GarageCond', 'PavedDrive', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch', '3SsnPorch', 'ScreenPorch', 'PoolArea', 'PoolQC', 'Fence', 'MiscFeature', 'MiscVal', 'MoSold', 'YrSold', 'SaleType', 'SaleCondition'])
+</code></pre>
+
+<p>Rows/Indexes</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">loads</span><span class="p">(</span><span class="n">default</span><span class="p">)[</span><span class="s1">&#39;Id&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>{'0': 1461,
+ '1': 1462,
+ '2': 1463,
+ '3': 1464,
+ '4': 1465,
+ '5': 1466,
+ '6': 1467,
+ '7': 1468,
+ '8': 1469}
+</code></pre>
+
+<p>Works great.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">default</span><span class="p">)</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Id</th>
+      <th>MSSubClass</th>
+      <th>MSZoning</th>
+      <th>LotFrontage</th>
+      <th>LotArea</th>
+      <th>Street</th>
+      <th>Alley</th>
+      <th>LotShape</th>
+      <th>LandContour</th>
+      <th>Utilities</th>
+      <th>...</th>
+      <th>ScreenPorch</th>
+      <th>PoolArea</th>
+      <th>PoolQC</th>
+      <th>Fence</th>
+      <th>MiscFeature</th>
+      <th>MiscVal</th>
+      <th>MoSold</th>
+      <th>YrSold</th>
+      <th>SaleType</th>
+      <th>SaleCondition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1461</td>
+      <td>20</td>
+      <td>RH</td>
+      <td>80.0</td>
+      <td>11622</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>120</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1462</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>81.0</td>
+      <td>14267</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>Gar2</td>
+      <td>12500</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1463</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>74.0</td>
+      <td>13830</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>MnPrv</td>
+      <td>None</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1464</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>78.0</td>
+      <td>9978</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1465</td>
+      <td>120</td>
+      <td>RL</td>
+      <td>43.0</td>
+      <td>5005</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>HLS</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1466</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>75.0</td>
+      <td>10000</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1467</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>NaN</td>
+      <td>7980</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>GdPrv</td>
+      <td>Shed</td>
+      <td>500</td>
+      <td>3</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1468</td>
+      <td>60</td>
+      <td>RL</td>
+      <td>63.0</td>
+      <td>8402</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>IR1</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>5</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1469</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>85.0</td>
+      <td>10176</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2010</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<p>The only difference between calling with the default <code>None</code> value and <code>records</code> is that <code>records</code> will first sort your columns.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">recs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">recs</span><span class="p">)</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1stFlrSF</th>
+      <th>2ndFlrSF</th>
+      <th>3SsnPorch</th>
+      <th>Alley</th>
+      <th>BedroomAbvGr</th>
+      <th>BldgType</th>
+      <th>BsmtCond</th>
+      <th>BsmtExposure</th>
+      <th>BsmtFinSF1</th>
+      <th>BsmtFinSF2</th>
+      <th>...</th>
+      <th>SaleType</th>
+      <th>ScreenPorch</th>
+      <th>Street</th>
+      <th>TotRmsAbvGrd</th>
+      <th>TotalBsmtSF</th>
+      <th>Utilities</th>
+      <th>WoodDeckSF</th>
+      <th>YearBuilt</th>
+      <th>YearRemodAdd</th>
+      <th>YrSold</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>896</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>2</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>468</td>
+      <td>144</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>120</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>882</td>
+      <td>AllPub</td>
+      <td>140</td>
+      <td>1961</td>
+      <td>1961</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1329</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>923</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>1329</td>
+      <td>AllPub</td>
+      <td>393</td>
+      <td>1958</td>
+      <td>1958</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>928</td>
+      <td>701</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>791</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>928</td>
+      <td>AllPub</td>
+      <td>212</td>
+      <td>1997</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>926</td>
+      <td>678</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>602</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>926</td>
+      <td>AllPub</td>
+      <td>360</td>
+      <td>1998</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1280</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>2</td>
+      <td>TwnhsE</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>263</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>144</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>1280</td>
+      <td>AllPub</td>
+      <td>0</td>
+      <td>1992</td>
+      <td>1992</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>763</td>
+      <td>892</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>763</td>
+      <td>AllPub</td>
+      <td>157</td>
+      <td>1993</td>
+      <td>1994</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1187</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>935</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>6</td>
+      <td>1168</td>
+      <td>AllPub</td>
+      <td>483</td>
+      <td>1992</td>
+      <td>2007</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>789</td>
+      <td>676</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>3</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>No</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>7</td>
+      <td>789</td>
+      <td>AllPub</td>
+      <td>0</td>
+      <td>1998</td>
+      <td>1998</td>
+      <td>2010</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1341</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>2</td>
+      <td>1Fam</td>
+      <td>TA</td>
+      <td>Gd</td>
+      <td>637</td>
+      <td>0</td>
+      <td>...</td>
+      <td>WD</td>
+      <td>0</td>
+      <td>Pave</td>
+      <td>5</td>
+      <td>1300</td>
+      <td>AllPub</td>
+      <td>192</td>
+      <td>1990</td>
+      <td>1990</td>
+      <td>2010</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 80 columns</p>
+</div>
+
+<p>Which we can (painstakingly) show by de-serializing <code>default_json</code>, sorting the keys, reserializing and comparing <code>recs</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">default_json</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+
+<span class="n">sorted_default_json</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">default_json</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">default_json</span><span class="p">)}</span>
+<span class="n">sorted_default_json</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['1stFlrSF', '2ndFlrSF', '3SsnPorch', 'Alley', 'BedroomAbvGr', 'BldgType', 'BsmtCond', 'BsmtExposure', 'BsmtFinSF1', 'BsmtFinSF2', 'BsmtFinType1', 'BsmtFinType2', 'BsmtFullBath', 'BsmtHalfBath', 'BsmtQual', 'BsmtUnfSF', 'CentralAir', 'Condition1', 'Condition2', 'Electrical', 'EnclosedPorch', 'ExterCond', 'ExterQual', 'Exterior1st', 'Exterior2nd', 'Fence', 'FireplaceQu', 'Fireplaces', 'Foundation', 'FullBath', 'Functional', 'GarageArea', 'GarageCars', 'GarageCond', 'GarageFinish', 'GarageQual', 'GarageType', 'GarageYrBlt', 'GrLivArea', 'HalfBath', 'Heating', 'HeatingQC', 'HouseStyle', 'Id', 'KitchenAbvGr', 'KitchenQual', 'LandContour', 'LandSlope', 'LotArea', 'LotConfig', 'LotFrontage', 'LotShape', 'LowQualFinSF', 'MSSubClass', 'MSZoning', 'MasVnrArea', 'MasVnrType', 'MiscFeature', 'MiscVal', 'MoSold', 'Neighborhood', 'OpenPorchSF', 'OverallCond', 'OverallQual', 'PavedDrive', 'PoolArea', 'PoolQC', 'RoofMatl', 'RoofStyle', 'SaleCondition', 'SaleType', 'ScreenPorch', 'Street', 'TotRmsAbvGrd', 'TotalBsmtSF', 'Utilities', 'WoodDeckSF', 'YearBuilt', 'YearRemodAdd', 'YrSold'])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
+
+<span class="c1"># .fillna(&#39;&#39;) because NULL doesn&#39;t play well w ==</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="n">sorted_default_json</span><span class="p">))</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">recs</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code></pre></div>
+<p>Woof.</p>
+
+<h3 id="table">table</h3>
+
+<p>Finally, <code>orient='table'</code> takes <code>records</code> and does one better</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">table</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span></code></pre></div>
+<pre><code>'{&quot;schema&quot;: {&quot;fields&quot;:[{&quot;name&quot;:&quot;index&quot;,&quot;type&quot;:&quot;integer&quot;},{&quot;name&quot;:&quot;Id&quot;,&quot;type&quot;:&quot;integer&quot;},{&quot;name&quot;:&quot;MSSubClass&quot;,&quot;type&quot;:&quot;integer&quot;},{&quot;name&quot;:&quot;MSZoning&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;LotFrontage&quot;,&quot;type&quot;:&quot;number&quot;},{&quot;name&quot;:&quot;LotArea&quot;,&quot;type&quot;:&quot;integer&quot;},{&quot;name&quot;:&quot;Street&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;Alley&quot;,&quot;type&quot;:&quot;number&quot;},{&quot;name&quot;:&quot;LotShape&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;LandContour&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;Utilities&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;LotConfig&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;LandSlope&quot;,&quot;type&quot;:&quot;string&quot;},{&quot;name&quot;:&quot;N'
+</code></pre>
+
+<p>The <code>data</code> value is the same as if we&rsquo;d done <code>orient='records'</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></code></pre></div>
+<pre><code>dict_keys(['schema', 'data'])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">display</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]))</span>
+<span class="n">display</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">loads</span><span class="p">(</span><span class="n">recs</span><span class="p">)))</span></code></pre></div>
+<pre><code>9
+
+
+
+9
+</code></pre>
+
+<p>Except for the fact that <code>data</code> holds onto the <code>Index</code> column</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></code></pre></div>
+<pre><code>81
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">loads</span><span class="p">(</span><span class="n">recs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></code></pre></div>
+<pre><code>80
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="o">-</span>
+<span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">loads</span><span class="p">(</span><span class="n">recs</span><span class="p">)[</span><span class="mi">0</span><span class="p">])))</span></code></pre></div>
+<pre><code>{'index'}
+</code></pre>
+
+<p>but <code>schema</code> gives us a simple schema definition, like we might expect work working with PySpark. Which is pretty cool.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">loads</span><span class="p">(</span><span class="n">table</span><span class="p">)[</span><span class="s1">&#39;schema&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>{'fields': [{'name': 'index', 'type': 'integer'},
+  {'name': 'Id', 'type': 'integer'},
+  {'name': 'MSSubClass', 'type': 'integer'},
+  {'name': 'MSZoning', 'type': 'string'},
+  {'name': 'LotFrontage', 'type': 'number'},
+  {'name': 'LotArea', 'type': 'integer'},
+  {'name': 'Street', 'type': 'string'},
+  {'name': 'Alley', 'type': 'number'},
+  {'name': 'LotShape', 'type': 'string'},
+  {'name': 'LandContour', 'type': 'string'},
+  {'name': 'Utilities', 'type': 'string'},
+  {'name': 'LotConfig', 'type': 'string'},
+  {'name': 'LandSlope', 'type': 'string'},
+  {'name': 'Neighborhood', 'type': 'string'},
+  {'name': 'Condition1', 'type': 'string'},
+  {'name': 'Condition2', 'type': 'string'},
+  {'name': 'BldgType', 'type': 'string'},
+  {'name': 'HouseStyle', 'type': 'string'},
+  {'name': 'OverallQual', 'type': 'integer'},
+  {'name': 'OverallCond', 'type': 'integer'},
+  {'name': 'YearBuilt', 'type': 'integer'},
+  {'name': 'YearRemodAdd', 'type': 'integer'},
+  {'name': 'RoofStyle', 'type': 'string'},
+  {'name': 'RoofMatl', 'type': 'string'},
+  {'name': 'Exterior1st', 'type': 'string'},
+  {'name': 'Exterior2nd', 'type': 'string'},
+  {'name': 'MasVnrType', 'type': 'string'},
+  {'name': 'MasVnrArea', 'type': 'integer'},
+  {'name': 'ExterQual', 'type': 'string'},
+  {'name': 'ExterCond', 'type': 'string'},
+  {'name': 'Foundation', 'type': 'string'},
+  {'name': 'BsmtQual', 'type': 'string'},
+  {'name': 'BsmtCond', 'type': 'string'},
+  {'name': 'BsmtExposure', 'type': 'string'},
+  {'name': 'BsmtFinType1', 'type': 'string'},
+  {'name': 'BsmtFinSF1', 'type': 'integer'},
+  {'name': 'BsmtFinType2', 'type': 'string'},
+  {'name': 'BsmtFinSF2', 'type': 'integer'},
+  {'name': 'BsmtUnfSF', 'type': 'integer'},
+  {'name': 'TotalBsmtSF', 'type': 'integer'},
+  {'name': 'Heating', 'type': 'string'},
+  {'name': 'HeatingQC', 'type': 'string'},
+  {'name': 'CentralAir', 'type': 'string'},
+  {'name': 'Electrical', 'type': 'string'},
+  {'name': '1stFlrSF', 'type': 'integer'},
+  {'name': '2ndFlrSF', 'type': 'integer'},
+  {'name': 'LowQualFinSF', 'type': 'integer'},
+  {'name': 'GrLivArea', 'type': 'integer'},
+  {'name': 'BsmtFullBath', 'type': 'integer'},
+  {'name': 'BsmtHalfBath', 'type': 'integer'},
+  {'name': 'FullBath', 'type': 'integer'},
+  {'name': 'HalfBath', 'type': 'integer'},
+  {'name': 'BedroomAbvGr', 'type': 'integer'},
+  {'name': 'KitchenAbvGr', 'type': 'integer'},
+  {'name': 'KitchenQual', 'type': 'string'},
+  {'name': 'TotRmsAbvGrd', 'type': 'integer'},
+  {'name': 'Functional', 'type': 'string'},
+  {'name': 'Fireplaces', 'type': 'integer'},
+  {'name': 'FireplaceQu', 'type': 'string'},
+  {'name': 'GarageType', 'type': 'string'},
+  {'name': 'GarageYrBlt', 'type': 'integer'},
+  {'name': 'GarageFinish', 'type': 'string'},
+  {'name': 'GarageCars', 'type': 'integer'},
+  {'name': 'GarageArea', 'type': 'integer'},
+  {'name': 'GarageQual', 'type': 'string'},
+  {'name': 'GarageCond', 'type': 'string'},
+  {'name': 'PavedDrive', 'type': 'string'},
+  {'name': 'WoodDeckSF', 'type': 'integer'},
+  {'name': 'OpenPorchSF', 'type': 'integer'},
+  {'name': 'EnclosedPorch', 'type': 'integer'},
+  {'name': '3SsnPorch', 'type': 'integer'},
+  {'name': 'ScreenPorch', 'type': 'integer'},
+  {'name': 'PoolArea', 'type': 'integer'},
+  {'name': 'PoolQC', 'type': 'number'},
+  {'name': 'Fence', 'type': 'string'},
+  {'name': 'MiscFeature', 'type': 'string'},
+  {'name': 'MiscVal', 'type': 'integer'},
+  {'name': 'MoSold', 'type': 'integer'},
+  {'name': 'YrSold', 'type': 'integer'},
+  {'name': 'SaleType', 'type': 'string'},
+  {'name': 'SaleCondition', 'type': 'string'}],
+ 'primaryKey': ['index'],
+ 'pandas_version': '0.20.0'}
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

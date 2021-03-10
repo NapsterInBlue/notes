@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="From Trees to Forests to Boosted Trees" />
+<meta property="og:description" content="Overview In general, when we fit a Decision Tree, we run the risk of putting together a model with extremely-high variance&ndash; the tree that winds up being fit is highly dependent on how we split our data into train/test.
+The following sections present methods for overcoming this shortcoming by building many different Decision Trees and leveraging them together for prediction. As outlined in our discussion of Boostrapping, we can counter this variance by aggregating our relevant statistics many times." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/trees/trees_forests_boosted/" />
+
+
+
+<meta property="article:published_time" content="2019-09-29T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-29T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="From Trees to Forests to Boosted Trees"/>
+<meta name="twitter:description" content="Overview In general, when we fit a Decision Tree, we run the risk of putting together a model with extremely-high variance&ndash; the tree that winds up being fit is highly dependent on how we split our data into train/test.
+The following sections present methods for overcoming this shortcoming by building many different Decision Trees and leveraging them together for prediction. As outlined in our discussion of Boostrapping, we can counter this variance by aggregating our relevant statistics many times."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "From Trees to Forests to Boosted Trees",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/trees/trees_forests_boosted/",
+  "wordCount": "731",
+  "datePublished": "2019-09-29T00:00:00&#43;00:00",
+  "dateModified": "2019-09-29T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>From Trees to Forests to Boosted Trees</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">From Trees to Forests to Boosted Trees</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-29T00:00:00Z "> 29 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>In general, when we fit a Decision Tree, we run the risk of putting together a model with extremely-high variance&ndash; the tree that winds up being fit is <em>highly</em> dependent on how we split our data into train/test.</p>
+
+<p>The following sections present methods for overcoming this shortcoming by building <em>many</em> different Decision Trees and leveraging them together for prediction. As outlined <a href="https://napsterinblue.github.io/notes/machine_learning/validation/bootstrap/">in our discussion of Boostrapping</a>, we can counter this variance by aggregating our relevant statistics many times.</p>
+
+<p>This is the fundamental idea to this notebook and each section builds on that a little more.</p>
+
+<h3 id="bagging">Bagging</h3>
+
+<p>As mentioned above, Bootstrapping gives us a powerful tool for generating robust models from multiple repeated samples of simpler models.</p>
+
+<p>The same can be said for Decision Trees. Except in this case, instead of aggregating summary statistics, we make an <em>aggregate prediction</em> for a given value <code>X</code>, using our various tree predictions, <code>f_hat^b</code>. In fact, the term &ldquo;bagging&rdquo; is a sort of portmanteau of &ldquo;bootstrap&rdquo; and &ldquo;aggregating&rdquo;.</p>
+
+<p>Concretely, the prediciton on a given <code>X</code> looks like this:</p>
+
+<p>$\hat{f}(X) = \frac{1}{B} \sum_{b=1}{B}\hat{f}^b(X)$</p>
+
+<p>for the Regression case, and a majority vote when we do Classification.</p>
+
+<h4 id="out-of-bag-error">Out-Of-Bag Error</h4>
+
+<p>As mentioned in the notebook on Bootstrapping, if we Bootstrap <code>n</code> samples on a dataset of size <code>n</code>, we&rsquo;ve got about a <sup>2</sup>&frasl;<sub>3</sub> chance of seeeing any data point.</p>
+
+<p>This elegant property is also very convenient, as it allows us to examine a natural holdout set if we just do a set-diff between values that we trained Trees on and those we didn&rsquo;t.</p>
+
+<h3 id="random-forests">Random Forests</h3>
+
+<p>One shortcoming of the Bagging method is that the Trees that we produce are highly-correlated with one another. Sure, we overcome some of the variance due to the ~<sup>2</sup>&frasl;<sub>3</sub> property, but with enough data, each tree will likely devise similar splits on similar attributes.</p>
+
+<p>The <em>Random Forest</em> algorithm corrects for this by <em>only allowing a random sample of <code>m</code> predictors</em> to be considered in the construction of any Tree. They show empirically in ISL that choosing <code>m=sqrt(p)</code> is often optimal.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/rand_forest_m.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="trees_forests_boosted_2_0.png" alt="png" /></p>
+
+<p>Borrowing their explanation:</p>
+
+<blockquote>
+<p>This may sound crazy, but it has a clever rationale. Suppose that there is one very strong predictor in the data set, among a number of moderately strong predictors. Then in the collection of bagged trees, most or all of the trees will use this strong predictor in the top split. Consequently, all of the bagged trees will look quite similar to each other.</p>
+</blockquote>
+
+<h4 id="interpretability-tradeoff">Interpretability Tradeoff</h4>
+
+<p>One thing that bears mentioning that while these Aggregated Models have a competitive edge over Decision Trees by lowering the variance, they aren&rsquo;t as effective in the way of interpretability.</p>
+
+<p>Whereas you could literally trace the decision of any <code>X</code> in a Decision Tree, it&rsquo;s hardly feasible or intuitive to try and simultaneously repeat the exercise for arbitrarily-many Trees in the case of RF or Bagging.</p>
+
+<p>Instead, what we can use is a &ldquo;Variable Importance&rdquo; Metric, which is basically a measure of the information gain due to splits on a given feature.</p>
+
+<ul>
+<li>In Regression Problems, we look at reduction in RSS</li>
+<li>In Classificaiton, Decreases in the Gini Index</li>
+</ul>
+
+<p>Tracking this value for every feature of every Tree sounds like a tedious feat, but is often readily available in libraries with <code>RandomForest</code> implementations.</p>
+
+<h3 id="boosted-trees">Boosted Trees</h3>
+
+<p>As outlined in <a href="https://napsterinblue.github.io/notes/machine_learning/model_selection/boosting">our notebook on Boosted Methods</a>, we can fit increasingly-informative Decision Trees using a Boosting scheme.</p>
+
+<p>In the last section of that notebook, we discuss a couple hyperparameters, taking <code>d</code>, the tree-depth, as a given. A few thoughts on selecting the right value:</p>
+
+<ul>
+<li>The whole point of Boosting/Bagging/Random Forests is to allow increasing complexity by the aggregation of many, simpler models</li>
+<li>Thus, a small value of <code>d</code> is most appropriate, especially with random feature consideration and training data sampling&ndash; the deeper <code>d</code> is allowed ot be, the more likely it is that you&rsquo;re going to wind up basically seeing the same <code>n</code> features calling the shots in your models</li>
+<li>Finally, the example that ISL shares shows that <code>d=1</code> is the optimal value for their dataset, but this all depends. In general, <em><code>d</code> should be considered a mechanism for allowing interaction terms</em>. Think about it&ndash; if you have two feature where Interaction is appropriate/gives a lot of predictive power, then splitting on the first and then the second is essentially the same as considering each data point <code>X</code> as a joint function of those features.</li>
+</ul>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

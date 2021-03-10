@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Generating Classification Datasets" />
+<meta property="og:description" content="When you&rsquo;re tired of running through the Iris or Breast Cancer datasets for the umpteenth time, sklearn has a neat utility that lets you generate classification datasets.
+Its use is pretty simple. A call to the function yields a attributes and a target column of the same length
+import numpy as np from sklearn.datasets import make_classification X, y = make_classification() print(X.shape, y.shape) (100, 20) (100,)  Customizing Additionally, the function takes a bunch of parameters that allow you to modify your dataset including:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/datasets/make_classification/" />
+
+
+
+<meta property="article:published_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-14T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Generating Classification Datasets"/>
+<meta name="twitter:description" content="When you&rsquo;re tired of running through the Iris or Breast Cancer datasets for the umpteenth time, sklearn has a neat utility that lets you generate classification datasets.
+Its use is pretty simple. A call to the function yields a attributes and a target column of the same length
+import numpy as np from sklearn.datasets import make_classification X, y = make_classification() print(X.shape, y.shape) (100, 20) (100,)  Customizing Additionally, the function takes a bunch of parameters that allow you to modify your dataset including:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Generating Classification Datasets",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/datasets/make_classification/",
+  "wordCount": "511",
+  "datePublished": "2018-09-14T00:00:00&#43;00:00",
+  "dateModified": "2018-09-14T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Generating Classification Datasets</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Generating Classification Datasets</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-14T00:00:00Z "> 14 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>When you&rsquo;re tired of running through the Iris or Breast Cancer datasets for the umpteenth time, <code>sklearn</code> has a neat utility that lets you generate classification datasets.</p>
+
+<p>Its use is pretty simple. A call to the function yields a attributes and a target column of the same length</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></code></pre></div>
+<pre><code>(100, 20) (100,)
+</code></pre>
+
+<h3 id="customizing">Customizing</h3>
+
+<p>Additionally, the function takes a bunch of parameters that allow you to modify your dataset including:</p>
+
+<p>Number of samples and size of feature space</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></code></pre></div>
+<pre><code>(1000, 10) (1000,)
+</code></pre>
+
+<p>Number of linear combination/repeated features to trip up your models, or how many informative variables there are</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_redundant</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_repeated</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_informative</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code></pre></div>
+<p>Number of classes you aim to predict (Note, the generation algorithm needs a balance between informative attributes and classes)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_informative</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">))</span></code></pre></div>
+<pre><code>[0 1 2]
+</code></pre>
+
+<p>And other, more technical elements</p>
+
+<h2 id="sparse-datasets">Sparse Datasets</h2>
+
+<p>One thing this functionality fails to do is generate <em>sparse</em> datasets. It&rsquo;s not unreasonable to want to practice training algorithms on datasets with a huge class imbalance, <code>make_classification()</code> generally provides an even-ish split.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span></code></pre></div>
+<pre><code>5007
+4997
+5013
+5015
+5019
+</code></pre>
+
+<p>To get around this, we&rsquo;re going to do a bit of <code>pandas</code> magic™.</p>
+
+<p>First, we&rsquo;ll make a ton of data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span></code></pre></div>
+<p>Which is, as expected, about <sup>50</sup>&frasl;<sub>50</sub> <code>1</code> and <code>0</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span></code></pre></div>
+<pre><code>5012
+</code></pre>
+
+<p>If we stuff this into a <code>DataFrame</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(10000, 21)
+</code></pre>
+
+<p>We can write some tricksy logic to find all of the <code>1</code> rows</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">true_rows</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">true_rows</span><span class="p">))</span></code></pre></div>
+<pre><code>5012
+</code></pre>
+
+<p>Randomly pick a selection of them</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">survivors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">true_rows</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">survivors</span></code></pre></div>
+<pre><code>array([  28, 2844, 4029,  876, 8481, 6550, 4976, 2347, 8514, 1986, 8691,
+       1763, 3272, 5270, 2864, 1217, 8935, 4135,  561, 2259, 3420,  804,
+       8671, 8038,  706, 1568, 8309, 3756,  877, 8653, 4461, 3986, 6061,
+       5831, 7167, 2214, 1415, 3260, 6016, 4288, 1924, 6576, 1546, 3267,
+       8999, 5531, 1152, 3800, 1523, 6493, 3390, 2965, 6186,   14, 7335,
+       7867, 5706, 8033, 1247, 7669, 8100, 8146, 2375, 3351, 9907, 5604,
+       4679, 3794, 3429, 1020, 6384, 8380, 3250, 6055, 2558, 3388, 4299,
+        929, 8720, 8145, 5570, 4274, 7250, 7692, 7795, 6964, 3834, 3589,
+       6312, 8418, 6370,  720, 1098, 4666, 3041, 8691, 8004, 3197, 1001,
+       1420], dtype=int64)
+</code></pre>
+
+<p>And cull the rest</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">chopping_block</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">true_rows</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">survivors</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">chopping_block</span><span class="p">)</span></code></pre></div>
+<p>Giving us a much smaller <code>DataFrame</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<pre><code>(5087, 21)
+</code></pre>
+
+<p>With an artifically down-sampled target column</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span></code></pre></div>
+<pre><code>0.0    4988
+1.0      99
+Name: 20, dtype: int64
+</code></pre>
+
+<p>That we&rsquo;ll stuff back into our original <code>X</code>, <code>y</code> values</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></code></pre></div>
+<pre><code>(5087, 20) (5087,)
+</code></pre>
+
+<h3 id="as-a-function">As a Function</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">downsample_class</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">classToDownsample</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">downsampleToPct</span><span class="o">=.</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+    
+    <span class="n">true_rows</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="n">classToDownsample</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">num_desired_true</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">downsampleToPct</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">true_rows</span><span class="p">))</span>
+    
+    <span class="n">survivors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">true_rows</span><span class="p">,</span> <span class="n">num_desired_true</span><span class="p">)</span>
+    <span class="n">chopping_block</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">true_rows</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">survivors</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">chopping_block</span><span class="p">)</span>
+    
+    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">downsample_class</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>54765
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

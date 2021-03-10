@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Visualizing Model Structure" />
+<meta property="og:description" content="Occasionally, you might find yourself toying with a keras application that&rsquo;s sufficiently complicated to merit graduating from the vanilla, Sequential() API to doing things functionally. While the expressiveness that this allows is immediately desirable for the sake of creativity, keeping a mental model of the model flow in your head becomes increasingly tedious. More to the point, the neat, vertical printout of model.summary() will likely do an insufficient job at relating the branching architecture you&rsquo;ve created." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/tensorflow/visualizing_structure/" />
+
+
+
+<meta property="article:published_time" content="2019-08-05T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-08-05T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Visualizing Model Structure"/>
+<meta name="twitter:description" content="Occasionally, you might find yourself toying with a keras application that&rsquo;s sufficiently complicated to merit graduating from the vanilla, Sequential() API to doing things functionally. While the expressiveness that this allows is immediately desirable for the sake of creativity, keeping a mental model of the model flow in your head becomes increasingly tedious. More to the point, the neat, vertical printout of model.summary() will likely do an insufficient job at relating the branching architecture you&rsquo;ve created."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Visualizing Model Structure",
+  "url": "https://napsterinblue.github.io/notes/python/tensorflow/visualizing_structure/",
+  "wordCount": "561",
+  "datePublished": "2019-08-05T00:00:00&#43;00:00",
+  "dateModified": "2019-08-05T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Visualizing Model Structure</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Visualizing Model Structure</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-08-05T00:00:00Z "> 05 Aug 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Occasionally, you might find yourself toying with a <code>keras</code> application that&rsquo;s sufficiently complicated to merit graduating from the vanilla, <code>Sequential()</code> API to doing things functionally. While the expressiveness that this allows is immediately desirable for the sake of creativity, keeping a mental model of the model flow in your head becomes increasingly tedious. More to the point, the neat, vertical printout of <code>model.summary()</code> will likely do an insufficient job at relating the branching architecture you&rsquo;ve created.</p>
+
+<p>Thankfully, <code>keras</code> neatly employs the <code>graphviz</code> library to address just that.</p>
+
+<h2 id="a-sample-model">A Sample Model</h2>
+
+<p>For the sake of example, we&rsquo;re going to leverage some helper code I found on the Internet to build an Auxiliary GAN where the Discriminator is trying to simultaneously predict Real/Fake as well as which MNIST class an image comes from.</p>
+
+<p>Implementation details are unimportant here&ndash; I just wanted a Network sufficiently complicated to show the handiness of visualization.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">helpers</span> <span class="kn">import</span> <span class="n">build_discriminator</span><span class="p">,</span> <span class="n">build_generator</span>
+
+<span class="kn">from</span> <span class="nn">keras.optimizers</span> <span class="kn">import</span> <span class="n">Adam</span>
+<span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Input</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">Model</span></code></pre></div>
+<pre><code>Using TensorFlow backend.
+</code></pre>
+
+<p>And so we start off by building out the discriminator&ndash; the losses here are for Real/Fake and Correct Class, respectively.</p>
+
+<p>You may notice that printing <code>discriminator.summary()</code>, the last two rows are informed by the <code>0</code>th element of the <code>1</code>th element of <code>Conv_Block</code>&hellip; Whatever that means.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">discriminator</span> <span class="o">=</span> <span class="n">build_discriminator</span><span class="p">()</span>
+<span class="n">discriminator</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">Adam</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span> <span class="s1">&#39;sparse_categorical_crossentropy&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">discriminator</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to                     
+==================================================================================================
+Image_Input (InputLayer)        (None, 28, 28, 1)    0                                            
+__________________________________________________________________________________________________
+Conv_Block (Sequential)         (None, 12544)        387840      Image_Input[0][0]                
+__________________________________________________________________________________________________
+generation (Dense)              (None, 1)            12545       Conv_Block[1][0]                 
+__________________________________________________________________________________________________
+auxiliary (Dense)               (None, 10)           125450      Conv_Block[1][0]                 
+==================================================================================================
+Total params: 525,835
+Trainable params: 525,835
+Non-trainable params: 0
+__________________________________________________________________________________________________
+</code></pre>
+
+<h3 id="plotting-them">Plotting Them</h3>
+
+<p>However, looking at a plot of the model, this is simply where the model forks.</p>
+
+<p>Couple things to note here:</p>
+
+<ul>
+<li>This <code>Conv_Block</code> is actually about a dozen lines of <code>Conv2D</code>, <code>LeakyReLU</code>, and <code>Dropout</code> stacked atop one another, but the visualization abstracts all of that away</li>
+<li>Filling in the <code>name=</code> parameter during layer instantiation goes a long way for clarity of your graphic</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">plot_model</span>
+<span class="kn">from</span> <span class="nn">keras.preprocessing</span> <span class="kn">import</span> <span class="n">image</span>
+
+<span class="n">plot_model</span><span class="p">(</span><span class="n">discriminator</span><span class="p">,</span> <span class="n">to_file</span><span class="o">=</span><span class="s1">&#39;discriminator.png&#39;</span><span class="p">,</span> <span class="n">show_shapes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="s1">&#39;discriminator.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="visualizing_structure_9_0.png" alt="png" /></p>
+
+<h2 id="continued">Continued</h2>
+
+<p>For completeness, we&rsquo;ll look at the other portions that make up the GAN.</p>
+
+<p>Being able to track the data dimensions between the images (Fake or Real) as well as class, and how they carry through the Generator was enormously helpful for me to understanding the construction of the Network as a whole.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">latent_size</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="n">generator</span> <span class="o">=</span> <span class="n">build_generator</span><span class="p">(</span><span class="n">latent_size</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plot_model</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">to_file</span><span class="o">=</span><span class="s1">&#39;generator.png&#39;</span><span class="p">,</span> <span class="n">show_shapes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="s1">&#39;generator.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="visualizing_structure_13_0.png" alt="png" /></p>
+
+<p>Similarly to how <code>Conv_Block</code> abstracts away all of the intermediate information, all you need to know about the overall structure of the <code>combined</code> Model that represents the whole GAN is that:</p>
+
+<ul>
+<li>It takes an image input and a class input</li>
+<li>It does some stuff</li>
+<li>The output of the final layer will be a True/False prediction and a Class prediction, chosen from 10</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">latent</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">latent_size</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Image_Input&#39;</span><span class="p">)</span>
+<span class="n">image_class</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Image_Class&#39;</span><span class="p">)</span>
+
+<span class="n">fake</span> <span class="o">=</span> <span class="n">generator</span><span class="p">([</span><span class="n">latent</span><span class="p">,</span> <span class="n">image_class</span><span class="p">])</span>
+
+<span class="n">discriminator</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">fake</span><span class="p">,</span> <span class="n">aux</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">fake</span><span class="p">)</span>
+<span class="n">combined</span> <span class="o">=</span> <span class="n">Model</span><span class="p">([</span><span class="n">latent</span><span class="p">,</span> <span class="n">image_class</span><span class="p">],</span> <span class="p">[</span><span class="n">fake</span><span class="p">,</span> <span class="n">aux</span><span class="p">])</span>
+
+<span class="n">combined</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">Adam</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span> <span class="s1">&#39;sparse_categorical_crossentropy&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">combined</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to                     
+==================================================================================================
+Image_Input (InputLayer)        (None, 128)          0                                            
+__________________________________________________________________________________________________
+Image_Class (InputLayer)        (None, 1)            0                                            
+__________________________________________________________________________________________________
+model_2 (Model)                 (None, 28, 28, 1)    2754945     Image_Input[0][0]                
+                                                                 Image_Class[0][0]                
+__________________________________________________________________________________________________
+model_1 (Model)                 [(None, 1), (None, 1 525835      model_2[1][0]                    
+==================================================================================================
+Total params: 3,280,780
+Trainable params: 2,754,369
+Non-trainable params: 526,411
+__________________________________________________________________________________________________
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">plot_model</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">to_file</span><span class="o">=</span><span class="s1">&#39;combined.png&#39;</span><span class="p">,</span> <span class="n">show_shapes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="s1">&#39;combined.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="visualizing_structure_16_0.png" alt="png" /></p>
+
+<p>Ez pz</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

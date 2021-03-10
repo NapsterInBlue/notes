@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Basic Clustering Evaluation Metrics" />
+<meta property="og:description" content="Overview One of the fundamental characteristics of a clustering algorithm is that it&rsquo;s, for the most part, an unsurpervised learning process. Whereas traditional prediction and classification problems have a whole host of accuracy measures (RMSE, Entropy, Precision/Recall, etc), it might seem a little more abstract coming up with a comparable measure of &ldquo;goodness of fit&rdquo; for the way an unsupervised model aligns with our data.
+Most introductory texts in the space (e." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/unsupervised/basic_evaluation_metrics/" />
+
+
+
+<meta property="article:published_time" content="2020-04-08T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-04-08T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Basic Clustering Evaluation Metrics"/>
+<meta name="twitter:description" content="Overview One of the fundamental characteristics of a clustering algorithm is that it&rsquo;s, for the most part, an unsurpervised learning process. Whereas traditional prediction and classification problems have a whole host of accuracy measures (RMSE, Entropy, Precision/Recall, etc), it might seem a little more abstract coming up with a comparable measure of &ldquo;goodness of fit&rdquo; for the way an unsupervised model aligns with our data.
+Most introductory texts in the space (e."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Basic Clustering Evaluation Metrics",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/unsupervised/basic_evaluation_metrics/",
+  "wordCount": "956",
+  "datePublished": "2020-04-08T00:00:00&#43;00:00",
+  "dateModified": "2020-04-08T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Basic Clustering Evaluation Metrics</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Basic Clustering Evaluation Metrics</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-04-08T00:00:00Z "> 08 Apr 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>One of the fundamental characteristics of a clustering algorithm is that it&rsquo;s, for the most part, an unsurpervised learning process. Whereas traditional prediction and classification problems have a whole host of accuracy measures (RMSE, Entropy, Precision/Recall, etc), it might seem a little more abstract coming up with a comparable measure of &ldquo;goodness of fit&rdquo; for the way an unsupervised model aligns with our data.</p>
+
+<p>Most introductory texts in the space (e.g. <a href="https://medium.com/analytics-vidhya/how-to-determine-the-optimal-k-for-k-means-708505d204eb">this Medium post</a>) start by explaining a notion of an &ldquo;Elbow method&rdquo; that essentially a measure of class consistency. Essentially, you:</p>
+
+<ol>
+<li>Break your data out into the classes that it was sorted into</li>
+<li>Calculate the squared distance from each point to its centroid</li>
+<li>Sum the squared errors</li>
+</ol>
+
+<p>Something like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">wss_score</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="n">sse</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">centroids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cluster_centers_</span>    
+
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        <span class="n">centroid</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="n">km</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))]</span>
+        <span class="n">sse</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">centroid</span> <span class="o">-</span> <span class="n">point</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">sse</span></code></pre></div>
+<p>This gives you the Within-Cluster Sum of Squared Error (WSS).</p>
+
+<p>And in an overly-simple case like this, you&rsquo;d fit various estimators at different values of <code>number_of_classes</code>. In this case, the author was trying different <code>k</code> values for her K-Means algorithm.</p>
+
+<p>Inspecting the <code>k/Wss</code> chart below, there&rsquo;s a kink/elbow at the point <code>k=3</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/3_classes.PNG&#39;</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/elbow.PNG&#39;</span><span class="p">))</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_4_0.png" alt="png" /></p>
+
+<p><img src="basic_evaluation_metrics_4_1.png" alt="png" /></p>
+
+<p>However, as the post goes on to describe, the simplicity of this approach breaks down quickly when your data is less intentionally-generated.</p>
+
+<h3 id="silhouette">Silhouette</h3>
+
+<p>A popular alternative to the Elbow Method is using the Silhouette Coefficient.</p>
+
+<p>Whereas the WSS only considers total in-class, &ldquo;point-to-centroid&rdquo; accuracy, the Silhouette also considers how well-separated classes are from one another. The <a href="https://scikit-learn.org/stable/modules/clustering.html#silhouette-coefficient">sklearn docs</a> do an excellent job explaining this, so I&rsquo;m not going to try and compete.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/silhouette.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_6_0.png" alt="png" /></p>
+
+<p>Given a host of models, picking the one with the highest value of <code>s</code> means finding the class arrangement that simultaneously:</p>
+
+<ul>
+<li>maxing <code>b</code>: has the most cross-class separability</li>
+<li>mining <code>a</code>: has the tighest-packed centroids</li>
+<li>dividing by <code>max(a, b)</code>, normalizes the numerator by whatever we&rsquo;re good at, so we don&rsquo;t overly-value separability or centroid tightness</li>
+</ul>
+
+<h2 id="on-data">On Data</h2>
+
+<p>Let&rsquo;s look at something a little less contrived.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_wine</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_wine</span><span class="p">()</span>
+<span class="n">wine</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;feature_names&#39;</span><span class="p">])</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>Nevermind the context, if I told you to separate these data points into two classes, you&rsquo;d probably draw a vertical line at the point <code>x=3.5</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">temp</span> <span class="o">=</span> <span class="n">wine</span><span class="p">[</span><span class="o">~</span><span class="p">((</span><span class="n">wine</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span>
+               <span class="o">&amp;</span>
+              <span class="p">(</span><span class="n">wine</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">2.5</span> <span class="p">))]</span>
+
+<span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">,</span> <span class="s1">&#39;flavanoids&#39;</span><span class="p">]]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">],</span> <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;flavanoids&#39;</span><span class="p">]);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_10_0.png" alt="png" /></p>
+
+<p>If we iterate over potential values for <code>k</code> and plot the WSS curves, we can see an elbow at <code>k=3</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">wss_scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+    
+    <span class="n">wss_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wss_score</span><span class="p">(</span><span class="n">km</span><span class="p">,</span> <span class="n">temp</span><span class="p">))</span>
+    
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">wss_scores</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_12_0.png" alt="png" /></p>
+
+<p>Plotting, this gives us a messy cluster on the left side where two classes just sort of bleed into one another, while the one on the right does its own thing.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">],</span> <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;flavanoids&#39;</span><span class="p">],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_14_0.png" alt="png" /></p>
+
+<p>On the other hand, recall that the silhouette score actively penalizes classes for being too close together, and thus a similar &ldquo;plot the scores for various values of <code>k</code>&rdquo; reveals the intuitive solution at <code>k=2</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">silhouette_score</span>
+
+<span class="n">silhouettes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+    
+    <span class="n">y</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+    <span class="n">silhouettes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">silhouette_score</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">silhouettes</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_16_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">],</span> <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;flavanoids&#39;</span><span class="p">],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_17_0.png" alt="png" /></p>
+
+<h3 id="less-nice">Less Nice</h3>
+
+<p>Okay, so that amounted to <code>k=2</code> vs <code>k=3</code>. Big deal, right?</p>
+
+<p>Now look what happens when we take the bumper lanes off of our dataset.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">wine</span><span class="p">[[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">,</span> <span class="s1">&#39;flavanoids&#39;</span><span class="p">]]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_19_0.png" alt="png" /></p>
+
+<p>Where did our neat elbow go? 4?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">wss_scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    
+    <span class="n">wss_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wss_score</span><span class="p">(</span><span class="n">km</span><span class="p">,</span> <span class="n">X</span><span class="p">))</span>
+    
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">wss_scores</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_21_0.png" alt="png" /></p>
+
+<p>Well that&rsquo;s kind of a mess&hellip;.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="s1">&#39;flavanoids&#39;</span><span class="p">],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_23_0.png" alt="png" /></p>
+
+<p>Same exercise, silhouette score sugggests we try <code>k=2</code> still</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">silhouettes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    
+    <span class="n">y</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">silhouettes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">silhouette_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">silhouettes</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_25_0.png" alt="png" /></p>
+
+<p>Not bad, not bad.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s1">&#39;malic_acid&#39;</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="s1">&#39;flavanoids&#39;</span><span class="p">],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_27_0.png" alt="png" /></p>
+
+<h3 id="bad-for-means">Bad for Means</h3>
+
+<p>Now let&rsquo;s look at something a bit trickier. What about a situation where you&rsquo;d draw a line more sophisticated than a vertical one?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">wine</span><span class="p">[[</span><span class="s1">&#39;color_intensity&#39;</span><span class="p">,</span> <span class="s1">&#39;flavanoids&#39;</span><span class="p">]]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span><span class="p">);</span>
+
+<span class="n">trend_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">trend_y</span> <span class="o">=</span> <span class="n">trend_x</span> <span class="o">*</span> <span class="o">.</span><span class="mi">2</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">trend_x</span><span class="p">,</span> <span class="n">trend_y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_29_0.png" alt="png" /></p>
+
+<p>WSS gives us an elbow at <code>k=3</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">wss_scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    
+    <span class="n">wss_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wss_score</span><span class="p">(</span><span class="n">km</span><span class="p">,</span> <span class="n">X</span><span class="p">))</span>
+    
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">wss_scores</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_31_0.png" alt="png" /></p>
+
+<p>And fitting gives us three classes, placed clumsily next to one another, as if we <em>did</em> go the way of verical lines</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_33_0.png" alt="png" /></p>
+
+<p>Silhouette Score hasn&rsquo;t failed us yet</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">silhouettes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">km</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    
+    <span class="n">y</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">silhouettes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">silhouette_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">silhouettes</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_35_0.png" alt="png" /></p>
+
+<p>Okay, this isn&rsquo;t much better&hellip;.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_37_0.png" alt="png" /></p>
+
+<p>Of course, our inability to arrive at a separation that we might have done visually lies more in the fact that we were using the wrong clustering algorithm, not the wrong measure.</p>
+
+<p>Peeking at <a href="https://scikit-learn.org/stable/modules/clustering.html#overview-of-clustering-methods">this cheatsheet in the sklearn docs</a>, we decide to try a Gaussian Mixture Model.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span>
+
+<span class="n">silhouettes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">gm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    
+    <span class="n">y</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">silhouettes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">silhouette_score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">silhouettes</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_39_0.png" alt="png" /></p>
+
+<p>Our maximum silhouette score with <code>KMeans</code> was <code>.54</code>&ndash; 25% higher than our max with <code>GaussianMixture</code>&ndash; let&rsquo;s see if it&rsquo;s still usable&hellip;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">gm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">);</span></code></pre></div>
+<p><img src="basic_evaluation_metrics_41_0.png" alt="png" /></p>
+
+<p>God, this library is so dang cool.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

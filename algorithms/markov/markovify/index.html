@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="How Markovify works" />
+<meta property="og:description" content="Markovify is one of the more elegant libraries I&rsquo;ve come across. While it can be extended for general Markov Process use, it was written to generate novel sentences using Markov Chains on a corpus of text.
+Its interface is extremely clean and astoundingly fast, fitting and predicting instantaneously
+import re import markovify with open(&#34;Harry Potter and the Sorcerer.txt&#34;) as f: text = f.readlines() # drop chapter headings and blank lines text = [x for x in text if not x." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/algorithms/markov/markovify/" />
+
+
+
+<meta property="article:published_time" content="2020-06-12T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-06-12T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="How Markovify works"/>
+<meta name="twitter:description" content="Markovify is one of the more elegant libraries I&rsquo;ve come across. While it can be extended for general Markov Process use, it was written to generate novel sentences using Markov Chains on a corpus of text.
+Its interface is extremely clean and astoundingly fast, fitting and predicting instantaneously
+import re import markovify with open(&#34;Harry Potter and the Sorcerer.txt&#34;) as f: text = f.readlines() # drop chapter headings and blank lines text = [x for x in text if not x."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How Markovify works",
+  "url": "https://napsterinblue.github.io/notes/algorithms/markov/markovify/",
+  "wordCount": "1329",
+  "datePublished": "2020-06-12T00:00:00&#43;00:00",
+  "dateModified": "2020-06-12T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>How Markovify works</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">How Markovify works</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-06-12T00:00:00Z "> 12 Jun 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p><a href="https://github.com/jsvine/markovify">Markovify</a> is one of the more elegant libraries I&rsquo;ve come across. While it can be extended for general Markov Process use, it was written to generate novel sentences using Markov Chains on a corpus of text.</p>
+
+<p>Its interface is extremely clean and astoundingly fast, fitting and predicting instantaneously</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">markovify</span>
+
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&#34;Harry Potter and the Sorcerer.txt&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1"># drop chapter headings and blank lines</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">isupper</span><span class="p">()]</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">]</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">markovify</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">make_sentence</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">make_sentence_with_start</span><span class="p">(</span><span class="s1">&#39;Snape&#39;</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>So if I look in the setting sun. 
+
+Where there should have let it fall open. 
+
+There was no reason for not wanting Snape near him and Mrs. Weasley smiled down at the other boys. 
+
+He clicked it again in Ron's eyes, but Harry, instead of looking up at once. 
+
+Professor McGonagall had reached a fork in the same room, while Aunt Petunia and Uncle Vernon went off to look at him. 
+
+--------------------
+Snape gave Harry a nasty grin on his face. 
+
+Snape was still rising higher and higher, and started pulling them off anyway. 
+
+Snape was trying to look on Malfoy's face during the next table, wasn't having much more luck. 
+
+Snape bent over the points they'd lost. 
+
+Snape was in a large silver key that had just chimed midnight when the owls flooded into the classroom. 
+</code></pre>
+
+<p>I&rsquo;m not going to go into the straight-up regex wizardry (heh) that the library employs to parse and validate all of the text. Instead, I want to peel back the curtain a bit and show how the library constructs the underlying Markov Chain and subsequently uses it to generate new sentences.</p>
+
+<p>But first, a motivating example.</p>
+
+<h3 id="text-and-markov-chains">Text and Markov Chains</h3>
+
+<p>The basic idea of Markov Chains and text is that you get a corpus of text</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
+
+
+<span class="n">example</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Space: the final frontier. These are the voyages of the starship Enterprise. &#39;</span>
+           <span class="s1">&#39;Its five-year mission: to explore strange new worlds. &#39;</span>
+           <span class="s1">&#39;To seek out new life and new civilizations. &#39;</span>
+           <span class="s1">&#39;To boldly go where no man has gone before!&#39;</span><span class="p">)</span>
+<span class="n">example</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">example</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">example</span><span class="p">)</span>
+<span class="n">example</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">example</span><span class="p">)</span></code></pre></div>
+<pre><code>['space', 'the', 'final', 'frontier', 'these', 'are', 'the', 'voyages', 'of', 'the', 'starship', 'enterprise', 'its', 'fiveyear', 'mission', 'to', 'explore', 'strange', 'new', 'worlds', 'to', 'seek', 'out', 'new', 'life', 'and', 'new', 'civilizations', 'to', 'boldly', 'go', 'where', 'no', 'man', 'has', 'gone', 'before']
+</code></pre>
+
+<p>and build a parser that will scan through the text, one pair at a time</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">example</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">example</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">example</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span></code></pre></div>
+<pre><code>space the
+the final
+final frontier
+frontier these
+these are
+are the
+the voyages
+voyages of
+of the
+the starship
+starship enterprise
+enterprise its
+its fiveyear
+fiveyear mission
+mission to
+to explore
+explore strange
+strange new
+new worlds
+worlds to
+to seek
+seek out
+out new
+new life
+life and
+and new
+new civilizations
+civilizations to
+to boldly
+boldly go
+go where
+where no
+no man
+man has
+has gone
+gone before
+</code></pre>
+
+<p>More-accurately, you want to build a dictionary of key=word with values as a list of all words that have followed that keyword.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">example</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">word</span> <span class="o">=</span> <span class="n">example</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">new_word</span> <span class="o">=</span> <span class="n">example</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_word</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">word</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_word</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></code></pre></div>
+<pre><code>{'space': ['the'], 'the': ['final', 'voyages', 'starship'], 'final': ['frontier'], 'frontier': ['these'], 'these': ['are'], 'are': ['the'], 'voyages': ['of'], 'of': ['the'], 'starship': ['enterprise'], 'enterprise': ['its'], 'its': ['fiveyear'], 'fiveyear': ['mission'], 'mission': ['to'], 'to': ['explore', 'seek', 'boldly'], 'explore': ['strange'], 'strange': ['new'], 'new': ['worlds', 'life', 'civilizations'], 'worlds': ['to'], 'seek': ['out'], 'out': ['new'], 'life': ['and'], 'and': ['new'], 'civilizations': ['to'], 'boldly': ['go'], 'go': ['where'], 'where': ['no'], 'no': ['man'], 'man': ['has'], 'has': ['gone'], 'gone': ['before']}
+</code></pre>
+
+<p>So in this case, there&rsquo;s some repetition after the words <code>the</code> (the final, the voyages, the starship) and similarly for <code>to</code> (to explore, to seek, to boldly).</p>
+
+<p>And so we can use this dictionary to reconstruct new phrases by following the keys. Let&rsquo;s say that we start with <code>mission</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;mission&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['to']
+</code></pre>
+
+<p>then we follow that key and see that there are 3 different paths that we can go down</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;to&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['explore', 'seek', 'boldly']
+</code></pre>
+
+<p>the model will randomly select one of these, but for simplicity, we&rsquo;ll use <code>explore</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;explore&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['strange']
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;strange&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['new']
+</code></pre>
+
+<p>And find another fork</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['worlds', 'life', 'civilizations']
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;life&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['and']
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;and&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['new']
+</code></pre>
+
+<p>it&rsquo;s easy to see how you can get caught up in a loop here.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="p">[</span><span class="s1">&#39;new&#39;</span><span class="p">]</span></code></pre></div>
+<pre><code>['worlds', 'life', 'civilizations']
+</code></pre>
+
+<p>But this goes on until we happen upon the last word in the phrase, <code>before</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;before&#39;</span><span class="p">)</span></code></pre></div>
+<h4 id="couple-caveats-to-this">Couple caveats to this</h4>
+
+<ul>
+<li>In practice, most implementations use <em>pairs of words</em> as their keys so capture more authentic-sounding phrases</li>
+<li>The list of words is appended with a couple sentinel values denoting beginning and end of the list. This way, the dictionary lookup terminates when it sees the end of the sequence, as opposed to the messy <code>dict.get()</code> that we did above.</li>
+</ul>
+
+<p>That out of the way, let&rsquo;s return to the implementation.</p>
+
+<h3 id="model-fit">Model Fit</h3>
+
+<p>At the time that we instantiated a <code>markovify.Text</code> object a flurry of data processing happened to build a (Markov) <code>Chain</code> object that lives within our <code>Text</code> object, <code>model</code>.</p>
+
+<h4 id="text-pre-pocessing">Text Pre-pocessing</h4>
+
+<p>Hand-waving past all of this, I&rsquo;ll just say that there&rsquo;s a lot of care to remove weird quotes and characters, and figure out how to split the entire body of text into a neat list of sentences. Then within those lists, split the sentences by word.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/parsed_sentences.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_25_0.png" alt="png" /></p>
+
+<h3 id="chain"><code>Chain</code></h3>
+
+<p>Once we have the corpus worked out, we move onto the meat-and-potatoes object.</p>
+
+<p>In the <code>.build()</code> method of the <code>Chain</code> object, we loop through all of our sentences, repeating the exercise that we did in our motivating example above.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/build.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_27_0.png" alt="png" /></p>
+
+<p>Fast-forwarding a bit and we&rsquo;re starting to see some patterns emerge. It&rsquo;s worth highlighting that our model&rsquo;s <code>state_size</code> is <code>2</code>, and so we&rsquo;re using <em>pairs of words</em> as our keys. Thus, values for the tuple (<code>__BEGIN__</code>, <code>__BEGIN__</code>) represent words that start sentences and tuples like (<code>__BEGIN__</code>, <code>Harry</code>) correspond to sentences that started with the word &lsquo;Harry&rsquo;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/ffwd.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_29_0.png" alt="png" /></p>
+
+<h3 id="clever-construction-of-first-values">Clever construction of first values</h3>
+
+<p>So there are a finite number of sentence starts found in the book. Under the hood, all of their lists are constructed as <code>[__BEGIN__, __BEGIN__, &lt;WORDS&gt;, __END__]</code>.</p>
+
+<p>So we start off by taking all of the words found in <code>model[('__BEGIN__', '__BEGIN__')]</code>, as well as all of their counts.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/next_dict.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_31_0.png" alt="png" /></p>
+
+<p>Then, because we want our model to start sentences with words and phrases proportional to their appearance in the corpus, we do some clever sampling.</p>
+
+<p>Using the dictionary above, we attach two lists to our <code>Chain</code> object: <code>choices</code> (the words) and <code>cumdist</code> (the cumulative sum of their counts).</p>
+
+<h3 id="building-sentences">Building Sentences</h3>
+
+<p>Then, when we make calls to <code>model.make_sentence()</code> we sample from this cumulative distribution. Concretely, we take the last value in <code>cumdist</code> (the total number of values available) and sample randomly between <code>0</code> and that value.</p>
+
+<p>Randomly running it as I type this, I got the following</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/sample.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_33_0.png" alt="png" /></p>
+
+<p>then the library uses a really cool standard library called <code>bisect</code>, which essentially allows you to pass a float key as a list index, and it will round your input to the closest valid key. For example, the following code gives us the index of the value directly above our input float</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">bisect</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span></code></pre></div>
+<pre><code>2
+</code></pre>
+
+<p>So the value <code>r=831.044</code> yields the word <code>He</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/first_value.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_37_0.png" alt="png" /></p>
+
+<p>We repeat the process, tossing it back into the dictionary (as (<code>__BEGIN__</code>, <code>He</code>)) and find a follow-up word, <code>couldn't</code>. Then find another list of choices and their weights using (<code>He</code>, <code>couldn't</code>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/choices.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="markovify_39_0.png" alt="png" /></p>
+
+<p>We repeat this exercise until one of our dictionary lookups yields a <code>__END__</code> key, kicking us out. In this case, we arrive at that confusing, but valid, sentence <code>He couldn't direct it at the note.</code></p>
+
+<p><strong>Note</strong>: As an added bonus, <code>markovify</code> does multiple runs for your initial keys to try and generate sentences with minimal overlap to our original corpus.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Confidence Intervals" />
+<meta property="og:description" content="Confidence Interval vs Level If you&rsquo;ve got a bunch of data and you&rsquo;re trying to approximate the average value, you&rsquo;re going to have to bake in some wiggle room for your prediction.
+Assuming that you&rsquo;ve already cleared our usual sampling conditions, we want essentially want to come up with an expression of
+$ourEstimate \pm marginOfError$
+How we calculate this &ldquo;marginOfError&rdquo; depends on whether we&rsquo;re looking at a sample mean or proportion (more below), but is basically the product of two parts:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/basics/conf_ints/" />
+
+
+
+<meta property="article:published_time" content="2018-10-03T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-10-03T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Confidence Intervals"/>
+<meta name="twitter:description" content="Confidence Interval vs Level If you&rsquo;ve got a bunch of data and you&rsquo;re trying to approximate the average value, you&rsquo;re going to have to bake in some wiggle room for your prediction.
+Assuming that you&rsquo;ve already cleared our usual sampling conditions, we want essentially want to come up with an expression of
+$ourEstimate \pm marginOfError$
+How we calculate this &ldquo;marginOfError&rdquo; depends on whether we&rsquo;re looking at a sample mean or proportion (more below), but is basically the product of two parts:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Confidence Intervals",
+  "url": "https://napsterinblue.github.io/notes/stats/basics/conf_ints/",
+  "wordCount": "402",
+  "datePublished": "2018-10-03T00:00:00&#43;00:00",
+  "dateModified": "2018-10-03T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Confidence Intervals</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Confidence Intervals</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-10-03T00:00:00Z "> 03 Oct 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h3 id="confidence-interval-vs-level">Confidence Interval vs Level</h3>
+
+<p>If you&rsquo;ve got a bunch of data and you&rsquo;re trying to approximate the average value, you&rsquo;re going to have to bake in some wiggle room for your prediction.</p>
+
+<p>Assuming that you&rsquo;ve <a href="https://napsterinblue.github.io/notes/stats/basics/sample_size/">already cleared our usual sampling conditions</a>, we want essentially want to come up with an expression of</p>
+
+<p>$ourEstimate \pm marginOfError$</p>
+
+<p>How we calculate this &ldquo;marginOfError&rdquo; depends on whether we&rsquo;re looking at a sample mean or proportion (more below), but is basically the product of two parts:</p>
+
+<ul>
+<li>The <strong>standard error</strong>, an approximation of the Standard Deviation</li>
+<li>Our <strong>test statistic</strong>, which is a function of what distribution we&rsquo;re using (mean vs proportion) and our <strong>confidence level</strong></li>
+</ul>
+
+<h4 id="confidence-level">Confidence Level</h4>
+
+<p>The confidence level is expressed as a percentage and essentially says</p>
+
+<blockquote>
+<p>In an infinite number of trials, X% of these error bands would contain our <em>population</em> mean</p>
+</blockquote>
+
+<h4 id="confidence-interval">Confidence Interval</h4>
+
+<p>By extension of that, these &ldquo;error bands&rdquo; are your confidence interval.</p>
+
+<h3 id="proportion">Proportion</h3>
+
+<p>Calculating the confidence interval for a sample proportion follows the equation</p>
+
+<p>$ \hat{p} \pm Z^* \sqrt\frac{\hat{p}(1-\hat{p})}{n}$</p>
+
+<p>Arriving at a <code>Z_star</code> value for a given confidence level has traditionally involved using a lookup table much more robust than below</p>
+
+<pre><code>CL    Z*
+==========
+80%   1.28
+90%   1.645
+95%   1.96
+98%   2.33
+99%   2.58
+</code></pre>
+
+<h3 id="mean">Mean</h3>
+
+<p>Similarly, calculating the confidence interval for a sample mean looks like the following</p>
+
+<p>$ \bar{X} \pm t^* \frac{s_x}{\sqrt{n}}$</p>
+
+<p>The lookup table for <code>t_star</code> is a bit more complicated than it&rsquo;s <code>Z</code> counterpart and also involves another dimension for <em>degrees of freedom</em>.</p>
+
+<h3 id="in-python">In Python</h3>
+
+<p>So how do we calculate these in Python?</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span></code></pre></div>
+<h4 id="proportion-1">Proportion</h4>
+
+<p>1000 values of either 0 or 1</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">1000</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">p_hat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">std_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">p_hat</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p_hat</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">p_hat</span> <span class="o">-</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">std_err</span><span class="p">,</span>
+      <span class="n">p_hat</span> <span class="o">+</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">std_err</span><span class="p">)</span></code></pre></div>
+<pre><code>0.477013645945 0.538986354055
+</code></pre>
+
+<p><code>scipy</code> has a <strong>ROBUST</strong> <code>stats</code> api with <a href="https://docs.scipy.org/doc/scipy/reference/stats.html">a ton of functionality</a>, including calculating confidence intervals</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">(</span><span class="n">X</span><span class="p">))</span></code></pre></div>
+<pre><code>(0.47699871080518186, 0.53900128919481816)
+</code></pre>
+
+<p>But I found that for my purposes, I was seldom reaching for the customization they provide. So instead, I threw together <a href="https://github.com/NapsterInBlue/stats101">stats101</a> as a thin wrapper with more of the arguments handled automagically.</p>
+
+<p>Now we just apply the confidence level and our data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">stats101</span> <span class="kn">import</span> <span class="n">confidence_interval</span>
+
+<span class="n">confidence_interval</span><span class="o">.</span><span class="n">proportion</span><span class="p">(</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(0.48198289796420185, 0.53401710203579811)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">confidence_interval</span><span class="o">.</span><span class="n">proportion</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(0.47699871080518186, 0.53900128919481816)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">confidence_interval</span><span class="o">.</span><span class="n">proportion</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(0.46725739973505387, 0.54874260026494615)
+</code></pre>
+
+<h4 id="mean-1">Mean</h4>
+
+<p>Works just as easy for a sample mean</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">1000</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">confidence_interval</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(47.149856666859471, 49.460143333140529)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">confidence_interval</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(46.537387386009932, 50.072612613990067)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">confidence_interval</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></code></pre></div>
+<pre><code>(45.980336643055075, 50.629663356944924)
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

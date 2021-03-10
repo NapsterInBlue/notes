@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Fine-Tuning Pretrained Networks" />
+<meta property="og:description" content="Perhaps the most practical, &ldquo;remember this snippet&rdquo; worthy section of Chollet&rsquo;s notebook on using pretrained networks is the section where he outlines how to fine-tune your pre-trained ConvNets for your use case.
+Generally, he breaks this practice up into 5 simple steps:
+1. Add a custom network on top of an already-trained base network To do this, we&rsquo;ll import one of the pre-trained network objects from keras, without the dense layer attache" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/computer_vision/fine_tuning_conv_nets/" />
+
+
+
+<meta property="article:published_time" content="2019-06-12T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-06-12T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Fine-Tuning Pretrained Networks"/>
+<meta name="twitter:description" content="Perhaps the most practical, &ldquo;remember this snippet&rdquo; worthy section of Chollet&rsquo;s notebook on using pretrained networks is the section where he outlines how to fine-tune your pre-trained ConvNets for your use case.
+Generally, he breaks this practice up into 5 simple steps:
+1. Add a custom network on top of an already-trained base network To do this, we&rsquo;ll import one of the pre-trained network objects from keras, without the dense layer attache"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Fine-Tuning Pretrained Networks",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/computer_vision/fine_tuning_conv_nets/",
+  "wordCount": "791",
+  "datePublished": "2019-06-12T00:00:00&#43;00:00",
+  "dateModified": "2019-06-12T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Fine-Tuning Pretrained Networks</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Fine-Tuning Pretrained Networks</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-06-12T00:00:00Z "> 12 Jun 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Perhaps the most practical, &ldquo;remember this snippet&rdquo; worthy section of <a href="https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/5.3-using-a-pretrained-convnet.ipynb">Chollet&rsquo;s notebook on using pretrained networks</a> is the section where he outlines how to fine-tune your pre-trained ConvNets for your use case.</p>
+
+<p>Generally, he breaks this practice up into 5 simple steps:</p>
+
+<h3 id="1-add-a-custom-network-on-top-of-an-already-trained-base-network">1. Add a custom network on top of an already-trained base network</h3>
+
+<p>To do this, we&rsquo;ll import one of the pre-trained network objects from <code>keras</code>, <em>without the dense layer attache</em></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.applications</span> <span class="kn">import</span> <span class="n">VGG16</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Using TensorFlow backend.
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">base_model</span> <span class="o">=</span> <span class="n">VGG16</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">,</span>
+                  <span class="n">include_top</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>   <span class="c1">## &lt;- most important step</span>
+                  <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></code></pre></div>
+<pre><code>WARNING:tensorflow:From C:\Users\Nick\Anaconda3\lib\site-packages\tensorflow\python\framework\op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+</code></pre>
+
+<p>And so we&rsquo;ve got a big ol&rsquo; <code>summary()</code> printout for the VGG16 model</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">base_model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_1 (InputLayer)         (None, 150, 150, 3)       0         
+_________________________________________________________________
+block1_conv1 (Conv2D)        (None, 150, 150, 64)      1792      
+_________________________________________________________________
+block1_conv2 (Conv2D)        (None, 150, 150, 64)      36928     
+_________________________________________________________________
+block1_pool (MaxPooling2D)   (None, 75, 75, 64)        0         
+_________________________________________________________________
+block2_conv1 (Conv2D)        (None, 75, 75, 128)       73856     
+_________________________________________________________________
+block2_conv2 (Conv2D)        (None, 75, 75, 128)       147584    
+_________________________________________________________________
+block2_pool (MaxPooling2D)   (None, 37, 37, 128)       0         
+_________________________________________________________________
+block3_conv1 (Conv2D)        (None, 37, 37, 256)       295168    
+_________________________________________________________________
+block3_conv2 (Conv2D)        (None, 37, 37, 256)       590080    
+_________________________________________________________________
+block3_conv3 (Conv2D)        (None, 37, 37, 256)       590080    
+_________________________________________________________________
+block3_pool (MaxPooling2D)   (None, 18, 18, 256)       0         
+_________________________________________________________________
+block4_conv1 (Conv2D)        (None, 18, 18, 512)       1180160   
+_________________________________________________________________
+block4_conv2 (Conv2D)        (None, 18, 18, 512)       2359808   
+_________________________________________________________________
+block4_conv3 (Conv2D)        (None, 18, 18, 512)       2359808   
+_________________________________________________________________
+block4_pool (MaxPooling2D)   (None, 9, 9, 512)         0         
+_________________________________________________________________
+block5_conv1 (Conv2D)        (None, 9, 9, 512)         2359808   
+_________________________________________________________________
+block5_conv2 (Conv2D)        (None, 9, 9, 512)         2359808   
+_________________________________________________________________
+block5_conv3 (Conv2D)        (None, 9, 9, 512)         2359808   
+_________________________________________________________________
+block5_pool (MaxPooling2D)   (None, 4, 4, 512)         0         
+=================================================================
+Total params: 14,714,688
+Trainable params: 14,714,688
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+
+<p>And we&rsquo;re going to make a <em>new</em> model that inherits from this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">base_model</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+vgg16 (Model)                (None, 4, 4, 512)         14714688  
+=================================================================
+Total params: 14,714,688
+Trainable params: 14,714,688
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+
+<p>You might have noticed looking at the <code>VGG.summary()</code> that this doesn&rsquo;t do any sort of classification, so we&rsquo;ll tack on the usual <code>Flatten/Dense</code> steps at the end. So we&rsquo;ll add that</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Flatten</span><span class="p">,</span> <span class="n">Dense</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+vgg16 (Model)                (None, 4, 4, 512)         14714688  
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 8192)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 256)               2097408   
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 257       
+=================================================================
+Total params: 16,812,353
+Trainable params: 16,812,353
+Non-trainable params: 0
+_________________________________________________________________
+</code></pre>
+
+<h3 id="2-freeze-the-base-network">2. Freeze the base network</h3>
+
+<p>16 million trainable params is entirely too many for a network that was already trained on a better computer than we&rsquo;ll have access to&ndash; especially at the lower-level features. So we&rsquo;re going to ignore updating those and focus on the classification element with a simple one liner</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">base_model</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="bp">False</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+vgg16 (Model)                (None, 4, 4, 512)         14714688  
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 8192)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 256)               2097408   
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 257       
+=================================================================
+Total params: 16,812,353
+Trainable params: 2,097,665
+Non-trainable params: 14,714,688
+_________________________________________________________________
+</code></pre>
+
+<p>Much better</p>
+
+<h3 id="3-train-the-part-you-added">3. Train the part you added</h3>
+
+<p>This is the portion where you&rsquo;ll do your typical model training code&ndash; presented as pseudocode here</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">train_generator</span> <span class="o">=</span> <span class="n">train_datagen</span><span class="o">.</span><span class="n">flow_from_directory</span><span class="p">()</span>
+<span class="n">test_generator</span> <span class="o">=</span> <span class="n">test_datagen</span><span class="o">.</span><span class="n">flow_from_directory</span><span class="p">()</span>
+
+<span class="n">model</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span>
+              <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">),</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acc&#39;</span><span class="p">])</span>
+
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span>
+    <span class="n">train_generator</span><span class="p">,</span>
+    <span class="n">steps_per_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_generator</span><span class="p">,</span>
+    <span class="n">validation_steps</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span></code></pre></div>
+<h3 id="4-unfreeze-some-layers-in-the-base-network">4. Unfreeze some layers in the base network</h3>
+
+<p>Now that you&rsquo;ve got a decent classification section of your network, it will likely do you some good to start tailoring the later-layers of your ConvNet to your application.</p>
+
+<p>This is the clever chunk of code you probably opened this notebook up for</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">base_model</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">set_trainable</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">base_model</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;block5_conv1&#39;</span><span class="p">:</span>
+        <span class="n">set_trainable</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">set_trainable</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="bp">False</span></code></pre></div>
+<p>The reason this works is because <code>base_model.layers</code> serves up each layer as they&rsquo;re constructed, sequentially, within the network</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">([</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">base_model</span><span class="o">.</span><span class="n">layers</span><span class="p">])</span></code></pre></div>
+<pre><code>['input_1', 'block1_conv1', 'block1_conv2', 'block1_pool', 'block2_conv1', 'block2_conv2', 'block2_pool', 'block3_conv1', 'block3_conv2', 'block3_conv3', 'block3_pool', 'block4_conv1', 'block4_conv2', 'block4_conv3', 'block4_pool', 'block5_conv1', 'block5_conv2', 'block5_conv3', 'block5_pool']
+</code></pre>
+
+<p>Thus, we loop over each layer, setting <code>layer.trainable = False</code> until we happen upon <code>block5_conv1</code>, near the end, and set the rest to <code>True</code></p>
+
+<h3 id="5-jointly-train-both-layers-in-the-part-you-added">5. Jointly train both layers in the part you added</h3>
+
+<p>The result is a Network that has a about 4x as many trainable params than before, which should yield better accuracy</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></code></pre></div>
+<pre><code>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+vgg16 (Model)                (None, 4, 4, 512)         14714688  
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 8192)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 256)               2097408   
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 257       
+=================================================================
+Total params: 16,812,353
+Trainable params: 9,177,089
+Non-trainable params: 7,635,264
+_________________________________________________________________
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

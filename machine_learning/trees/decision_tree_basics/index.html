@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Decision Tree Basics" />
+<meta property="og:description" content="Overview The basic idea of Decision Trees isn&rsquo;t hard to grok&ndash; indeed following the flow-chart of decision criteria is why they&rsquo;re considered one of the more powerful algorithms from an interpretability standpoint.
+We&rsquo;ll cover actually building the tree below. So skipping ahead, after we&rsquo;ve constructed our tree we wind up with m neat rectangles in some many-dimensional space. It&rsquo;s important to note that when we&rsquo;re done, every single data point&ndash; trained or new&ndash; maps directly onto one of these m rectangles." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_basics/" />
+
+
+
+<meta property="article:published_time" content="2019-09-25T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-09-25T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Decision Tree Basics"/>
+<meta name="twitter:description" content="Overview The basic idea of Decision Trees isn&rsquo;t hard to grok&ndash; indeed following the flow-chart of decision criteria is why they&rsquo;re considered one of the more powerful algorithms from an interpretability standpoint.
+We&rsquo;ll cover actually building the tree below. So skipping ahead, after we&rsquo;ve constructed our tree we wind up with m neat rectangles in some many-dimensional space. It&rsquo;s important to note that when we&rsquo;re done, every single data point&ndash; trained or new&ndash; maps directly onto one of these m rectangles."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Decision Tree Basics",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_basics/",
+  "wordCount": "1120",
+  "datePublished": "2019-09-25T00:00:00&#43;00:00",
+  "dateModified": "2019-09-25T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Decision Tree Basics</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Decision Tree Basics</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-09-25T00:00:00Z "> 25 Sep 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="overview">Overview</h2>
+
+<p>The basic idea of Decision Trees isn&rsquo;t hard to grok&ndash; indeed following the flow-chart of decision criteria is why they&rsquo;re considered one of the more powerful algorithms from an interpretability standpoint.</p>
+
+<p>We&rsquo;ll cover actually building the tree below. So skipping ahead, after we&rsquo;ve constructed our tree we wind up with <code>m</code> neat rectangles in some many-dimensional space. It&rsquo;s important to note that when we&rsquo;re done, every single data point&ndash; trained or new&ndash; maps directly onto one of these <code>m</code> rectangles.</p>
+
+<p>Finally, from a prediction standpoint, when we get a new <code>X</code>, we trace through the tree and figure out which rectangle it lands in, then make the prediction:</p>
+
+<ul>
+<li>Classification: Pick the class with the most representation in the rectangle/terminal node</li>
+<li>Regression: Return the average value of <code>y</code> for the training data that generated this rectangle/terminal node</li>
+</ul>
+
+<h2 id="building-tree">Building Tree</h2>
+
+<p>When we construct our Decision Tree, we only split on one variable at a time, per layer. Overall, our goal is to maximize the <em>information gain</em> at each split.</p>
+
+<p>Thus at each stage, it looks roughly like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">is_continuous</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
+        <span class="c1"># actual split value generation varies by implementation</span>
+        <span class="c1"># e.g. height (in) might try every 5 in between min and max</span>
+        <span class="n">lots_of_splits</span> <span class="o">=</span> <span class="n">get_splits</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
+        
+        <span class="n">best_split</span><span class="p">,</span> <span class="n">best_loss_value</span> <span class="o">=</span> <span class="n">check_continuous_splits</span><span class="p">(</span>
+                                         <span class="n">data</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">lots_of_splits</span><span class="p">)</span>
+    
+    <span class="k">elif</span> <span class="n">is_categorical</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
+        <span class="n">best_split</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">best_loss_value</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># for (A, B, C): A vs B+C, B vs A+C, C vs A+B</span>
+        <span class="n">checks</span> <span class="o">=</span> <span class="n">generate_one_vs_many</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">checks</span><span class="p">:</span>
+            <span class="n">loss_value</span> <span class="o">=</span> <span class="n">calculate_loss</span><span class="p">(</span><span class="n">split_on_check</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">loss_value</span> <span class="o">&lt;</span> <span class="n">best_loss_value</span><span class="p">:</span>
+                <span class="n">best_split</span> <span class="o">=</span> <span class="n">check</span>
+                <span class="n">best_loss_value</span> <span class="o">=</span> <span class="n">loss_value</span>
+                
+<span class="n">new_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">split_on</span><span class="p">(</span><span class="n">best_split</span><span class="p">)</span>
+
+<span class="c1"># recursively do this step until you&#39;ve organized your tree</span>
+            </code></pre></div>
+<p>Going back to this notion of &ldquo;make a bunch of multi-dimensional rectangles&rdquo;, we can define half-planes <code>R_1</code> and <code>R_2</code> as</p>
+
+<p>$R_1(j, s): {X|X&lt;s}$</p>
+
+<p>$R_2(j, s): {X|X\geq s}$</p>
+
+<p>That account for all points that fall within <code>R</code> for feature <code>j</code>, split at the value <code>s</code></p>
+
+<h3 id="objective-functions">Objective Functions</h3>
+
+<p>The Objective Function that you&rsquo;re trying to minimize throughout Tree construction depends, obviously, on whether or not you&rsquo;re working on a Classification or Regression problem.</p>
+
+<p>The Regression form should look familiar:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/regression_cost.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="decision_tree_basics_5_0.png" alt="png" /></p>
+
+<p>Classification, on the other hand, can take a few different forms.</p>
+
+<p>Because our predictions are based on the majority class in any terminal node, our loss/objective functions will all be based on <code>pHat_mk</code>, the proportion of the majority class <code>k</code> in node <code>m</code>. However, because I already know LaTeX will throw a fit if I try and put <code>mk</code> in the underscore, we&rsquo;ll refer to this variable as <code>rho</code>.</p>
+
+<p>And so the most basic function we could come up with is the <em>error rate</em>, the probability that we see another class in this terminal node.</p>
+
+<p>$E = 1 - max_k(\rho)$</p>
+
+<h4 id="advanced-classification-loss-functions">Advanced Classification Loss Functions</h4>
+
+<p>The two most popular loss functions for classification introduce more sensitivity to the diversity of class representation in each node.</p>
+
+<p>To illustrate that, let&rsquo;s construct a few simple hypothetical nodes, <code>proportions</code>, of <em>decreasing</em> diversity, and examine their effects on the loss functions.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">proportions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+               <span class="p">[[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.33</span><span class="p">,</span> <span class="mf">0.33</span><span class="p">,</span> <span class="mf">0.33</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]])</span>
+
+<span class="c1"># make zero vals basically zero for clean log-work</span>
+<span class="n">proportions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">proportions</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span></code></pre></div>
+<p>The <em>Gini Index</em> (the default loss function in <code>sklearn</code>) is defined by</p>
+
+<p>$G = \sum_{k=1}^{K} \rho(1 - \rho)$</p>
+
+<p>Throwing our dummy data at it, we get</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">proportions</span><span class="p">:</span>
+    <span class="n">gini</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">([(</span><span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">])</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{gini:.5f}&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>0.00000
+0.18000
+0.50000
+0.66330
+0.75000
+0.80000
+</code></pre>
+
+<p>Looking at the equation, it should be a no-brainer why our first <code>proportions</code> list yielded a straight-zero score, and increased as we had less-clear separation.</p>
+
+<p><strong>Note</strong>: The Gini Index is more-commonly referred to as the <em>node purity</em></p>
+
+<p>Another popular loss function is <a href="https://ml-cheatsheet.readthedocs.io/en/latest/loss_functions.html"><em>Categorical Cross Entropy</em></a>, which should be second-nature to anyone doing multiclass Deep Learning.</p>
+
+<p>Again, plugging our data in yields a clear increase in values as our dataset becomes less separated.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">proportions</span><span class="p">:</span>
+    <span class="n">entropy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">([</span><span class="o">-</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">])</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{entropy:.5f}&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>0.00000
+0.32508
+0.69315
+1.09758
+1.38629
+1.60944
+</code></pre>
+
+<h3 id="stopping-conditions">Stopping Conditions</h3>
+
+<p>Obviously, if the construction of our trees is done in a recursive fashion, we need some sort of break condition.</p>
+
+<p>There are a number of things that we might consider in this regard. Drawing from the docstring of <code>sklearn.tree.DecisionTreeClassifier</code> we can get a brief rundown of our options and their defaults</p>
+
+<pre><code>max_depth : int or None, optional (default=None)
+    The maximum depth of the tree. If None, then nodes are expanded until
+    all leaves are pure or until all leaves contain less than
+    min_samples_split samples.
+
+min_samples_split : int, float, optional (default=2)
+    The minimum number of samples required to split an internal node:
+
+    - If int, then consider `min_samples_split` as the minimum number.
+    - If float, then `min_samples_split` is a fraction and
+      `ceil(min_samples_split * n_samples)` are the minimum
+      number of samples for each split.
+
+min_samples_leaf : int, float, optional (default=1)
+    The minimum number of samples required to be at a leaf node.
+    A split point at any depth will only be considered if it leaves at
+    least ``min_samples_leaf`` training samples in each of the left and
+    right branches.  This may have the effect of smoothing the model,
+    especially in regression.
+
+    - If int, then consider `min_samples_leaf` as the minimum number.
+    - If float, then `min_samples_leaf` is a fraction and
+      `ceil(min_samples_leaf * n_samples)` are the minimum
+      number of samples for each node.
+
+max_features : int, float, string or None, optional (default=None)
+    The number of features to consider when looking for the best split:
+
+        - If int, then consider `max_features` features at each split.
+        - If float, then `max_features` is a fraction and
+          `int(max_features * n_features)` features are considered at each
+          split.
+        - If &quot;auto&quot;, then `max_features=sqrt(n_features)`.
+        - If &quot;sqrt&quot;, then `max_features=sqrt(n_features)`.
+        - If &quot;log2&quot;, then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
+
+max_leaf_nodes : int or None, optional (default=None)
+    Grow a tree with ``max_leaf_nodes`` in best-first fashion.
+    Best nodes are defined as relative reduction in impurity.
+    If None then unlimited number of leaf nodes.
+
+min_impurity_decrease : float, optional (default=0.)
+    A node will be split if this split induces a decrease of the impurity
+    greater than or equal to this value.
+</code></pre>
+
+<p>In general, though it&rsquo;s important to note that setting most of these to <code>None</code> and hitting Go will amount to this Tree perfectly overfitting our data&ndash; a trait obviously undesirable in any model.</p>
+
+<p>Few options here:</p>
+
+<ul>
+<li>Intelligently apply constraints via Cross Validation/Grid Searching</li>
+<li><a href="https://napsterinblue.github.io/notes/machine_learning/trees/decision_tree_pruning/">Prune our over-fit trees</a></li>
+<li>Move onto Tree-based ensemble methods</li>
+</ul>
+
+<p>On that last point, we consider the tradeoff between model performance and interpretability&ndash; we can either have a neat flow-chart of decision making, or a potentially-vague &ldquo;variable importance&rdquo; score across arbitrarily-many models.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

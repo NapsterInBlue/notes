@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="RDDs" />
+<meta property="og:description" content="import findspark findspark.init() import pyspark sc = pyspark.SparkContext() zenPath = &#39;../data/zen.txt&#39; Resiliant Distributed Datasets Spark operates using Resiliant Distributed Datasets that copy and spread data over your computing platform.
+In addition to the obvious &ldquo;Distributed Datasets&rdquo; properties in the name, there&rsquo;s also this notion of &ldquo;Resiliancy&rdquo; which essentially means that the data cannot be modified directly.
+Generally, there are two ways to go about making an RDD:
+From Files Say we have a file that reads line this" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/spark/basics/rdds/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RDDs"/>
+<meta name="twitter:description" content="import findspark findspark.init() import pyspark sc = pyspark.SparkContext() zenPath = &#39;../data/zen.txt&#39; Resiliant Distributed Datasets Spark operates using Resiliant Distributed Datasets that copy and spread data over your computing platform.
+In addition to the obvious &ldquo;Distributed Datasets&rdquo; properties in the name, there&rsquo;s also this notion of &ldquo;Resiliancy&rdquo; which essentially means that the data cannot be modified directly.
+Generally, there are two ways to go about making an RDD:
+From Files Say we have a file that reads line this"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RDDs",
+  "url": "https://napsterinblue.github.io/notes/spark/basics/rdds/",
+  "wordCount": "1086",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>RDDs</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">RDDs</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">findspark</span>
+<span class="n">findspark</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span>
+
+<span class="n">zenPath</span> <span class="o">=</span> <span class="s1">&#39;../data/zen.txt&#39;</span></code></pre></div>
+<h1 id="resiliant-distributed-datasets">Resiliant Distributed Datasets</h1>
+
+<p>Spark operates using <em>Resiliant Distributed Datasets</em> that copy and spread data over your computing platform.</p>
+
+<p>In addition to the obvious &ldquo;Distributed Datasets&rdquo; properties in the name, there&rsquo;s also this notion of &ldquo;Resiliancy&rdquo; which essentially means that the data cannot be modified directly.</p>
+
+<p>Generally, there are two ways to go about making an RDD:</p>
+
+<h2 id="from-files">From Files</h2>
+
+<p>Say we have a file that reads line this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="nb">type</span> <span class="s2">&#34;..\data\zen.txt&#34;</span></code></pre></div>
+<pre><code>Beautiful is better than ugly.
+Explicit is better than implicit.
+Simple is better than complex.
+Complex is better than complicated.
+Flat is better than nested.
+Sparse is better than dense.
+Readability counts.
+Special cases aren't special enough to break the rules.
+Although practicality beats purity.
+Errors should never pass silently.
+Unless explicitly silenced.
+In the face of ambiguity, refuse the temptation to guess.
+There should be oneâ€”and preferably only oneâ€”obvious way to do it.
+Although that way may not be obvious at first unless you're Dutch.
+Now is better than never.
+Although never is often better than right now.
+If the implementation is hard to explain, it's a bad idea.
+If the implementation is easy to explain, it may be a good idea.
+Namespaces are one honking great idea--let's do more of those!
+</code></pre>
+
+<h3 id="before-spark">Before Spark</h3>
+
+<p>If we wanted to read that in our typical Python fashion we&rsquo;d whip up something that looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">zenPath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></code></pre></div>
+<pre><code>Beautiful is better than ugly.
+Explicit is better than implicit.
+Simple is better than complex.
+Complex is better than complicated.
+Flat is better than nested.
+Sparse is better than dense.
+Readability counts.
+Special cases aren't special enough to break the rules.
+Although practicality beats purity.
+Errors should never pass silently.
+Unless explicitly silenced.
+In the face of ambiguity, refuse the temptation to guess.
+There should be oneâ€”and preferably only oneâ€”obvious way to do it.
+Although that way may not be obvious at first unless you're Dutch.
+Now is better than never.
+Although never is often better than right now.
+If the implementation is hard to explain, it's a bad idea.
+If the implementation is easy to explain, it may be a good idea.
+Namespaces are one honking great idea--let's do more of those!
+</code></pre>
+
+<p>This is pretty straightforward. The text from the file gets stored locally in our <code>text</code> variable as type <code>str</code>&ndash; all as one chunk.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></code></pre></div>
+<pre><code>str
+</code></pre>
+
+<h3 id="in-spark">In Spark</h3>
+
+<p>However, if we want to work with this in a distributed fashion, we need to use Spark to distribute the file.</p>
+
+<p>Using the <code>SparkContext</code> that we instantiated earlier:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">lines</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="n">zenPath</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">type</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></code></pre></div>
+<pre><code>pyspark.rdd.RDD
+</code></pre>
+
+<p>We use the <code>collect</code> function to get all re-assembled.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">lines</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>['Beautiful is better than ugly.',
+ 'Explicit is better than implicit.',
+ 'Simple is better than complex.',
+ 'Complex is better than complicated.',
+ 'Flat is better than nested.',
+ 'Sparse is better than dense.',
+ 'Readability counts.',
+ &quot;Special cases aren't special enough to break the rules.&quot;,
+ 'Although practicality beats purity.',
+ 'Errors should never pass silently.',
+ 'Unless explicitly silenced.',
+ 'In the face of ambiguity, refuse the temptation to guess.',
+ 'There should be one—and preferably only one—obvious way to do it.',
+ &quot;Although that way may not be obvious at first unless you're Dutch.&quot;,
+ 'Now is better than never.',
+ 'Although never is often better than right now.',
+ &quot;If the implementation is hard to explain, it's a bad idea.&quot;,
+ 'If the implementation is easy to explain, it may be a good idea.',
+ &quot;Namespaces are one honking great idea--let's do more of those!&quot;]
+</code></pre>
+
+<p>And the <code>glom</code> function to return the data as it&rsquo;s stored in the partitions. In this case, <code>lines</code> is split up in two different places.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">lines</span><span class="o">.</span><span class="n">glom</span><span class="p">()</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></code></pre></div>
+<pre><code>[['Beautiful is better than ugly.',
+  'Explicit is better than implicit.',
+  'Simple is better than complex.',
+  'Complex is better than complicated.',
+  'Flat is better than nested.',
+  'Sparse is better than dense.',
+  'Readability counts.',
+  &quot;Special cases aren't special enough to break the rules.&quot;,
+  'Although practicality beats purity.',
+  'Errors should never pass silently.',
+  'Unless explicitly silenced.',
+  'In the face of ambiguity, refuse the temptation to guess.'],
+ ['There should be one—and preferably only one—obvious way to do it.',
+  &quot;Although that way may not be obvious at first unless you're Dutch.&quot;,
+  'Now is better than never.',
+  'Although never is often better than right now.',
+  &quot;If the implementation is hard to explain, it's a bad idea.&quot;,
+  'If the implementation is easy to explain, it may be a good idea.',
+  &quot;Namespaces are one honking great idea--let's do more of those!&quot;]]
+</code></pre>
+
+<h2 id="on-the-fly">On the Fly</h2>
+
+<p>Similarly, we can take variables that we instantiate at runtime and instruct Spark to shuffle them out into RDDs using <code>parallelize</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">vals</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span></code></pre></div>
+<pre><code>&lt;class 'list'&gt;
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">valsRDD</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">valsRDD</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">valsRDD</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span></code></pre></div>
+<pre><code>&lt;class 'pyspark.rdd.RDD'&gt;
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">valsRDD</span><span class="o">.</span><span class="n">glom</span><span class="p">()</span><span class="o">.</span><span class="n">collect</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span></code></pre></div>
+<pre><code>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+[25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+[50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74]
+[75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

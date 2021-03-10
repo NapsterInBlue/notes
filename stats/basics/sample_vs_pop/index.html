@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Samples, Populations, and their Symbols" />
+<meta property="og:description" content="Terminology Samples come from populations, and represent a smaller subset of all possible values.
+ e.g. If you email 100 clients at random from a list of 10,000 clients.  Statistics describe samples whereas parameters describe populations (alliteration, FTW)
+ e.g. The &ldquo;average age of all clients&rdquo; vs &ldquo;average age of the 100 clients we selected&rdquo;  Symbols Generaly, Greek tends to mean population, whereas things with hats tend to mean sample." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/basics/sample_vs_pop/" />
+
+
+
+<meta property="article:published_time" content="2018-07-14T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-07-14T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Samples, Populations, and their Symbols"/>
+<meta name="twitter:description" content="Terminology Samples come from populations, and represent a smaller subset of all possible values.
+ e.g. If you email 100 clients at random from a list of 10,000 clients.  Statistics describe samples whereas parameters describe populations (alliteration, FTW)
+ e.g. The &ldquo;average age of all clients&rdquo; vs &ldquo;average age of the 100 clients we selected&rdquo;  Symbols Generaly, Greek tends to mean population, whereas things with hats tend to mean sample."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Samples, Populations, and their Symbols",
+  "url": "https://napsterinblue.github.io/notes/stats/basics/sample_vs_pop/",
+  "wordCount": "241",
+  "datePublished": "2018-07-14T00:00:00&#43;00:00",
+  "dateModified": "2018-07-14T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Samples, Populations, and their Symbols</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Samples, Populations, and their Symbols</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-07-14T00:00:00Z "> 14 Jul 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h3 id="terminology">Terminology</h3>
+
+<p><strong>Samples</strong> come from <strong>populations</strong>, and represent a smaller subset of all possible values.</p>
+
+<ul>
+<li>e.g. If you email 100 clients at random from a list of 10,000 clients.</li>
+</ul>
+
+<p><strong>Statistics</strong> describe <em>samples</em> whereas <strong>parameters</strong> describe populations (alliteration, FTW)</p>
+
+<ul>
+<li>e.g. The &ldquo;average age of all clients&rdquo; vs &ldquo;average age of the 100 clients we selected&rdquo;</li>
+</ul>
+
+<h3 id="symbols">Symbols</h3>
+
+<p>Generaly, Greek tends to mean population, whereas things with hats tend to mean sample.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># cheating because rendering table w/ latex</span>
+<span class="c1"># in jupyter and hugo is a headache</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;../images/symbol_table.png&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="sample_vs_pop_5_0.png" alt="png" /></p>
+
+<h2 id="calculating-sample-statistics">Calculating Sample Statistics</h2>
+
+<h3 id="proportions">Proportions</h3>
+
+<p>Sample Proportion</p>
+
+<p>$$\hat{p} = \frac{\text{Number of successes}}{\text{sample size}}= \frac{X}{n}$$</p>
+
+<p>Standard Error</p>
+
+<p>$$SE_\hat{p} = \sqrt{\frac{\% successes \times \% failures}{\text{sample size}}} = \sqrt{\frac{\hat{p}(1 - \hat{p})}{n}}$$</p>
+
+<h3 id="means">Means</h3>
+
+<p>Sample Mean</p>
+
+<p>$$\bar{X} = \frac{\text{sum of all observations}}{\text{sample size}} = \frac{x_1 + x_2 + \dots + x_n}{n}$$</p>
+
+<p>Standard Error</p>
+
+<p>$$SE_\bar{X} = \frac{\text{sample std dev}}{\text{factor of sample size}} = \frac{s_x}{\sqrt{n}}$$</p>
+
+<h3 id="a-note-on-the-sqrt-n-s">A Note on the sqrt(n)&rsquo;s</h3>
+
+<p>Both Standard Errors listed above are measures of variation on the <em>center statistic</em> of the distribution</p>
+
+<p>Let&rsquo;s do a quick derivation on why this works.</p>
+
+<p>If <em>x1, x2, &hellip; , xn</em> are independent from a population w/ mean and stdev $\mu, \sigma$ then the variance of their total is</p>
+
+<p>$$n\sigma^{2}$$</p>
+
+<p>And because the sample mean is expressed as</p>
+
+<p>$$\bar{X} = \frac{x_1, x_2, \dots, x_n}{n}$$</p>
+
+<p>We can substitute that into the variance calculation</p>
+
+<p>$$ Var(\bar{X}) = Var(\frac{1}{n}\sum\limits_{i=1}^{n}X_i)$$</p>
+
+<p>$$= \frac{1}{n^2}\sum\limits_{i=1}^{n}Var(X_i)$$</p>
+
+<p>$$= \frac{1}{n^2}n^2\sigma^2\frac{1}{n}$$</p>
+
+<p>$$= \frac{\sigma^2}{n} $$</p>
+
+<p>Thus, the standard deviation of this becomes $\frac{\sigma}{\sqrt{n}}$</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

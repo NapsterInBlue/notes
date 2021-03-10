@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Forward and Back Prop in Deeper Networks" />
+<meta property="og:description" content="The Dimensions As you add more and more layers into your Network, juggling all of the matrix dimensions becomes an increasingly tedious task, especially when working out all of the gradients.
+However, the following heuristics may prove useful:
+ The weights matrix, WN and its partial dWN must have the same dimensions Same goes for the activation layers, A, and intermediate linear combinations, Z Working out the dimensions in advance gives you a good sanity check before you find yourself wrist-deep in numpy, trying to debug with obj." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/neural_nets/deeper_props/" />
+
+
+
+<meta property="article:published_time" content="2018-08-13T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-08-13T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Forward and Back Prop in Deeper Networks"/>
+<meta name="twitter:description" content="The Dimensions As you add more and more layers into your Network, juggling all of the matrix dimensions becomes an increasingly tedious task, especially when working out all of the gradients.
+However, the following heuristics may prove useful:
+ The weights matrix, WN and its partial dWN must have the same dimensions Same goes for the activation layers, A, and intermediate linear combinations, Z Working out the dimensions in advance gives you a good sanity check before you find yourself wrist-deep in numpy, trying to debug with obj."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Forward and Back Prop in Deeper Networks",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/neural_nets/deeper_props/",
+  "wordCount": "231",
+  "datePublished": "2018-08-13T00:00:00&#43;00:00",
+  "dateModified": "2018-08-13T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Forward and Back Prop in Deeper Networks</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Forward and Back Prop in Deeper Networks</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-08-13T00:00:00Z "> 13 Aug 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="the-dimensions">The Dimensions</h2>
+
+<p>As you add more and more layers into your Network, juggling all of the matrix dimensions becomes an increasingly tedious task, <em>especially</em> when working out all of the gradients.</p>
+
+<p>However, the following heuristics may prove useful:</p>
+
+<ul>
+<li>The weights matrix, <code>WN</code> and its partial <code>dWN</code> must have <em>the same dimensions</em></li>
+<li>Same goes for the activation layers, <code>A</code>, and intermediate linear combinations, <code>Z</code></li>
+<li>Working out the dimensions in advance gives you a good sanity check before you find yourself wrist-deep in <code>numpy</code>, trying to debug with <code>obj.shape</code></li>
+</ul>
+
+<p>The following image is an example of a deeper Net structure, and its corresponding dimensions.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/deeper.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="deeper_props_5_0.png" alt="png" /></p>
+
+<h2 id="cache-over-everything">Cache over Everything</h2>
+
+<p>When we calculate through backprop for a single layer, we use <code>da_l</code>, the derivative of that activation layer, to look for:</p>
+
+<ul>
+<li>The derivatives <code>dW_l</code> and <code>db_l</code> that we&rsquo;re going to use for gradient descent</li>
+<li><code>da_l-1</code>, the derivative used as an input for the next layer</li>
+</ul>
+
+<p>First we calculate the derivative of the linear combination for that layer, <code>dZl</code></p>
+
+<p>$dZ^{[l]} = dA^{[l]} * g&rsquo;^{[l]} (Z^{[l]})$</p>
+
+<p>$dZ^{[l]} = W^{[l+1]T}dZ^{[l+1]} * g&rsquo;^{[l]}(Z^{[l]})$</p>
+
+<p><strong>Note</strong>: we use both <code>W_l+1</code> and <code>Zl</code></p>
+
+<p>$dW^{[l]} = \frac{1}{m} dZ^{[l]}A^{[l-1]T}$</p>
+
+<p><strong>Note:</strong> we use <code>A_l-1</code></p>
+
+<p>$db^{[l]} = \frac{1}{m} \sum dZ^{[l]}$</p>
+
+<p>$dA^{[l-1]} = W^{[l]T}dZ^{[l]}$</p>
+
+<p>Suffice to say, caching the intermediate values of the activation layers during forward prop is extremely useful in helping calculate the backward steps.</p>
+
+<p>One Layer:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/forward_back_one_layer.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="deeper_props_18_0.png" alt="png" /></p>
+
+<p>At Scale:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;images/forward_back_prop.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="deeper_props_20_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

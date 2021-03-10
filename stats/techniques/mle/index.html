@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Maximum Likelihood Estimators" />
+<meta property="og:description" content="from IPython.display import Image Note: The following images and intuition comes from this video
+Overview Note: The following images and intuition comes from this video
+Maximum Likelihood Estimators are used to approximate probability distributions, given some data.
+Though we don&rsquo;t have every single data point that could possibly fall within a distribution, we can arrive at a decent guess for the parameters that define a distribution the data we do have." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/stats/techniques/mle/" />
+
+
+
+<meta property="article:published_time" content="2019-07-06T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2019-07-06T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Maximum Likelihood Estimators"/>
+<meta name="twitter:description" content="from IPython.display import Image Note: The following images and intuition comes from this video
+Overview Note: The following images and intuition comes from this video
+Maximum Likelihood Estimators are used to approximate probability distributions, given some data.
+Though we don&rsquo;t have every single data point that could possibly fall within a distribution, we can arrive at a decent guess for the parameters that define a distribution the data we do have."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Maximum Likelihood Estimators",
+  "url": "https://napsterinblue.github.io/notes/stats/techniques/mle/",
+  "wordCount": "783",
+  "datePublished": "2019-07-06T00:00:00&#43;00:00",
+  "dateModified": "2019-07-06T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Maximum Likelihood Estimators</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Maximum Likelihood Estimators</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2019-07-06T00:00:00Z "> 06 Jul 2019</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span></code></pre></div>
+<p>Note: The following images and intuition comes from <a href="https://www.youtube.com/watch?v=XepXtl9YKwc">this video</a></p>
+
+<h2 id="overview">Overview</h2>
+
+<p>Note: The following images and intuition comes from <a href="https://www.youtube.com/watch?v=XepXtl9YKwc">this video</a></p>
+
+<p>Maximum Likelihood Estimators are used to approximate probability distributions, given some data.</p>
+
+<p>Though we don&rsquo;t have every single data point that could possibly fall within a distribution, we can arrive at a decent guess for the parameters that define a distribution the data we <em>do</em> have.</p>
+
+<p>In other words:</p>
+
+<blockquote>
+<p>Given an assumed distribution of data and a number of data points, what is the likelihood that these points fit the distribution?</p>
+</blockquote>
+
+<p>For instance, looking at a dataset like the one below, it&rsquo;s likely appropriate to say that the data fits a normal distribution&ndash; it&rsquo;s mostly-symmetrical and centered around a mean value.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_7_0.png" alt="png" /></p>
+
+<p>Because a normal distribution is defined by its mean and standard deviation, if we were so inclined, we could:</p>
+
+<ol>
+<li>Iterate through a bunch of candidate mean values (holding standard deviation constant)</li>
+<li>Check the probability of each point falling into a distribution defined by that mean and stddev</li>
+<li>Multiply the probabilities for each point for the overall sample likelihood</li>
+<li>Take the value for the mean that maximizes likelihood</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_9_0.png" alt="png" /></p>
+
+<p>Then holding that mean constant, we could repeat the exercise, but for different values of the standard deviation.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_11_0.png" alt="png" /></p>
+
+<h3 id="example-normal-distribution-closed-solution">Example: Normal Distribution (Closed Solution)</h3>
+
+<p>Fortunately, the behavior of Maximum Likelihood Estimators is well-understood for data that fits known distributions.</p>
+
+<p>Following along with <a href="https://www.youtube.com/watch?v=Dn6b9fCIUpM">this video</a>, if we wanted to get the likelihood of a point appearing within a normal distribution with given mean and standard deviation, we would employ the density function below</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_1.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_14_0.png" alt="png" /></p>
+
+<p>Thus, a poor guess of a mean of 20 makes it seriously unlikely that our observed data point of 32 belongs to this distribution</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_16_0.png" alt="png" /></p>
+
+<p>As above, this likelihood is maximized at the mean of our data, and we can inspect for the standard deviation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_3.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_18_0.png" alt="png" /></p>
+
+<p>Alternatively, we can just <em>solve</em> for the correct values, using Math™</p>
+
+<p>For <em>n</em> independent points, we can describe the joint likelihood of each point falling into a normal distribution with a given mean and stddev with the following equation</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_4.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_20_0.png" alt="png" /></p>
+
+<p>Written out, it looks like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_5.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_22_0.png" alt="png" /></p>
+
+<p>Because we&rsquo;re trying to maximize the values of mu and sigma, we&rsquo;re going to be doing some calculus to find the points where the derivative is equal to zero</p>
+
+<p>First, though, we&rsquo;re going to take the log of all of the terms. This lets us enjoy an easier time doing the math gymnastics&hellip;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_6.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_24_0.png" alt="png" /></p>
+
+<p>&hellip; and will still give us the same value where the derivative, because the log function is monotonically increasing</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_7.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_26_0.png" alt="png" /></p>
+
+<p>After a bunch of working (watch the video above if you want a step-by-step), we arrive at the optimal value for the mean being the mean of the sample data</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_8.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_28_0.png" alt="png" /></p>
+
+<p>And similarly, the optimal value for the stddev being the stddev of the sample data.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_norm_9.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_30_0.png" alt="png" /></p>
+
+<p>While that should be pretty obvious, a few things should jump out at this point:</p>
+
+<ul>
+<li>We were able to express the joint likelihood in generic terms of mu and sigma</li>
+<li>Taking the log of all of our terms makes for easier computation and yields the same results</li>
+<li>Our hand-mathing arrives at a simple, known, <em>closed</em> solution that will yield the correct results</li>
+</ul>
+
+<h3 id="example-gans-non-closed-solution">Example: GANs (Non-closed Solution)</h3>
+
+<p>So in the instance of a Generative Adversarial Network, we&rsquo;ve got two probability distributions that seed the whole shebang:</p>
+
+<ul>
+<li><code>p_data(x)</code>: The &ldquo;probability distribution&rdquo; that defines the composition of our input data</li>
+<li><code>p_z(z)</code>: Some noise vector (usually uniform or normal, with dimensions (1, N), n &gt;= 100ish) that seeds the latent space of the Generator</li>
+</ul>
+
+<p>From there, we&rsquo;ve got two MLPs:</p>
+
+<ul>
+<li><code>G(z)</code>: Learns the underlying data distribution of p_data to make fake images</li>
+<li><code>D(x)</code>: Learns probability that a sample came from our dataset and not the Generator</li>
+</ul>
+
+<p>The cost function has no closed-form solution and is represented by</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_gans.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_34_0.png" alt="png" /></p>
+
+<p>However, the vectors <code>x</code> and <code>z</code> can represent many data points, giving us huge summands in <code>D()</code> and <code>G()</code>.</p>
+
+<p>Thus, as above, we assume each observation to be independent, and multiply their individual probabilities together to get the joint, and take the log of each so we can add their probabilities together for ease of computation.</p>
+
+<p>In short, though, all a GAN is is two MLE&rsquo;s pitted against one another:</p>
+
+<ul>
+<li>One is trying to estimate the parameters that define the distribution <code>p_data</code></li>
+<li>One is trying to estimate the parameters that define the data generation distribution</li>
+</ul>
+
+<p>Ultimately, when you consider that the generator, <code>G()</code>, is trying to approximate the definition of a distribution <em>that produces a bunch of seemingly-random</em> images, you&rsquo;re wading into a serious mess of a definition.</p>
+
+<p>Or as my friend Tung eloquently puts it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;../images/mle_gans_2.PNG&#39;</span><span class="p">)</span></code></pre></div>
+<p><img src="mle_38_0.png" alt="png" /></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="csv 1: Overview" />
+<meta property="og:description" content="Intro All of the pandas csv and text file parsing are done through the read_csv() and read_table() functions. These, in turn, inherit most of their behavior from the csv module in the Python standard library.
+Because the end result of &ldquo;parse data to get to a Dataframe&rdquo; looks so tabular, it&rsquo;s worth having a good understanding of how these two function calls work, even in higher-order data, as those methods will leverage these on the backend." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/pandas/csv_1_overview/" />
+
+
+
+<meta property="article:published_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-05-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="csv 1: Overview"/>
+<meta name="twitter:description" content="Intro All of the pandas csv and text file parsing are done through the read_csv() and read_table() functions. These, in turn, inherit most of their behavior from the csv module in the Python standard library.
+Because the end result of &ldquo;parse data to get to a Dataframe&rdquo; looks so tabular, it&rsquo;s worth having a good understanding of how these two function calls work, even in higher-order data, as those methods will leverage these on the backend."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "csv 1: Overview",
+  "url": "https://napsterinblue.github.io/notes/python/pandas/csv_1_overview/",
+  "wordCount": "219",
+  "datePublished": "2018-05-23T00:00:00&#43;00:00",
+  "dateModified": "2018-05-23T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>csv 1: Overview</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">csv 1: Overview</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-05-23T00:00:00Z "> 23 May 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<h2 id="intro">Intro</h2>
+
+<p>All of the <code>pandas</code> csv and text file parsing are done through the <code>read_csv()</code> and <code>read_table()</code> functions. These, in turn, inherit most of their behavior from the <code>csv</code> module in the Python standard library.</p>
+
+<p>Because the end result of &ldquo;parse data to get to a <code>Dataframe</code>&rdquo; looks so tabular, it&rsquo;s worth having a good understanding of how these two function calls work, even in higher-order data, as those methods will leverage these on the backend.</p>
+
+<h3 id="the-filepath-or-buffer-argument">The <code>filepath_or_buffer</code> argument</h3>
+
+<p>This is a pretty broad argument that represents the object being parsed for information. It can take:</p>
+
+<ul>
+<li>A path to a file (a <code>str</code> or <code>pathlib.Path</code>)</li>
+<li>A URL (with http included)</li>
+<li>Any object with a <code>read()</code> method (e.g. <code>StringIO</code> object)</li>
+</ul>
+
+<h3 id="all-of-the-other-arguments">All of the other arguments</h3>
+
+<p>To try to enumerate the 50 or so other arguments here would be unwieldy. Instead, see the other notebooks.</p>
+
+<p>The other options broadly fall into 5 categories:</p>
+
+<ul>
+<li>Indexing</li>
+<li>Type Inference</li>
+<li>Datetime Parsing</li>
+<li>Unclean Data</li>
+<li>Iterating</li>
+</ul>
+
+<h2 id="engine">Engine</h2>
+
+<p>The actual parsing can either be done in Python (easier to use) or in C (much faster).</p>
+
+<p>Generally speaking, if you&rsquo;re looking to use the C engine, you&rsquo;re going to want to be as explicit as possible in all of your argument-ing and not relying on the &lsquo;smart typing&rsquo; that arguments such as <code>sep</code>, <code>parse_dates</code>, etc provide.</p>
+
+<pre><code>float_precision
+lineterminator
+</code></pre>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

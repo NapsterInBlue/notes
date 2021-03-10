@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="LRU Caching" />
+<meta property="og:description" content="Caching is an invaluable tool for lowering the stress of repeated computes on your expensive functions, if you anticipate calling it with a relatively-narrow set of arguments. I read about it in the context of model.predict() calls, but wanted to lean on a more canonical example to show the how performance compares, caching vs non. The code is lifted and altered from the functools.lru_cache() documentation.
+By Example Below, I&rsquo;ve got two identical implementations for recursively serving up Fibonacci numbers&ndash; the only difference being that one of them counts the number of times the function is called, and the other caches the results its seen for later use." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/python/development/lru_cache/" />
+
+
+
+<meta property="article:published_time" content="2020-10-21T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2020-10-21T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="LRU Caching"/>
+<meta name="twitter:description" content="Caching is an invaluable tool for lowering the stress of repeated computes on your expensive functions, if you anticipate calling it with a relatively-narrow set of arguments. I read about it in the context of model.predict() calls, but wanted to lean on a more canonical example to show the how performance compares, caching vs non. The code is lifted and altered from the functools.lru_cache() documentation.
+By Example Below, I&rsquo;ve got two identical implementations for recursively serving up Fibonacci numbers&ndash; the only difference being that one of them counts the number of times the function is called, and the other caches the results its seen for later use."/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LRU Caching",
+  "url": "https://napsterinblue.github.io/notes/python/development/lru_cache/",
+  "wordCount": "950",
+  "datePublished": "2020-10-21T00:00:00&#43;00:00",
+  "dateModified": "2020-10-21T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>LRU Caching</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">LRU Caching</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2020-10-21T00:00:00Z "> 21 Oct 2020</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p>Caching is an invaluable tool for lowering the stress of repeated computes on your expensive functions, if you anticipate calling it with a relatively-narrow set of arguments. I read about it in the context of <code>model.predict()</code> calls, but wanted to lean on a more canonical example to show the how performance compares, caching vs non. The code is lifted and altered from the <code>functools.lru_cache()</code> <a href="https://docs.python.org/3.3/library/functools.html#functools.lru_cache">documentation</a>.</p>
+
+<h2 id="by-example">By Example</h2>
+
+<p>Below, I&rsquo;ve got two identical implementations for recursively serving up Fibonacci numbers&ndash; the only difference being that one of them counts the number of times the function is called, and the other caches the results its seen for later use.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span></code></pre></div><div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">fib_no_cache</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">fib_call_count</span>
+    <span class="n">fib_call_count</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fib_no_cache</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib_no_cache</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span></code></pre></div>
+<h3 id="speed">Speed</h3>
+
+<p>Without caching, <code>fib(20)</code> runs on the order of milliseconds</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">timeit</span>
+
+<span class="n">fib_no_cache</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>2.91 ms ± 51.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+</code></pre>
+
+<p>With caching, it&rsquo;s measured instead in <em>nanoseconds</em>, which several orders of magnitude faster (10^-3) vs (10^-9)</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">timeit</span>
+
+<span class="n">fib</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></code></pre></div>
+<pre><code>56.5 ns ± 0.677 ns per loop (mean ± std. dev. of 7 runs, 10000000 loops each)
+</code></pre>
+
+<p>This alone is probably endorsement enough to use <code>@lru_cache()</code> where applicable.</p>
+
+<h3 id="call-efficiency">Call Efficiency</h3>
+
+<p>We can get a good understanding of the increase in efficiency by inspecting some of the utilities <code>functools</code> gives us.</p>
+
+<p>On its own, a user-defined function doesn&rsquo;t come with anything attached to it, besides a host of <code>__dunder__</code> methods.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">blank_function</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">blank_function</span><span class="o">.</span><span class="n">__dir__</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span></code></pre></div>
+<pre><code>[]
+</code></pre>
+
+<p>On the other hand, we can see that functions implemented under the <code>@functools.lru_cache()</code> decorator, get attached with a couple functions to interface with the cache.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fib</span><span class="o">.</span><span class="n">__dir__</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span></code></pre></div>
+<pre><code>['cache_info', 'cache_clear']
+</code></pre>
+
+<p>In practice, we can use this function to inspect how much work is going on under the hood.</p>
+
+<p>At start, the <code>namedtuple</code> shows that:</p>
+
+<ul>
+<li><code>hits=0</code>: The cache hasn&rsquo;t provided a shortcut yet</li>
+<li><code>misses=0</code>: Nothing has been cached yet</li>
+<li><code>maxsize=64</code>: The number of values that will be cached</li>
+<li><code>currsize=0</code>: Similar to <code>misses</code>, this is how many values have been cached.</li>
+</ul>
+
+<p>The key difference here is that <code>currsize</code> will only ever get as big as <code>maxsize</code>. At that point, it will drop the <em>oldest</em> cached call to <code>fib()</code>, as implied by the <strong>L</strong>ast <strong>R</strong>ecently <strong>U</strong>sed in <code>lru_cache()</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">())</span></code></pre></div>
+<pre><code>CacheInfo(hits=0, misses=0, maxsize=64, currsize=0)
+</code></pre>
+
+<p>Then, if we call our cached Fibonacci sequence, we can inspect how it&rsquo;s leveraging its cache.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;Fib({i}) =&#34;</span><span class="p">,</span> <span class="n">fib</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<pre><code>Fib(0) = 0
+CacheInfo(hits=0, misses=1, maxsize=64, currsize=1) 
+
+Fib(1) = 1
+CacheInfo(hits=0, misses=2, maxsize=64, currsize=2) 
+
+Fib(2) = 1
+CacheInfo(hits=2, misses=3, maxsize=64, currsize=3) 
+
+Fib(3) = 2
+CacheInfo(hits=4, misses=4, maxsize=64, currsize=4) 
+
+Fib(4) = 3
+CacheInfo(hits=6, misses=5, maxsize=64, currsize=5) 
+</code></pre>
+
+<p>Pausing here to remark on what we&rsquo;re seeing.</p>
+
+<p>The first <code>print</code> statement is self-explanitory, but look what&rsquo;s happening when we print out successive <code>fib.cache_info()</code>s:</p>
+
+<ul>
+<li>Every time we call <code>fib()</code> with a value not yet seen, <code>misses</code> gets incremented by 1.</li>
+<li>Because of the recursive nature of the algorithm, every time we get a new value for <code>n</code>, we get <em>two</em> new increments in <code>hits</code> (Look at the function defintion. <code>fib(4)</code> calls <code>fib(3)</code> and <code>fib(2)</code>. But because we <em>cached</em> these results, they&rsquo;re simply returned&ndash; we don&rsquo;t then go on to perform <em>their</em> recursive calls.)</li>
+</ul>
+
+<p>Moving on&hellip;</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">())</span></code></pre></div>
+<pre><code>8
+CacheInfo(hits=9, misses=7, maxsize=64, currsize=7)
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">())</span></code></pre></div>
+<pre><code>13
+CacheInfo(hits=11, misses=8, maxsize=64, currsize=8)
+</code></pre>
+
+<p>You get the idea.</p>
+
+<h3 id="at-scale">At Scale</h3>
+
+<p>Finally, I want to show what happens when we take multiple, successive values of <code>fib()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="n">fib</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+<span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">fib</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">hits</span><span class="p">,</span> <span class="n">misses</span> <span class="o">=</span> <span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">hits</span><span class="p">,</span> <span class="n">misses</span><span class="p">,</span> <span class="n">hits</span><span class="o">+</span><span class="n">misses</span><span class="p">))</span>
+
+<span class="n">operations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span></code></pre></div>
+<pre><code>Populating the interactive namespace from numpy and matplotlib
+</code></pre>
+
+<p>In the cached case, the growth is steady and linear going from 0 to 200.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">len_x</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">len_x</span><span class="p">),</span> <span class="n">operations</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;All&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">len_x</span><span class="p">),</span> <span class="n">operations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Hits&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">len_x</span><span class="p">),</span> <span class="n">operations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Misses&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span></code></pre></div>
+<p><img src="lru_cache_23_0.png" alt="png" /></p>
+
+<p>By the time we&rsquo;ve called <code>fib(200)</code>, we&rsquo;ve done 596 operations&ndash; 200 new runs and 396 cache lookups.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">operations</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></code></pre></div>
+<pre><code>array([396, 200, 596])
+</code></pre>
+
+<p>Compare that to the non-cached case, <strong>ran on 10% of the records</strong>. World of difference.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">fib_call_counts</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+    <span class="n">fib_no_cache</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">fib_call_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fib_call_count</span><span class="p">)</span>
+    
+<span class="k">print</span><span class="p">(</span><span class="n">fib_call_count</span><span class="p">)</span></code></pre></div>
+<pre><code>35400
+</code></pre>
+
+<p>Sixty times as many operations, on 10% of the top-level calls.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">/</span> <span class="n">operations</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span></code></pre></div>
+<pre><code>59.395973154362416
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">len_x</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fib_call_counts</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">len_x</span><span class="p">),</span> <span class="n">fib_call_counts</span><span class="p">);</span></code></pre></div>
+<p><img src="lru_cache_30_0.png" alt="png" /></p>
+
+<h3 id="in-the-wild">In the wild</h3>
+
+<p>Now, suppose that we&rsquo;ve got some application that randomly calls fib, per a uniform distribution between 1 and 10. And over the course of a day, it gets called 10 thousand times.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ten_k_calls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span></code></pre></div>
+<p>Then, comparing the relative operations between the cached and non-cached implementations, we have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">fib</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+<span class="n">cache</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">no_cache</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">ten_k_calls</span><span class="p">:</span>
+    <span class="n">fib</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+    <span class="n">fib_no_cache</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+    
+    <span class="n">hits</span><span class="p">,</span> <span class="n">misses</span> <span class="o">=</span> <span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hits</span> <span class="o">+</span> <span class="n">misses</span><span class="p">)</span>
+    <span class="n">no_cache</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fib_call_count</span><span class="p">)</span></code></pre></div>
+<p>Which leads to an enormous difference.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="n">cache</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="n">no_cache</span><span class="p">);</span></code></pre></div>
+<p><img src="lru_cache_36_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">/</span> <span class="mi">10000</span></code></pre></div>
+<pre><code>30.8738
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">sum</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">()[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">10000</span></code></pre></div>
+<pre><code>1.0016
+</code></pre>
+
+<p>Now look what happens when we double the output range of our random number generator</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ten_k_calls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span></code></pre></div>
+<p>Then, comparing the relative operations between the cached and non-cached implementations, we have</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">fib</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+
+<span class="n">cache</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">no_cache</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">ten_k_calls</span><span class="p">:</span>
+    <span class="n">fib</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+    <span class="n">fib_no_cache</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+    
+    <span class="n">hits</span><span class="p">,</span> <span class="n">misses</span> <span class="o">=</span> <span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hits</span> <span class="o">+</span> <span class="n">misses</span><span class="p">)</span>
+    <span class="n">no_cache</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fib_call_count</span><span class="p">)</span></code></pre></div>
+<p>Which leads to an enormous difference.</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="n">cache</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="n">no_cache</span><span class="p">);</span></code></pre></div>
+<p><img src="lru_cache_44_0.png" alt="png" /></p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">fib_call_count</span> <span class="o">/</span> <span class="mi">10000</span></code></pre></div>
+<pre><code>2825.3216
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="nb">sum</span><span class="p">(</span><span class="n">fib</span><span class="o">.</span><span class="n">cache_info</span><span class="p">()[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">10000</span></code></pre></div>
+<pre><code>1.0038
+</code></pre>
+
+<p>This tangent is probably more a lesson in algorithm complexity than anything. Hopefully though, it&rsquo;s also a lesson in how that complexity can be mitigated by good use of <code>@functools.lru_cache()</code></p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

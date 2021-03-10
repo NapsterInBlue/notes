@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-66582-32"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-66582-32');
+    </script>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="Multi-Class Regression with SoftMax" />
+<meta property="og:description" content="Note, these notes were taken in the context of Week 3 of Improving Deep Neural Networks
+When your prediction task extends beyond a binary classification, you want to rely less on the sigmoid function and logistic regression. While you might see some success doing it anyways, and then doing some numpy.max() dancing over your results, a much cleaner approach is to use the SoftMax function.
+The Math Essentially, softmax takes an arbitrary results vector, Z, and instead of applying our typical sigmoid function to it, instead does the following:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://napsterinblue.github.io/notes/machine_learning/regression/multiclass/" />
+
+
+
+<meta property="article:published_time" content="2018-09-05T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-09-05T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Multi-Class Regression with SoftMax"/>
+<meta name="twitter:description" content="Note, these notes were taken in the context of Week 3 of Improving Deep Neural Networks
+When your prediction task extends beyond a binary classification, you want to rely less on the sigmoid function and logistic regression. While you might see some success doing it anyways, and then doing some numpy.max() dancing over your results, a much cleaner approach is to use the SoftMax function.
+The Math Essentially, softmax takes an arbitrary results vector, Z, and instead of applying our typical sigmoid function to it, instead does the following:"/>
+<meta name="generator" content="Hugo 0.40.3" />
+
+    
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Multi-Class Regression with SoftMax",
+  "url": "https://napsterinblue.github.io/notes/machine_learning/regression/multiclass/",
+  "wordCount": "269",
+  "datePublished": "2018-09-05T00:00:00&#43;00:00",
+  "dateModified": "2018-09-05T00:00:00&#43;00:00",
+  "author": {
+    "@type": "Person",
+    "name": ""
+  }
+}
+</script> 
+
+    <title>Multi-Class Regression with SoftMax</title>
+
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+
+    
+    <link href="https://napsterinblue.github.io/notes/css/custom.css" rel="stylesheet">
+    <link href="https://napsterinblue.github.io/notes/css/syntax.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700" rel="stylesheet">
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Data Science Notes" />
+
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://napsterinblue.github.io">Movies, Metrics, Musings</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav navbar-nav mr-auto"></ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://napsterinblue.github.io/pages/about.html" title="About">About</a></li>
+                    <li><a href="https://napsterinblue.github.io/archives.html" title="Archive">Archive</a></li>
+                    <li><a href="https://napsterinblue.github.io/pages/resources.html" title="Resources">Resources</a></li>
+                    <li><a href="https://napsterinblue.github.io/notes/" title="Notes">My Notes</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+
+                 
+
+
+<article>
+  <div class="technical_note">
+  <header>
+    <h1 class="technical_note_title">Multi-Class Regression with SoftMax</h1>
+    <div class="technical_note_date">
+      <time datetime=" 2018-09-05T00:00:00Z "> 05 Sep 2018</time>
+    </div>
+  </header>
+  <div class="content">
+  
+
+<p><em>Note, these notes were taken in the context of Week 3 of <a href="https://www.coursera.org/learn/deep-neural-network">Improving Deep Neural Networks</a></em></p>
+
+<p>When your prediction task extends beyond a binary classification, you want to rely less on the sigmoid function and logistic regression. While you might see some success doing it anyways, and then doing some <code>numpy.max()</code> dancing over your results, a much cleaner approach is to use the <em>SoftMax</em> function.</p>
+
+<h3 id="the-math">The Math</h3>
+
+<p>Essentially, softmax takes an arbitrary results vector, <code>Z</code>, and instead of applying our typical sigmoid function to it, instead does the following:</p>
+
+<ol>
+<li>Overwrites each value, <code>z_i</code> with <code>t_i</code>, where</li>
+</ol>
+
+<p>$t_i = e^{z_i}$</p>
+
+<ol>
+<li>Normalizes each value by the sum of all values in the vector (the activation function)</li>
+</ol>
+
+<p>$a = \frac{e^Z}{\sum{t_i}}$</p>
+
+<p>This has the convenient effect of all values in the vector <code>a</code> summing to 1&ndash; a rough &ldquo;percent likelihood&rdquo; value assigned to each cell.</p>
+
+<ol>
+<li>In terms of training, we can do Gradient Descent on this just fine as the cost function is essentially the same as that for Logistic Regression, but with more parts.</li>
+</ol>
+
+<h3 id="a-simple-example">A Simple Example</h3>
+
+<p>Say we&rsquo;re trying to decide between 4 separate classes and wind up with a final vector that looks like</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">Z</span></code></pre></div>
+<pre><code>array([ 5,  2, -1,  3])
+</code></pre>
+
+<p>Determining softmax likelihood is easy enough, following along with the steps above</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+<span class="n">T</span></code></pre></div>
+<pre><code>array([148.4131591 ,   7.3890561 ,   0.36787944,  20.08553692])
+</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">A</span> <span class="o">=</span> <span class="n">T</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+<span class="n">A</span></code></pre></div>
+<pre><code>array([0.84203357, 0.04192238, 0.00208719, 0.11395685])
+</code></pre>
+
+<p>We can see that <code>Class_0</code> having a large value makes it likely and conversely <code>Class_2</code> having a low value makes it unlikely, thus mirroring our Sigmoid Activation intuition.</p>
+
+</div>
+  <aside>
+      <div class="bug_reporting">
+          <h4>Find an error or bug?</h4>
+          <p>Everything on this site is available on GitHub. Head to <a href='https://github.com/napsterinblue/notes/issues/new'>and submit a suggested change</a>. You can also message me directly on <a href='https://twitter.com/napsterinblue'>Twitter</a>.</p>
+      </div>
+      </aside>
+
+    </div>
+</article>
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <footer class="footer text-center">
+        <div class="container">
+            <span class="text-muted">This project contains 185 pages and is available on <a href="https://github.com/napsterinblue/notes">GitHub</a>. Copyright &copy; NapsterInBlue, <time datetime="2018">2018</time>.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
