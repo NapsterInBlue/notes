@@ -17,6 +17,9 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
+# unclear what these are, but I want them out
+.DS_STORE
+
 # Never want to push up rendered docs to master
 docs/
 
